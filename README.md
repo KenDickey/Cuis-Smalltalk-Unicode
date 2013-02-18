@@ -10,6 +10,7 @@ See http://Unicode.org
 Unicode is a complex system and strategy for computer manipulation of character and string information for human language. 
 
 The code presented here has very limited ambitions:
+
 	Properly read and write Unicode data to/from disk.
 	Allow programattic (code) manipulation of Unicode code points.
 	Implement reasonable sorting, searching, and other manipulation of code points.
@@ -23,12 +24,14 @@ The basic strategy is as follows:
 	[See https://en.wikipedia.org/wiki/Rope_%28computer_science%29 ]
 
 THE GRAND PLAN
+
 	UniCodes	- Basic codepoint support (CodePoints: Characters, Ropes ["strings"])
 	UniUtils	- Bidirectional, location based sorting; advanced algorithms
 	UniDisplay	- Character composition ; ligatures
 	UniInput	- Multilingual text input
 
-Unit tests are in separate packages due to large size
+Unit tests are in separate packages due to large size:
+
 	UniCodesTests
 	UniUtilsTests
 	UniDisplayTests
