@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1600] on 17 February 2013 at 10:08:38 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1600] on 19 February 2013 at 3:18:43 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -155,6 +155,46 @@ asUniString
 
 	^UniString fromString: (self asString )! !
 
+!Integer methodsFor: '*unicodes' stamp: 'KenD 2/19/2013 14:04'!
+nextUnicodeCodePointFromUtf8: anUtf8Stream
+	"anUtf8Stream can be over a ByteArray
+	Answer nil if conversion not possible, because of invalid UTF-8.
+	Also answer nil for codePoint U+FEFF (BOM, unneededly added by Win clipboard)"
+
+	| byte1 byte2 byte3 byte4 codePoint |
+	byte1 _ anUtf8Stream next asInteger.
+	byte1 < 128 ifTrue: [	"single byte"
+		^byte1 ].
+	
+	"At least 2 bytes"
+	byte2 _ anUtf8Stream next asInteger.
+	(byte2 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
+	(byte1 bitAnd: 16rE0) = 192 ifTrue: [ "two bytes"
+		^ ((byte1 bitAnd: 31) bitShift: 6) 
+			+ (byte2 bitAnd: 63) 
+	].
+	
+	"At least 3 bytes"
+	byte3 _ anUtf8Stream next asInteger.
+	(byte3 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
+	(byte1 bitAnd: 16rF0) = 224 ifTrue: [ "three bytes"
+		codePoint _  ((byte1 bitAnd: 15) bitShift: 12) 
+					+ ((byte2 bitAnd: 63) bitShift: 6) 
+					+ (byte3 bitAnd: 63).
+		^ codePoint
+	].
+
+	"4 bytes"
+	byte4 _ anUtf8Stream next asInteger.
+	(byte4 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
+	(byte1 bitAnd: 16rF8) = 240 ifTrue: [  "four bytes"
+		^((byte1 bitAnd: 16r7) bitShift: 18) 
+			+ ((byte2 bitAnd: 63) bitShift: 12) 
+			+ ((byte3 bitAnd: 63) bitShift: 6) 
+			+ (byte4 bitAnd: 63) ].
+
+	^nil! !
+
 !Number methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 09:02'!
 asUniChar
 	"Answer a Unicode character [UniChar] with me as a code point"
@@ -184,6 +224,24 @@ asUniString
 
 	^UniString fromString: self! !
 
+!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
+< aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self codePoint) < (aCharacter asUniChar codePoint) " NB: Insensitive to case"! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
+= aCharacter 
+	"Answer true if codePoints are equal"
+
+	^ (self codePoint) = (aCharacter asUniChar codePoint) " NB: Insensitive to case"! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
+> aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self codePoint) > (aCharacter asUniChar codePoint) " NB: Insensitive to case"! !
+
 !UniChar methodsFor: 'converting' stamp: 'KenD 2/17/2013 19:56'!
 asCharacter
 
@@ -205,11 +263,28 @@ codePoint
 
 	^codePoint! !
 
-!UniChar methodsFor: 'printing' stamp: 'KenD 2/17/2013 17:25'!
+!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:25'!
+hash
+	"Hash is reimplemented because = is implemented."
+
+	^codePoint ! !
+
+!UniChar methodsFor: 'printing' stamp: 'KenD 2/19/2013 13:22'!
 printOn: aStream
 
-	aStream nextPut: $$.
-	aStream nextPut: (self codePoint asCharacter) "@@@FIXME@@@"! !
+	| codePoint |
+	codePoint := self codePoint.
+	
+	(codePoint < 16rFF) "Fits in a byte?"
+	ifTrue: [
+		aStream nextPut: $$.
+		aStream nextPut: (self codePoint asCharacter)
+	]
+	ifFalse: [ "Do what Cuis does as with String>>fromUtf8: "
+		aStream nextPutAll: '&#'.
+		codePoint printOn: aStream base: 10.
+		aStream nextPut: $; 
+	]! !
 
 !UniChar methodsFor: 'private' stamp: 'KenD 2/17/2013 09:00'!
 privateSetCodePoint: aCodePoint
@@ -227,6 +302,68 @@ unicodeCodePoint
 
 	^self codePoint! !
 
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:36'!
+arrowDown
+
+	^ (31 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
+arrowLeft
+
+	^ (28 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
+arrowRight
+
+	^ (29 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
+arrowUp
+
+	^ (30 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
+backspace
+	"Answer the Character representing a backspace."
+
+	^ (8 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:38'!
+crCharacter
+	"Answer the Character representing a carriage return."
+
+	^ (13 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:38'!
+delete
+
+	^ (127 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:38'!
+end
+
+	^ (4 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:39'!
+enter
+	"Answer the Character representing enter."
+
+	^ (3 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:39'!
+escape
+	"Answer the ASCII ESC character"
+
+	^ (27 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:46'!
+euro
+	"The Euro currency sign, that E with two dashes.
+	Note that this differs from class Character, as
+	Cuis uses ISO Latin 9 (ISO 8859-15) character encoding."
+
+	^ (16r20AC asUniChar)! !
+
 !UniChar class methodsFor: 'instance creation' stamp: 'KenD 2/17/2013 09:22'!
 fromCodePoint: aCodePoint
 	"Answer a new Unicode character to represent aCodePoint"
@@ -239,6 +376,70 @@ fromCodePoint: aCodePoint
 	newUChar := aCodePoint classForCodePoint new initialize.
 	newUChar privateSetCodePoint: aCodePoint.
 	^newUChar! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:39'!
+home
+
+	^ (1 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
+insert
+
+	^ (5 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
+lfCharacter
+	"Answer the Character representing a linefeed."
+
+	^ (10 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
+nbsp
+	"non-breakable space."
+
+	^ (202 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:41'!
+newLineCharacter
+	"Answer the Character representing a newLine, that is, a linefeed.
+	This should be the only method in the system that knows about this detail.
+	Everybody else should eventually ask us."
+
+	^ self lfCharacter! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:41'!
+newPage
+	"Answer the Character representing a form feed."
+
+	^ (12 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:41'!
+null
+	"Answer the null Character."
+
+	^ (0 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
+pageDown
+
+	^ (12 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
+pageUp
+
+	^ (11 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
+space
+	"Answer the Character representing a space."
+
+	^ (32 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
+tab
+	"Answer the Character representing a tab."
+
+	^ (9 asUniChar)! !
 
 !UniFlat methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:11'!
 at: anIndex
@@ -718,12 +919,22 @@ rebalance
 	].
 	^ UniString merge: leafNodes start: 1 end: (leafNodes size).! !
 
-!UniString methodsFor: 'printing' stamp: 'KenD 2/17/2013 21:35'!
+!UniString methodsFor: 'printing' stamp: 'KenD 2/19/2013 14:26'!
 stringRepresentation
 
-	"@@@ FIXME: BOGUS. Convert to UTF-8 @@@"
+	"Do what Cuis does in String>>fromUtf8:hex:trimLastNull: "
 	
-	^String streamContents: [:s | self codePointDo: [ :codePoint | s nextPut: (codePoint asCharacter ) ]]! !
+	^String streamContents: [:strm | 
+		self codePointDo: [ :codePoint | 
+			(codePoint < 16rFF) "Single byte?"
+			ifTrue: [ strm nextPut: (codePoint asCharacter ) ]
+			ifFalse: [
+				strm nextPutAll: '&#x'.
+				codePoint printOn: strm base: 16 length: 4 padded: true.
+				strm nextPut: $; 
+			]
+		]
+	]! !
 
 !UniString class methodsFor: 'private' stamp: 'KenD 2/17/2013 15:51'!
 fibonacci
@@ -733,20 +944,67 @@ fibonacci
 "
 	^Fibonacci ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/17/2013 20:44'!
+!UniString class methodsFor: 'private' stamp: 'KenD 2/19/2013 13:51'!
+fromCodePointCollection: anIntegerCollection
+	"Answer a UniString"
+	
+	"Determine size to allocate"
+	| length num8 num16 num32 charBlock |
+	num8  := 0.
+	num16 := 0.
+	num32 := 0.
+	length := anIntegerCollection size.
+	
+	anIntegerCollection do: [ :codePoint | 
+		(codePoint < 16rFF)
+		ifTrue: [num8 := num8 + 1]
+		ifFalse: [ (codePoint < 16rFFFF)
+			ifTrue: [num16 := num16 + 1]
+			ifFalse: [num32 := num32 + 1]
+		]
+	].
+	"@@FIXME: is a small number of larger codepoints use UniSplice'd ropes"
+	(num32 > 0)
+	ifTrue: [charBlock := WordArray new: length]
+	ifFalse: [(num16 > 0)
+			ifTrue: [charBlock := ShortIntegerArray  new: length]
+			ifFalse: [charBlock := ByteArray new: length]
+	].
+	"Pack 'em tight"
+	1 to: length do:	[ :index | charBlock at: index put: (anIntegerCollection at: index) ].
+	
+	^ (UniFlat new initialize with: charBlock) 
+! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 14:13'!
 fromString: aString
 	"Answer a new UniString"
 
 	(aString class == String)
-	ifTrue: [	 | charBlock |
-		charBlock := ByteArray new: (aString size) withAll: 0.
-		1 to: (aString size) do: [ :index |
-			"@@@ FIXME: BOGUS: Assumes all codePoints are u8 @@@"
-			charBlock at: index put: ((aString at: index) unicodeCodePoint) 
-		].
-		^(UniFlat new initialize with: charBlock) 
+	ifFalse: [ DomainError signal: 'UniString fromString: requires a String argument' ]
+	ifTrue: [	 | codePointsColl |
+		codePointsColl := OrderedCollection new: (aString size).
+		1 to: (aString size) do: [ :index | codePointsColl addLast: (aString at: index) unicodeCodePoint ].
+		
+		^ (self fromCodePointCollection:codePointsColl)
 	]
-	ifFalse: [ DomainError signal: 'UniString fromString: requires a String argument' ]! !
+! !
+
+!UniString class methodsFor: 'private' stamp: 'KenD 2/19/2013 14:07'!
+fromUtf8: aByteArray hex: useHexForNCRs trimLastNull: doTrimLastNullChar
+	"Convert the given string from UTF-8 to  UniString"
+	
+	"@@FIXME: Slow but correct"
+	| codePointsColl bytes codePoint |
+	codePointsColl := OrderedCollection new initialize.
+	bytes _ aByteArray readStream.
+	[ bytes atEnd ] whileFalse: [
+		codePoint _ (UniChar nextUnicodeCodePointFromUtf8: bytes).
+		codePoint ifNotNil: [  codePointsColl addLast: codePoint ]. "@@FIXME: ignore errors??"
+	].
+	(doTrimLastNullChar and: [ codePoint = 0 ]) ifTrue: [
+				codePointsColl removeLast ].
+	^ (self fromCodePointCollection: codePointsColl)! !
 
 !UniString class methodsFor: 'class initialization' stamp: 'KenD 2/17/2013 21:26'!
 initialize
@@ -756,6 +1014,12 @@ initialize
 	Fibonacci :=   #( 0  1  1  2  3  5  8  13  21  34  55  89  144  233  377  610  987  1597  2584  4181  6765  10946  17711  28657  46368  75025  121393  196418  317811  514229  832040  1346269  2178309  3524578  5702887  9227465  14930352  24157817  39088169  63245986  102334155  165580141  267914296  433494437  701408733  1134903170  1836311903  2971215073  4807526976  7778742049  12586269025  20365011074  32951280099  53316291173  86267571272  139583862445  225851433717  365435296162  591286729879  956722026041  1548008755920  2504730781961  4052739537881  6557470319842  10610209857723  17167680177565  27777890035288  44945570212853  72723460248141  117669030460994  190392490709135  308061521170129  498454011879264  806515533049393  1304969544928657  2111485077978050  3416454622906707  5527939700884757  8944394323791464  14472334024676221  23416728348467685  37889062373143906  61305790721611591  99194853094755497  160500643816367088  259695496911122585  420196140727489673  679891637638612258  1100087778366101931  1779979416004714189  2880067194370816120  4660046610375530309  7540113804746346429 ).
 	
 	MaxRopeDepth := 96.  "rebalance ropes whose depth exceeds this"! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 13:24'!
+lfString
+	"Answer a Rope containing a single Lf character."
+
+	^ (Character lfCharacter asUniString)! !
 
 !UniString class methodsFor: 'private' stamp: 'KenD 2/17/2013 15:51'!
 maxRopeDepth
@@ -784,7 +1048,13 @@ merge: leafNodes start: start end: end
 	   (self merge: leafNodes start: middle end: end)
 ! !
 
-!UniString class methodsFor: 'user interface' stamp: 'KenD 2/17/2013 19:42'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 13:25'!
+newLineString
+	"Answer a string containing a single newLine (i.e. Lf) character."
+
+	^ (Character newLineCharacter asUniString)! !
+
+!UniString class methodsFor: 'user interface' stamp: 'KenD 2/18/2013 15:38'!
 openTextEditor
 
 "
@@ -792,8 +1062,14 @@ openTextEditor
 "
 	SystemWindow 
 		editText: (TextModel 
-			withText: (FlatRope fromString: 'Let us see what these UniString things can do.')) 
+			withText: (UniFlat fromString: 'Let us see what these UniString things can do.')) 
 			label: 'Text Editor' 
 			wrap: true! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 13:26'!
+tab
+	"Answer a string containing a single tab character."
+
+	^ (Character tab asUniString)! !
 UniSplice initialize!
 UniString initialize!
