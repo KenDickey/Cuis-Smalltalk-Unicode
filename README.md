@@ -49,3 +49,9 @@ Unit tests are in separate packages due to large size:
 - UniUtilsTests
 - UniDisplayTests
 - UniInputTests
+
+
+### References
+
+- http://www.unicode.org
+- http://cldr.unicode.org/ Unicode Common Locale Data Repository (includes rules for segmenting text, sorting and searching)
