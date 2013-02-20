@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1600] on 19 February 2013 at 3:18:43 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1590] on 20 February 2013 at 10:49:35 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -253,10 +253,11 @@ asUniChar
 
 	^self! !
 
-!UniChar methodsFor: 'converting' stamp: 'KenD 2/17/2013 22:00'!
+!UniChar methodsFor: 'converting' stamp: 'hjh 2/20/2013 10:49'!
 asUniString
-
-	^self codePoint asCharacter asUniString ! !
+	"changed by HH, before it depended on asCharacter which is 8bit only"
+	
+	^UniString fromCodePointCollection: (Array with: self codePoint)! !
 
 !UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 08:58'!
 codePoint
@@ -976,7 +977,7 @@ fromCodePointCollection: anIntegerCollection
 	^ (UniFlat new initialize with: charBlock) 
 ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 14:13'!
+!UniString class methodsFor: 'instance creation' stamp: 'hjh 2/20/2013 10:44'!
 fromString: aString
 	"Answer a new UniString"
 
@@ -986,7 +987,7 @@ fromString: aString
 		codePointsColl := OrderedCollection new: (aString size).
 		1 to: (aString size) do: [ :index | codePointsColl addLast: (aString at: index) unicodeCodePoint ].
 		
-		^ (self fromCodePointCollection:codePointsColl)
+		^ (self fromCodePointCollection: codePointsColl)
 	]
 ! !
 
