@@ -3,13 +3,14 @@ Cuis-Unicode
 
 ### Aim
 
-Design Sketch showing mechanics for Unicode support. Uses Ropes.
-cf https://github.com/KenDickey/Cuis-Ropes
+Design Sketch showing mechanics for Unicode support. Uses Ropes as in
+https://github.com/KenDickey/Cuis-Ropes
 
 
 ### Status
 
 Incomplete; Pre-Alpha; Not ready yet to see the light of day...
+There is nothing here at this time to support actual display of Unicode text.
 
 
 ### Introduction
@@ -23,17 +24,15 @@ The code presented here has very limited ambitions:
 - Allow programattic (code) manipulation of Unicode code points.
 - Implement reasonable sorting, searching, and other manipulation of code points.
 	
-There is nothing here at this time to support actual display of Unicode text.
 
 The basic strategy is as follows:
 - The main useful classes are UniChar and UniString.  Others are helper subclasses.
 - Unicode text is represented by arrayed blocks of storage where all characters are of the same size.
-- Ropes are used to keep the illustion of mixed storage sizes while allowing indexing into text by character location.
+- Ropes are used to keep the illusion of mixed storage sizes while allowing indexing into text by character location.
   [See https://en.wikipedia.org/wiki/Rope_%28computer_science%29 ]
 
-More on Unicoce see http://Unicode.org
-
 This package is separate from Core Cuis.  
+
 This means that the class UniChar does not inherit from Character and UniString does not inherit from String. 
 
 
