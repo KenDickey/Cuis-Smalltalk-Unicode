@@ -38,7 +38,8 @@ This means that the class UniChar does not inherit from Character and UniString 
 
 ### The grand plan
 
-- UniCodes	- Basic codepoint support (CodePoints: Characters, Ropes ["strings"]) The grand planidirectional, location based sorting; advanced algorithms
+- UniCodes	- Basic codepoint support (CodePoints: Characters, Ropes ["strings"])
+- UniUtils	- Bidirectional, location based sorting; advanced algorithms
 - UniDisplay	- Character composition ; ligatures
 - UniInput	- Multilingual text input
 
