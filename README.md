@@ -56,3 +56,4 @@ Unit tests are in separate packages due to large size:
 - http://www.unicode.org
 - http://cldr.unicode.org/ Unicode Common Locale Data Repository (includes rules for segmenting text, sorting and searching)
 - Unicode Locale Data Markup Language (LDML) http://www.unicode.org/reports/tr35/
+- Locale Explorer http://demo.icu-project.org/icu-bin/locexp
