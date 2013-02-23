@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1590] on 20 February 2013 at 10:49:35 am'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1600] on 21 February 2013 at 4:55:14 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -945,34 +945,31 @@ fibonacci
 "
 	^Fibonacci ! !
 
-!UniString class methodsFor: 'private' stamp: 'KenD 2/19/2013 13:51'!
+!UniString class methodsFor: 'private' stamp: 'KenD 2/21/2013 14:31'!
 fromCodePointCollection: anIntegerCollection
 	"Answer a UniString"
 	
 	"Determine size to allocate"
-	| length num8 num16 num32 charBlock |
+	|  num8 num16 num32 charBlock |
 	num8  := 0.
 	num16 := 0.
 	num32 := 0.
-	length := anIntegerCollection size.
 	
 	anIntegerCollection do: [ :codePoint | 
 		(codePoint < 16rFF)
 		ifTrue: [num8 := num8 + 1]
-		ifFalse: [ (codePoint < 16rFFFF)
+		ifFalse: [ (codePoint < 16r7FFF)
 			ifTrue: [num16 := num16 + 1]
 			ifFalse: [num32 := num32 + 1]
 		]
 	].
 	"@@FIXME: is a small number of larger codepoints use UniSplice'd ropes"
 	(num32 > 0)
-	ifTrue: [charBlock := WordArray new: length]
+	ifTrue: [charBlock := WordArray withAll: anIntegerCollection]
 	ifFalse: [(num16 > 0)
-			ifTrue: [charBlock := ShortIntegerArray  new: length]
-			ifFalse: [charBlock := ByteArray new: length]
+			ifTrue: [charBlock := ShortIntegerArray  withAll: anIntegerCollection]
+			ifFalse: [charBlock := ByteArray  withAll: anIntegerCollection]
 	].
-	"Pack 'em tight"
-	1 to: length do:	[ :index | charBlock at: index put: (anIntegerCollection at: index) ].
 	
 	^ (UniFlat new initialize with: charBlock) 
 ! !
@@ -991,7 +988,14 @@ fromString: aString
 	]
 ! !
 
-!UniString class methodsFor: 'private' stamp: 'KenD 2/19/2013 14:07'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/21/2013 13:49'!
+fromUtf8:  utf8
+	"Answer a new UniString"
+
+	^ (self fromUtf8: utf8 hex: false trimLastNull: false)
+! !
+
+!UniString class methodsFor: 'private' stamp: 'KenD 2/21/2013 13:50'!
 fromUtf8: aByteArray hex: useHexForNCRs trimLastNull: doTrimLastNullChar
 	"Convert the given string from UTF-8 to  UniString"
 	
@@ -1000,7 +1004,7 @@ fromUtf8: aByteArray hex: useHexForNCRs trimLastNull: doTrimLastNullChar
 	codePointsColl := OrderedCollection new initialize.
 	bytes _ aByteArray readStream.
 	[ bytes atEnd ] whileFalse: [
-		codePoint _ (UniChar nextUnicodeCodePointFromUtf8: bytes).
+		codePoint _ (Character nextUnicodeCodePointFromUtf8: bytes).
 		codePoint ifNotNil: [  codePointsColl addLast: codePoint ]. "@@FIXME: ignore errors??"
 	].
 	(doTrimLastNullChar and: [ codePoint = 0 ]) ifTrue: [
