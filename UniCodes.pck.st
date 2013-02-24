@@ -1,10 +1,20 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1600] on 21 February 2013 at 4:55:14 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1600] on 24 February 2013 at 3:11:58 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
+!classDefinition: #U16Array category: #UniCodes!
+ShortIntegerArray variableWordSubclass: #U16Array
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'U16Array class' category: #UniCodes!
+U16Array class
+	instanceVariableNames: ''!
+
 !classDefinition: #UniChar category: #UniCodes!
 Object subclass: #UniChar
 	instanceVariableNames: 'codePoint'
-	classVariableNames: ''
+	classVariableNames: 'ZeroCodePoints'
 	poolDictionaries: ''
 	category: 'UniCodes'!
 !classDefinition: 'UniChar class' category: #UniCodes!
@@ -81,6 +91,9 @@ UniString subclass: #UniSplice
 UniSplice class
 	instanceVariableNames: ''!
 
+
+!U16Array commentStamp: '<historical>' prior: 0!
+Fake storage for unsigned 16 bit integers.!
 
 !UChar16 commentStamp: '<historical>' prior: 0!
 I am a Unicode character which is represented in 16 bits.
@@ -195,6 +208,19 @@ nextUnicodeCodePointFromUtf8: anUtf8Stream
 
 	^nil! !
 
+!Integer methodsFor: '*unicodes' stamp: 'KenD 2/24/2013 09:48'!
+uniDigit
+	"This is a Unicode codePoint value representing a digit.  Return the corresponding digit value"
+	(UniChar zeroCodePoints) 
+		findBinary: [ :elt | self - elt ] "Compare block "
+	 	do: [ :exactMatch | ^exactMatch ]
+	 	ifNone: [ :low :high | ^ self - low ]
+		
+"
+16r32 uniDigit .  -> 2
+16r7C2 uniDigit -> 2.
+"! !
+
 !Number methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 09:02'!
 asUniChar
 	"Answer a Unicode character [UniChar] with me as a code point"
@@ -223,6 +249,24 @@ classForCodePoint
 asUniString
 
 	^UniString fromString: self! !
+
+!U16Array methodsFor: 'accessing' stamp: 'KenD 2/24/2013 14:58'!
+at: anIndex
+
+	"Answer unsigned value"
+	| probe |
+	probe := super at: anIndex.
+	(probe < 0)
+	ifTrue: [ ^ (probe negated) bitOr: 16r8000 ]
+	ifFalse: [^probe ]! !
+
+!U16Array methodsFor: 'accessing' stamp: 'KenD 2/24/2013 14:57'!
+at: anIndex put: anInt16Value
+
+	"Store highbit negated if set"
+	(anInt16Value bitAnd: 16r8000) isZero
+	ifTrue:   [ super at: anIndex put: anInt16Value ]
+	ifFalse: [ super at: anIndex put: ((anInt16Value bitAnd:  16r7FFF) negated) ]! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
 < aCharacter 
@@ -253,16 +297,24 @@ asUniChar
 
 	^self! !
 
-!UniChar methodsFor: 'converting' stamp: 'hjh 2/20/2013 10:49'!
+!UniChar methodsFor: 'converting' stamp: 'KenD 2/24/2013 15:11'!
 asUniString
-	"changed by HH, before it depended on asCharacter which is 8bit only"
-	
-	^UniString fromCodePointCollection: (Array with: self codePoint)! !
+
+	^ UniString fromCodePointCollection: {self codePoint} ! !
 
 !UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 08:58'!
 codePoint
 
 	^codePoint! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 2/24/2013 14:14'!
+digitValue
+	"Answer value of chareacter taken as a decimal digit."
+	"Note that this differs in behavior from Character>>digitValue"
+"
+	$2 asUniChar digitValue
+"
+	^ self codePoint uniDigit ! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:25'!
 hash
@@ -270,7 +322,7 @@ hash
 
 	^codePoint ! !
 
-!UniChar methodsFor: 'printing' stamp: 'KenD 2/19/2013 13:22'!
+!UniChar methodsFor: 'printing' stamp: 'KenD 2/19/2013 15:41'!
 printOn: aStream
 
 	| codePoint |
@@ -279,7 +331,7 @@ printOn: aStream
 	(codePoint < 16rFF) "Fits in a byte?"
 	ifTrue: [
 		aStream nextPut: $$.
-		aStream nextPut: (self codePoint asCharacter)
+		aStream nextPut: codePoint
 	]
 	ifFalse: [ "Do what Cuis does as with String>>fromUtf8: "
 		aStream nextPutAll: '&#'.
@@ -383,6 +435,57 @@ home
 
 	^ (1 asUniChar)! !
 
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 2/24/2013 09:47'!
+initialize
+"
+	UniChar initialize.
+"
+	ZeroCodePoints := #(
+       16r0030                "DIGIT ZERO"
+       16r0660                "ARABIC-INDIC DIGIT ZERO"
+       16r06F0                "EXTENDED ARABIC-INDIC DIGIT ZERO"
+       16r07C0                "NKO DIGIT ZERO"
+       16r0966                "DEVANAGARI DIGIT ZERO"
+       16r09E6                "BENGALI DIGIT ZERO"
+       16r0A66                "GURMUKHI DIGIT ZERO"
+       16r0AE6                "GUJARATI DIGIT ZERO"
+       16r0B66                "ORIYA DIGIT ZERO"
+       16r0BE6                "TAMIL DIGIT ZERO"
+       16r0C66                "TELUGU DIGIT ZERO"
+       16r0CE6                "KANNADA DIGIT ZERO"
+       16r0D66                "MALAYALAM DIGIT ZERO"
+       16r0E50                "THAI DIGIT ZERO"
+       16r0ED0                "LAO DIGIT ZERO"
+       16r0F20                "TIBETAN DIGIT ZERO"
+       16r1040                "MYANMAR DIGIT ZERO"
+       16r1090                "MYANMAR SHAN DIGIT ZERO"
+       16r17E0                "KHMER DIGIT ZERO"
+       16r1810                "MONGOLIAN DIGIT ZERO"
+       16r1946                "LIMBU DIGIT ZERO"
+       16r19D0                "NEW TAI LUE DIGIT ZERO"
+       16r1A80                "TAI THAM HORA DIGIT ZERO"
+       16r1A90                "TAI THAM THAM DIGIT ZERO"
+       16r1B50                "BALINESE DIGIT ZERO"
+       16r1BB0                "SUNDANESE DIGIT ZERO"
+       16r1C40                "LEPCHA DIGIT ZERO"
+       16r1C50                "OL CHIKI DIGIT ZERO"
+       16rA620                "VAI DIGIT ZERO"
+       16rA8D0                "SAURASHTRA DIGIT ZERO"
+       16rA900                "KAYAH LI DIGIT ZERO"
+       16rA9D0                "JAVANESE DIGIT ZERO"
+       16rAA50                "CHAM DIGIT ZERO"
+       16rABF0                "MEETEI MAYEK DIGIT ZERO"
+       16rFF10                "FULLWIDTH DIGIT ZERO"
+       16r104A0               "OSMANYA DIGIT ZERO"
+       16r11066               "BRAHMI DIGIT ZERO"
+       16r1D7CE               "MATHEMATICAL BOLD DIGIT ZERO"
+       16r1D7D8               "MATHEMATICAL DOUBLE-STRUCK DIGIT ZERO"
+       16r1D7E2               "MATHEMATICAL SANS-SERIF DIGIT ZERO"
+       16r1D7EC               "MATHEMATICAL SANS-SERIF BOLD DIGIT ZERO"
+       16r1D7F6               "MATHEMATICAL MONOSPACE DIGIT ZERO"
+  ).
+! !
+
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
 insert
 
@@ -441,6 +544,11 @@ tab
 	"Answer the Character representing a tab."
 
 	^ (9 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 2/24/2013 09:36'!
+zeroCodePoints
+	
+	^ZeroCodePoints! !
 
 !UniFlat methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:11'!
 at: anIndex
@@ -531,12 +639,12 @@ substringFrom: startIndex length: numChars
 	]
 	ifFalse: [self errorSubscriptBounds: startIndex]! !
 
-!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 2/17/2013 16:28'!
+!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 2/24/2013 15:01'!
 with: aCharBlock
 
 	| blockClass |
 	blockClass := aCharBlock class.
-	((blockClass == ByteArray) or: [(blockClass == ShortIntegerArray) or: [ blockClass == WordArray]])
+	((blockClass == ByteArray) or: [(blockClass == U16Array) or: [ blockClass == WordArray]])
 	ifTrue: [	 charBlock := aCharBlock. "Nota Bene: immutable"
 			^self]
 	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
@@ -546,15 +654,15 @@ at: anIndex
 
 	^(self codePointAt: anIndex) asUniChar "Nota Bene: #codePointAt: does the index offset"! !
 
-!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 20:59'!
+!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/19/2013 15:43'!
 at: index put: aCharacter 
 
 	"Answer a new rope"
-	| offsetIndex startIndex endIndex |
+	| offsetIndex firstIndex endIndex |
 	
-	startIndex := self startIndex.
-	endIndex := startIndex + self size - 1.
-	offsetIndex := index +  startIndex - 1.
+	firstIndex := self startIndex.
+	endIndex := firstIndex + self size - 1.
+	offsetIndex := index +  firstIndex - 1.
 	
 	(self size = 1)
 	ifTrue:  [
@@ -602,15 +710,15 @@ codePointAt: anIndex
 
 	^self charBlock at: (anIndex + startIndex - 1)! !
 
-!UniFlatSlice methodsFor: 'enumerating' stamp: 'KenD 2/17/2013 21:41'!
+!UniFlatSlice methodsFor: 'enumerating' stamp: 'KenD 2/19/2013 15:44'!
 codePointDo: aBlock
 	"aBlock takes each codePoint in me as an argument"
 
-	| start end charBlock |
+	| start end codePointBlock |
 	start := self startIndex.
 	end := start + self size - 1.
-	charBlock := self charBlock. "cache locally"
-	start to: end do: [ :index |  aBlock value: (charBlock at: index) ]! !
+	codePointBlock := self charBlock. "cache locally"
+	start to: end do: [ :index |  aBlock value: (codePointBlock at: index) ]! !
 
 !UniFlatSlice methodsFor: 'copying' stamp: 'KenD 2/17/2013 22:07'!
 copyFrom: start to: stop 
@@ -945,36 +1053,39 @@ fibonacci
 "
 	^Fibonacci ! !
 
-!UniString class methodsFor: 'private' stamp: 'KenD 2/21/2013 14:31'!
+!UniString class methodsFor: 'private' stamp: 'KenD 2/24/2013 14:44'!
 fromCodePointCollection: anIntegerCollection
 	"Answer a UniString"
 	
 	"Determine size to allocate"
-	|  num8 num16 num32 charBlock |
+	| length num8 num16 num32 charBlock |
 	num8  := 0.
 	num16 := 0.
 	num32 := 0.
+	length := anIntegerCollection size.
 	
 	anIntegerCollection do: [ :codePoint | 
 		(codePoint < 16rFF)
 		ifTrue: [num8 := num8 + 1]
-		ifFalse: [ (codePoint < 16r7FFF)
+		ifFalse: [ (codePoint < 16rFFFF)
 			ifTrue: [num16 := num16 + 1]
 			ifFalse: [num32 := num32 + 1]
 		]
 	].
 	"@@FIXME: is a small number of larger codepoints use UniSplice'd ropes"
 	(num32 > 0)
-	ifTrue: [charBlock := WordArray withAll: anIntegerCollection]
+	ifTrue: [charBlock := WordArray new: length]
 	ifFalse: [(num16 > 0)
-			ifTrue: [charBlock := ShortIntegerArray  withAll: anIntegerCollection]
-			ifFalse: [charBlock := ByteArray  withAll: anIntegerCollection]
+			ifTrue: [charBlock := U16Array  new: length]
+			ifFalse: [charBlock := ByteArray new: length]
 	].
+	"Pack 'em tight"
+	1 to: length do:	[ :index | charBlock at: index put: (anIntegerCollection at: index) ].
 	
 	^ (UniFlat new initialize with: charBlock) 
 ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'hjh 2/20/2013 10:44'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 14:13'!
 fromString: aString
 	"Answer a new UniString"
 
@@ -984,18 +1095,11 @@ fromString: aString
 		codePointsColl := OrderedCollection new: (aString size).
 		1 to: (aString size) do: [ :index | codePointsColl addLast: (aString at: index) unicodeCodePoint ].
 		
-		^ (self fromCodePointCollection: codePointsColl)
+		^ (self fromCodePointCollection:codePointsColl)
 	]
 ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/21/2013 13:49'!
-fromUtf8:  utf8
-	"Answer a new UniString"
-
-	^ (self fromUtf8: utf8 hex: false trimLastNull: false)
-! !
-
-!UniString class methodsFor: 'private' stamp: 'KenD 2/21/2013 13:50'!
+!UniString class methodsFor: 'private' stamp: 'KenD 2/19/2013 14:07'!
 fromUtf8: aByteArray hex: useHexForNCRs trimLastNull: doTrimLastNullChar
 	"Convert the given string from UTF-8 to  UniString"
 	
@@ -1004,7 +1108,7 @@ fromUtf8: aByteArray hex: useHexForNCRs trimLastNull: doTrimLastNullChar
 	codePointsColl := OrderedCollection new initialize.
 	bytes _ aByteArray readStream.
 	[ bytes atEnd ] whileFalse: [
-		codePoint _ (Character nextUnicodeCodePointFromUtf8: bytes).
+		codePoint _ (UniChar nextUnicodeCodePointFromUtf8: bytes).
 		codePoint ifNotNil: [  codePointsColl addLast: codePoint ]. "@@FIXME: ignore errors??"
 	].
 	(doTrimLastNullChar and: [ codePoint = 0 ]) ifTrue: [
@@ -1076,5 +1180,6 @@ tab
 	"Answer a string containing a single tab character."
 
 	^ (Character tab asUniString)! !
+UniChar initialize!
 UniSplice initialize!
 UniString initialize!
