@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1600] on 24 February 2013 at 3:11:58 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1617] on 26 February 2013 at 3:33:29 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #U16Array category: #UniCodes!
@@ -93,7 +93,7 @@ UniSplice class
 
 
 !U16Array commentStamp: '<historical>' prior: 0!
-Fake storage for unsigned 16 bit integers.!
+Arrayed storage for unsigned 16 bit integers. [0 to 16rFFFF =  65535].!
 
 !UChar16 commentStamp: '<historical>' prior: 0!
 I am a Unicode character which is represented in 16 bits.
@@ -250,23 +250,27 @@ asUniString
 
 	^UniString fromString: self! !
 
-!U16Array methodsFor: 'accessing' stamp: 'KenD 2/24/2013 14:58'!
+!U16Array methodsFor: 'accessing' stamp: 'KenD 2/26/2013 08:28'!
 at: anIndex
+	"Return the 16-bit unsigned integer value at the given index of the receiver."
 
-	"Answer unsigned value"
-	| probe |
-	probe := super at: anIndex.
-	(probe < 0)
-	ifTrue: [ ^ (probe negated) bitOr: 16r8000 ]
-	ifFalse: [^probe ]! !
+	| primValue |
+	primValue _ super at: anIndex.
+	^primValue < 0
+		ifTrue: [ (primValue + 1) negated bitInvert16 ]
+		ifFalse: [ primValue ]! !
 
-!U16Array methodsFor: 'accessing' stamp: 'KenD 2/24/2013 14:57'!
-at: anIndex put: anInt16Value
+!U16Array methodsFor: 'accessing' stamp: 'KenD 2/26/2013 08:30'!
+at: index put:  value
+	"Store the given 16-bit unsigned integer at the given index in the receiver."
 
-	"Store highbit negated if set"
-	(anInt16Value bitAnd: 16r8000) isZero
-	ifTrue:   [ super at: anIndex put: anInt16Value ]
-	ifFalse: [ super at: anIndex put: ((anInt16Value bitAnd:  16r7FFF) negated) ]! !
+	| primValue |
+	value < 0 ifTrue: [ self errorImproperStore ].
+	primValue _ value > 16r7FFF
+			ifTrue: [ (value bitInvert16 + 1) negated ]
+			ifFalse: [ value ].
+	super at: index put: primValue.
+	^value! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
 < aCharacter 
@@ -291,6 +295,12 @@ asCharacter
 
 	"@@Fixme: BOGUS@@"
 	^self codePoint asCharacter ! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 2/26/2013 15:32'!
+asInteger
+
+	"Answer my value as an integer"
+	^self codePoint! !
 
 !UniChar methodsFor: 'converting' stamp: 'KenD 2/17/2013 14:42'!
 asUniChar
@@ -1156,6 +1166,13 @@ merge: leafNodes start: start end: end
 	^ (self merge: leafNodes start: start end: middle ) ,
 	   (self merge: leafNodes start: middle end: end)
 ! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/26/2013 15:30'!
+newFrom: aCollection
+
+	"A collection of codePoints or Characters"
+	^ UniString fromCodePointCollection: ( aCollection collect: [ :whatever | whatever asInteger ])
+	! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 13:25'!
 newLineString
