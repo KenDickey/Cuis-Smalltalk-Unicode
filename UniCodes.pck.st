@@ -1,16 +1,6 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1617] on 26 February 2013 at 3:33:29 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1620] on 28 February 2013 at 7:20:39 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!classDefinition: #U16Array category: #UniCodes!
-ShortIntegerArray variableWordSubclass: #U16Array
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'U16Array class' category: #UniCodes!
-U16Array class
-	instanceVariableNames: ''!
-
 !classDefinition: #UniChar category: #UniCodes!
 Object subclass: #UniChar
 	instanceVariableNames: 'codePoint'
@@ -91,9 +81,6 @@ UniString subclass: #UniSplice
 UniSplice class
 	instanceVariableNames: ''!
 
-
-!U16Array commentStamp: '<historical>' prior: 0!
-Arrayed storage for unsigned 16 bit integers. [0 to 16rFFFF =  65535].!
 
 !UChar16 commentStamp: '<historical>' prior: 0!
 I am a Unicode character which is represented in 16 bits.
@@ -249,28 +236,6 @@ classForCodePoint
 asUniString
 
 	^UniString fromString: self! !
-
-!U16Array methodsFor: 'accessing' stamp: 'KenD 2/26/2013 08:28'!
-at: anIndex
-	"Return the 16-bit unsigned integer value at the given index of the receiver."
-
-	| primValue |
-	primValue _ super at: anIndex.
-	^primValue < 0
-		ifTrue: [ (primValue + 1) negated bitInvert16 ]
-		ifFalse: [ primValue ]! !
-
-!U16Array methodsFor: 'accessing' stamp: 'KenD 2/26/2013 08:30'!
-at: index put:  value
-	"Store the given 16-bit unsigned integer at the given index in the receiver."
-
-	| primValue |
-	value < 0 ifTrue: [ self errorImproperStore ].
-	primValue _ value > 16r7FFF
-			ifTrue: [ (value bitInvert16 + 1) negated ]
-			ifFalse: [ value ].
-	super at: index put: primValue.
-	^value! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
 < aCharacter 
@@ -649,12 +614,12 @@ substringFrom: startIndex length: numChars
 	]
 	ifFalse: [self errorSubscriptBounds: startIndex]! !
 
-!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 2/24/2013 15:01'!
+!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 2/27/2013 21:12'!
 with: aCharBlock
 
 	| blockClass |
 	blockClass := aCharBlock class.
-	((blockClass == ByteArray) or: [(blockClass == U16Array) or: [ blockClass == WordArray]])
+	((blockClass == ByteArray) or: [(blockClass == ShortWordArray) or: [ blockClass == WordArray]])
 	ifTrue: [	 charBlock := aCharBlock. "Nota Bene: immutable"
 			^self]
 	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
@@ -1063,7 +1028,7 @@ fibonacci
 "
 	^Fibonacci ! !
 
-!UniString class methodsFor: 'private' stamp: 'KenD 2/24/2013 14:44'!
+!UniString class methodsFor: 'private' stamp: 'KenD 2/27/2013 21:12'!
 fromCodePointCollection: anIntegerCollection
 	"Answer a UniString"
 	
@@ -1086,7 +1051,7 @@ fromCodePointCollection: anIntegerCollection
 	(num32 > 0)
 	ifTrue: [charBlock := WordArray new: length]
 	ifFalse: [(num16 > 0)
-			ifTrue: [charBlock := U16Array  new: length]
+			ifTrue: [charBlock := ShortWordArray  new: length]
 			ifFalse: [charBlock := ByteArray new: length]
 	].
 	"Pack 'em tight"
