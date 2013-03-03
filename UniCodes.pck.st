@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1620] on 28 February 2013 at 7:20:39 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1620] on 2 March 2013 at 8:53:42 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -39,6 +39,16 @@ UniChar subclass: #UChar8
 	category: 'UniCodes'!
 !classDefinition: 'UChar8 class' category: #UniCodes!
 UChar8 class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniForms category: #UniCodes!
+Object subclass: #UniForms
+	instanceVariableNames: ''
+	classVariableNames: 'FormsArray'
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniForms class' category: #UniCodes!
+UniForms class
 	instanceVariableNames: ''!
 
 !classDefinition: #UniString category: #UniCodes!
@@ -111,6 +121,12 @@ Do not use me directly, use UniString.!
 
 !UniFlatSlice commentStamp: '<historical>' prior: 0!
 I refer to an immutable charBlock slice shared with another UniString.!
+
+!UniForms commentStamp: '<historical>' prior: 0!
+GNU Unifont Forms
+
+"U+4E7E is 1st YiJing Hexagram - a Chinese charater"
+((UniForms formForCodePoint: 16r4E7E) magnifyBy: 4)  displayAt: 100@100. !
 
 !UniSplice commentStamp: '<historical>' prior: 0!
 I am the splice/concatenation of two other UniStrings.!
@@ -290,6 +306,17 @@ digitValue
 	$2 asUniChar digitValue
 "
 	^ self codePoint uniDigit ! !
+
+!UniChar methodsFor: 'accessing' stamp: 'KenD 3/2/2013 20:49'!
+form
+
+	"Answer a form if I am in plane zero, else the form for a space"
+	| aForm |
+	aForm := UniForms formForCodePoint: self codePoint.
+	
+	(aForm isNil)
+	ifTrue: [ ^UniForms formForCodePoint: (Character space asUniChar codePoint) ] 
+	ifFalse: [ ^aForm ]! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:25'!
 hash
@@ -741,6 +768,109 @@ startIndex
 
 	^startIndex! !
 
+!UniForms class methodsFor: 'private' stamp: 'KenD 3/2/2013 20:10'!
+array16FromHexString: aString
+	"aString consists of 32 or 64 hex digits.
+	If 32, form into 16rXX where XX is each succeedingpair of hex digits.
+	If 64, form into 16rXXXX where hex digits are taken in 4s
+	Shift left 16 and answer the resultant array, which must be size 16
+	"
+	| coll hexStr |
+	coll := OrderedCollection new: 16.
+	
+	"@@FIXME: Find a smart way to do this"
+	
+	(aString size = 32) ifTrue: [
+		hexStr := '16rXX'.
+		1 to: 16 by: 2 do: [ :index |
+			hexStr at: 4 put: (aString at: index).
+			hexStr at: 5 put: (aString at: index + 1).
+			coll addLast: (hexStr asNumber)
+		]
+	]
+	ifFalse: [ 
+		(aString size = 64) 
+			ifFalse: [Error signal: 'Malformed hex pixel string ' , aString].
+		
+		hexStr := '16rXXXX'.
+		1 to: 64 by: 4 do: [ :index |
+			 hexStr at: 4 put: (aString at: index).
+			 hexStr at: 5 put: (aString at: index + 1).
+			 hexStr at: 6 put: (aString at: index + 2).
+			 hexStr at: 7 put: (aString at: index + 3).
+			coll addLast: (hexStr asNumber)
+		]
+	].
+	
+	^ ( coll asArray collect: [ :bits | bits  bitShift: 16] )
+! !
+
+!UniForms class methodsFor: 'accessing' stamp: 'KenD 3/2/2013 20:13'!
+formForCodePoint: aCodePoint
+
+	"Answer a form for glyph/character at codePoint or nil"
+
+	| index |
+	index := aCodePoint + 1. "Conver to zero based index"
+	
+	(index < 1)
+	ifTrue: [DomainError signal: 'Unicode code point out of range ' , aCodePoint printString ].
+	
+	(index > 16rFFFF) ifTrue: [ ^nil ]. "Past end of table -- we only do plane 0"
+	
+	^ FormsArray at: index! !
+
+!UniForms class methodsFor: 'private' stamp: 'KenD 3/2/2013 20:04'!
+formsArray
+
+	"Note: Unicode indexes from zero, so index is 1+codePoint."
+	^FormsArray 	! !
+
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 3/2/2013 19:57'!
+initialize
+"
+	UniForms initialize.
+"
+
+	| slash |
+	slash :=FileDirectory slash.
+	FormsArray := self readFormsArray: '..' , slash , 'Cuis-Unicode', slash, 'unifont-5.1.20080907.hex'.
+	! !
+
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 3/2/2013 20:10'!
+readFormsArray: fileName
+
+	| formsArray fileStream aLine |
+	formsArray := Array new: 16rFFFF withAll: nil.
+	fileStream := StandardFileStream oldFileNamed: fileName.
+	
+	aLine := fileStream nextLine.
+	"Each line is of form:  
+		  <codePoint>:<bits>
+	where <codePoint> is 4 hex digits and
+	<bits> are either 32 or 64 hex digits.
+	"
+	[aLine isNil] whileFalse:[ |tokens codePoint pixelArray|
+		(aLine size > 0) ifFalse: [
+			 "??ERROR??"
+			self halt.
+			^formsArray].
+		tokens := aLine findTokens: ':' . "Split line at colon"
+		(tokens size = 2) ifFalse: [Error signal: 'Malformed UniForm line: ' , aLine].
+		codePoint := ( '16r', (tokens at: 1)) asNumber.
+		((codePoint > 16rFFFF) or: [codePoint < 0]) ifTrue: [Error signal: 'Bad codePoint ' , (tokens at: 1) ].
+		pixelArray := self array16FromHexString: (tokens at: 2).
+		formsArray 
+			at: (1 + codePoint) "Note Bene: CodePoints start at zero"
+			put:  (Form extent: 16@16 fromArray: pixelArray offset: (0 @ 0)).
+			
+		aLine := fileStream nextLine.
+	].
+	^formsArray
+	
+	
+	! !
+
 !UniSplice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 20:35'!
 at: anIndex
 
@@ -925,6 +1055,36 @@ asUniString
 copyReplaceFrom: start to: stop with: aStringOrUniString
 
 	^((self copyFrom: 1 to: (start - 1)) , aStringOrUniString asUniString , (self copyFrom: (stop + 1) to: (self size))) ! !
+
+!UniString methodsFor: 'displaying' stamp: 'KenD 3/2/2013 20:53'!
+displayAt: aPoint 
+	"Display the receiver as a DisplayText at aPoint on the display screen."
+"
+(({ 16r4E7E. 16r0020. 16r5143. 16r4EA8. 16r5229. 16r8C9E  } 
+	collect: [ :n | n asUniChar]) as: UniString)  
+		displayAt: 100@100.
+"
+	self displayOn: Display at: aPoint! !
+
+!UniString methodsFor: 'displaying' stamp: 'KenD 3/2/2013 20:34'!
+displayOn: aDisplayMedium
+	"Display the receiver on the given DisplayMedium. "
+
+	self displayOn: aDisplayMedium at: 0 @ 0! !
+
+!UniString methodsFor: 'displaying' stamp: 'KenD 3/2/2013 20:47'!
+displayOn: aDisplayMedium at: aPoint 
+	"Show a representation of the receiver as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
+
+	| aCanvas |
+	aCanvas := aDisplayMedium getCanvas.
+	
+	1 to: self size do: [ :index |
+		"@@Fixme: assumes 16 bit wide character forms"
+		aCanvas image: ((self at: index) form) at: ((aPoint x + (16 * (index - 1))) @ (aPoint y)).
+	]
+	
+	! !
 
 !UniString methodsFor: 'debugging' stamp: 'KenD 2/17/2013 22:06'!
 doesNotUnderstand: aMessage
@@ -1163,5 +1323,6 @@ tab
 
 	^ (Character tab asUniString)! !
 UniChar initialize!
+UniForms initialize!
 UniSplice initialize!
 UniString initialize!
