@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1620] on 2 March 2013 at 8:53:42 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1620] on 3 March 2013 at 8:22:38 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -253,6 +253,21 @@ asUniString
 
 	^UniString fromString: self! !
 
+!UChar16 methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:11'!
+icon
+
+	^self form! !
+
+!UChar32 methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:11'!
+icon
+
+	^self form! !
+
+!UChar8 methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:12'!
+icon
+
+	^self form! !
+
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
 < aCharacter 
 	"Answer true if codePoints are ordered as expected"
@@ -324,7 +339,12 @@ hash
 
 	^codePoint ! !
 
-!UniChar methodsFor: 'printing' stamp: 'KenD 2/19/2013 15:41'!
+!UniChar methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:00'!
+icon
+
+	^self form! !
+
+!UniChar methodsFor: 'printing' stamp: 'KenD 3/3/2013 14:07'!
 printOn: aStream
 
 	| codePoint |
@@ -333,7 +353,7 @@ printOn: aStream
 	(codePoint < 16rFF) "Fits in a byte?"
 	ifTrue: [
 		aStream nextPut: $$.
-		aStream nextPut: codePoint
+		aStream nextPut: (Character value: codePoint)
 	]
 	ifFalse: [ "Do what Cuis does as with String>>fromUtf8: "
 		aStream nextPutAll: '&#'.
@@ -768,7 +788,7 @@ startIndex
 
 	^startIndex! !
 
-!UniForms class methodsFor: 'private' stamp: 'KenD 3/2/2013 20:10'!
+!UniForms class methodsFor: 'private' stamp: 'KenD 3/3/2013 20:03'!
 array16FromHexString: aString
 	"aString consists of 32 or 64 hex digits.
 	If 32, form into 16rXX where XX is each succeedingpair of hex digits.
@@ -782,7 +802,7 @@ array16FromHexString: aString
 	
 	(aString size = 32) ifTrue: [
 		hexStr := '16rXX'.
-		1 to: 16 by: 2 do: [ :index |
+		1 to: 32 by: 2 do: [ :index |
 			hexStr at: 4 put: (aString at: index).
 			hexStr at: 5 put: (aString at: index + 1).
 			coll addLast: (hexStr asNumber)
@@ -826,7 +846,7 @@ formsArray
 	"Note: Unicode indexes from zero, so index is 1+codePoint."
 	^FormsArray 	! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 3/2/2013 19:57'!
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 3/3/2013 20:21'!
 initialize
 "
 	UniForms initialize.
@@ -835,13 +855,15 @@ initialize
 	| slash |
 	slash :=FileDirectory slash.
 	FormsArray := self readFormsArray: '..' , slash , 'Cuis-Unicode', slash, 'unifont-5.1.20080907.hex'.
+	"'unifontfull-5.1.20080820.hex'."
+	"unifont-5.1.20080907.hex"
 	! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 3/2/2013 20:10'!
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 3/3/2013 20:02'!
 readFormsArray: fileName
 
 	| formsArray fileStream aLine |
-	formsArray := Array new: 16rFFFF withAll: nil.
+	formsArray := Array new: 16rFFFF + 1 withAll: nil.
 	fileStream := StandardFileStream oldFileNamed: fileName.
 	
 	aLine := fileStream nextLine.
