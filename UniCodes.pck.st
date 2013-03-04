@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1620] on 3 March 2013 at 8:22:38 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1620] on 4 March 2013 at 7:32:39 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -124,6 +124,15 @@ I refer to an immutable charBlock slice shared with another UniString.!
 
 !UniForms commentStamp: '<historical>' prior: 0!
 GNU Unifont Forms
+
+This bitmapped font has glyphs for Unicode plane 0, the Basic Multilingual Plane, codePoints 0 through 16rFFFF (U+0000..U+FFFF).  See  http://unicode.org
+
+The GNU Unifont glyphs are available at:  http://www.unifoundry.com/unifont.html
+
+Licence is GPL 2 
+
+See the class method:
+	UniForms licence.
 
 "U+4E7E is 1st YiJing Hexagram - a Chinese charater"
 ((UniForms formForCodePoint: 16r4E7E) magnifyBy: 4)  displayAt: 100@100. !
@@ -788,7 +797,7 @@ startIndex
 
 	^startIndex! !
 
-!UniForms class methodsFor: 'private' stamp: 'KenD 3/3/2013 20:03'!
+!UniForms class methodsFor: 'private' stamp: 'KenD 3/3/2013 22:36'!
 array16FromHexString: aString
 	"aString consists of 32 or 64 hex digits.
 	If 32, form into 16rXX where XX is each succeedingpair of hex digits.
@@ -801,7 +810,7 @@ array16FromHexString: aString
 	"@@FIXME: Find a smart way to do this"
 	
 	(aString size = 32) ifTrue: [
-		hexStr := '16rXX'.
+		hexStr := '16rXX0'. "Zero at end centers a half-width glyph"
 		1 to: 32 by: 2 do: [ :index |
 			hexStr at: 4 put: (aString at: index).
 			hexStr at: 5 put: (aString at: index + 1).
@@ -812,7 +821,7 @@ array16FromHexString: aString
 		(aString size = 64) 
 			ifFalse: [Error signal: 'Malformed hex pixel string ' , aString].
 		
-		hexStr := '16rXXXX'.
+		hexStr := '16rXXXX'. "Full-width glyph"
 		1 to: 64 by: 4 do: [ :index |
 			 hexStr at: 4 put: (aString at: index).
 			 hexStr at: 5 put: (aString at: index + 1).
@@ -858,6 +867,117 @@ initialize
 	"'unifontfull-5.1.20080820.hex'."
 	"unifont-5.1.20080907.hex"
 	! !
+
+!UniForms class methodsFor: 'licence' stamp: 'KenD 3/4/2013 07:30'!
+licence
+
+^
+'GNU Unifont licence is GPL 2 -- details below
+
+Original files from:
+
+	http://www.unifoundry.com/unifont.html
+
+OVERVIEW
+--------
+The Unifont is a dual-width (8x16/16x16) bitmap font, designed to provide
+coverage for all of Unicode Plane 0, the Basic Multilingual Plane (BMP).
+This version has a glyph for each visible code point in the Unicode 5.1
+Basic Multilingual Plane.
+
+Note that this version of the Unifont only provides a single glyph
+for each character, making it impossible to handle any language that
+needs context-dependent character shaping well. It is supplied in the
+form of a hex file, with a converter to convert it to bdf. See
+http://czyborra.com/unifont/ or http://unifoundry.com/unifont.html
+for more information.
+
+unifont AUTHORS
+---------------
+Roman Czyborra created the original GNU Unifont, including the
+.hex format.  For greater detail, see the HISTORY section below.
+
+David Starner aggregated many glyphs contributed by others and
+built these into earlier unifont releases.
+
+Qianqian Fang began his Wen Quan Yi fonts in 2004; most of the
+almost 30,000 CJK ideographs in the latest unifont were taken
+from Wen Quan Yi with permission of Qianqian Fang.  
+
+Changwoo Ryu created the 11,172 thick-stroke Hangul Syllables glyphs
+using thin-stroke glyphs from the xfonts-baekmuk Debian package, in
+the file unifont.bdf in the Debian bf-utf-source package.  The fonts
+in the xfonts-baekmuk Debian package were created by Jeong-Hwan Kim.
+Replacing the thick-stroke Hangul glyphs was a desire expressed by
+Roman Czyborra for years.
+
+Paul Hardy merged Qianqian Fang''s unibit and Wen Quan Yi glyphs
+into the GNU Unifont (with lots of help and enthusiasm from Qianqian
+Fang), copied the Hangul Syllables glyphs from Changwoo Ryu''s copy
+of unifont.bdf, drew about 8,500 more glyphs, and replaced the
+existing Tibetan glyphs with new ones contributed by Rich Felker.
+
+
+LICENSE
+-------
+Roman Czyborra released his work (Perl scripts and font .hex files)
+under the following terms:
+
+     All of my works you find here are freeware. You may
+     freely copy, use, quote, modify or redistribute them
+     as long as you properly attribute my contribution and
+     have given a quick thought about whether Roman might
+     perhaps be interested to read what you did with his
+     stuff. Horizontal rules don''t apply.
+
+David Starner released what in this package is named "hex2bdf-split"
+under the same license as Roman Czyborra''s work.
+
+License 
+
+     These are released under the terms of the GNU General Public
+     License version 2, or (at your option) a later version.
+
+License for Fonts:
+
+     Any fonts using glyphs from the "wqy-cjk.hex" file (including
+     the default TrueType font) are bound by the terms of the Wen
+     Quan Yi font license.  Those fonts are released under the terms
+     of the GNU General Public License (GPL) versionn 2, with the
+     exception that embedding the font in a document does not by
+     itself bind that document to the terms of the GNU GPL.
+
+     Any fonts that do not use glyphs from the wqy-cjk.hex file
+     fall under the above License for all of Roman Czyborra''s work
+
+     The fonts in "./font/precompiled" do use wqy-cjk.hex, and so
+     are licensed under the GNU GPL version 2, with the exception
+     that embedding the font in a document does not in itself bind
+     that document to the terms of the GNU GPL.  The following
+     paragraphs explaining the exception is taken from the Wen
+     Quan Yi font distribution:
+
+          ** GPL v2.0 license with font embedding exception:
+
+          As a special exception, if you create a document which
+          uses this font, and embed this font or unaltered portions
+          of this font into the document, this font does not by
+          itself cause the resulting document to be covered by
+          the GNU General Public License. This exception does not
+          however invalidate any other reasons why the document
+          might be covered by the GNU General Public License.
+          If you modify this font, you may extend this exception
+          to your version of the font, but you are not obligated
+          to do so. If you do not wish to do so, delete this
+          exception statement from your version.
+
+License for blanks.hex
+
+     There is one exception to the above rules: Paul Hardy earlier
+     released the blanks.hex file into the public domain.
+
+'
+! !
 
 !UniForms class methodsFor: 'class initialization' stamp: 'KenD 3/3/2013 20:02'!
 readFormsArray: fileName
@@ -1314,10 +1434,13 @@ merge: leafNodes start: start end: end
 	   (self merge: leafNodes start: middle end: end)
 ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/26/2013 15:30'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/3/2013 22:45'!
 newFrom: aCollection
+	"Answer  <acollection of codePoints or Characters> as: UniString"
 
-	"A collection of codePoints or Characters"
+"
+	 { 16r4E7E. 16r0020. 16r5143. 16r4EA8. 16r5229. 16r8C9E  } as: UniString
+"
 	^ UniString fromCodePointCollection: ( aCollection collect: [ :whatever | whatever asInteger ])
 	! !
 
