@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1620] on 4 March 2013 at 7:32:39 am'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1620] on 5 March 2013 at 6:15:48 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -135,7 +135,14 @@ See the class method:
 	UniForms licence.
 
 "U+4E7E is 1st YiJing Hexagram - a Chinese charater"
-((UniForms formForCodePoint: 16r4E7E) magnifyBy: 4)  displayAt: 100@100. !
+
+((UniForms formForCodePoint: 16r4E7E) magnifyBy: 4)  displayAt: 100@100. 
+
+| aMorph |
+aMorph := ImageMorph new.
+aMorph image: ((UniForms formForCodePoint: 16r4E7E)  magnifyBy: 8).
+aMorph openInWorld .
+!
 
 !UniSplice commentStamp: '<historical>' prior: 0!
 I am the splice/concatenation of two other UniStrings.!
@@ -1198,13 +1205,11 @@ copyReplaceFrom: start to: stop with: aStringOrUniString
 
 	^((self copyFrom: 1 to: (start - 1)) , aStringOrUniString asUniString , (self copyFrom: (stop + 1) to: (self size))) ! !
 
-!UniString methodsFor: 'displaying' stamp: 'KenD 3/2/2013 20:53'!
+!UniString methodsFor: 'displaying' stamp: 'KenD 3/4/2013 20:29'!
 displayAt: aPoint 
 	"Display the receiver as a DisplayText at aPoint on the display screen."
 "
-(({ 16r4E7E. 16r0020. 16r5143. 16r4EA8. 16r5229. 16r8C9E  } 
-	collect: [ :n | n asUniChar]) as: UniString)  
-		displayAt: 100@100.
+({ 16r4E7E. 16r0020. 16r5143. 16r4EA8. 16r5229. 16r8C9E  }  as: UniString)  displayAt: 100@100.
 "
 	self displayOn: Display at: aPoint! !
 
@@ -1222,6 +1227,20 @@ displayOn: aDisplayMedium at: aPoint
 	aCanvas := aDisplayMedium getCanvas.
 	
 	1 to: self size do: [ :index |
+		"@@Fixme: assumes 16 bit wide character forms"
+		aCanvas image: ((self at: index) form) at: ((aPoint x + (16 * (index - 1))) @ (aPoint y)).
+	]
+	
+	! !
+
+!UniString methodsFor: 'displaying' stamp: 'KenD 3/4/2013 21:00'!
+displayOn: aDisplayMedium from: start to: stop at: aPoint 
+	"Show a representation of the receiver as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
+
+	| aCanvas |
+	aCanvas := aDisplayMedium getCanvas.
+	
+	start to: stop do: [ :index |
 		"@@Fixme: assumes 16 bit wide character forms"
 		aCanvas image: ((self at: index) form) at: ((aPoint x + (16 * (index - 1))) @ (aPoint y)).
 	]
