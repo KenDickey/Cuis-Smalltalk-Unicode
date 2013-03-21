@@ -1,10 +1,10 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1620] on 5 March 2013 at 6:15:48 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 20 March 2013 at 10:56:31 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
 Object subclass: #UniChar
 	instanceVariableNames: 'codePoint'
-	classVariableNames: 'ZeroCodePoints'
+	classVariableNames: 'AI AL B2 BA BB BK CB CJ CL CM CP CR CasedLetterBit Cc Cf Cn Co Compositions ControlBit Cs DecimalProperty Decompositions EX GL GeneralCategory GeneralPropMask H2 H3 HL HY ID IN IS JL JT JV LF LetterBit LineBreakNames LineBreakProperties LineBreakTable LineBreakTypeNames Ll Lm Lo Lt Lu MarkBit Mc Me Mn NL NS NU Nd Nl No NumberBit OP PO PR Pc Pd Pe Pf Pi Po PropertyNames Ps PunctuationBit QU RI SA SG SP SY Sc SeparatorBit Sk Sm SmalltalkSpecialChars So SymbolBit ToCasefold ToLower ToUpper WJ XX ZW ZeroCodePoints Zl Zp Zs'
 	poolDictionaries: ''
 	category: 'UniCodes'!
 !classDefinition: 'UniChar class' category: #UniCodes!
@@ -54,7 +54,7 @@ UniForms class
 !classDefinition: #UniString category: #UniCodes!
 ArrayedCollection subclass: #UniString
 	instanceVariableNames: ''
-	classVariableNames: 'Fibonacci MaxRopeDepth'
+	classVariableNames: 'EmptyString Fibonacci MaxRopeDepth'
 	poolDictionaries: ''
 	category: 'UniCodes'!
 !classDefinition: 'UniString class' category: #UniCodes!
@@ -91,6 +91,26 @@ UniString subclass: #UniSplice
 UniSplice class
 	instanceVariableNames: ''!
 
+!classDefinition: #UniStringWrapper category: #UniCodes!
+Object subclass: #UniStringWrapper
+	instanceVariableNames: 'uniString'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniStringWrapper class' category: #UniCodes!
+UniStringWrapper class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniTestFont category: #UniCodes!
+AbstractFont subclass: #UniTestFont
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniTestFont class' category: #UniCodes!
+UniTestFont class
+	instanceVariableNames: ''!
+
 
 !UChar16 commentStamp: '<historical>' prior: 0!
 I am a Unicode character which is represented in 16 bits.
@@ -108,14 +128,16 @@ See http://Unicode.org for information.
 
 UniChars are immutable.  
 
-UniChars with the same codePoint are frequently NOT unique.!
+UniChars with the same codePoint are typically NOT unique.
+
+Note that many "tests" (e.g. #isLetter #isUppercase) are property tests and are in category #properies, NOT category #testing.!
 
 !UniFlat commentStamp: '<historical>' prior: 0!
 A flat rope is basically a string.  My instances are "leaves" in a Rope "tree".
 
 Internal storage is all the same size, either 8, 16, or 32 bit chunks holding Unicode codePoints.
 
-This is to say, a CharBlock is one of ByteArray, ShortIntegerArray, or WordArray as required.
+This is to say, a CharBlock is one of ByteArray, ShortWordArray, or WordArray as required.
 
 Do not use me directly, use UniString.!
 
@@ -145,7 +167,10 @@ aMorph openInWorld .
 !
 
 !UniSplice commentStamp: '<historical>' prior: 0!
-I am the splice/concatenation of two other UniStrings.!
+I am the splice/concatenation of two other UniStrings.
+
+I am typically created as a side effect of operaions on UniStrings.
+!
 
 !UniString commentStamp: '<historical>' prior: 0!
 I am the abstract class of immutable strings known as Ropes.
@@ -173,6 +198,20 @@ NB: Unicode strings are treated as strings and called UniStrings, even though re
 Q:  If you call a tail a leg, how many legs does a dog have?
 A:  Five
 Correct Answer:  Four.  Calling a tail a leg does not make it one.  ;)
+!
+
+!UniStringWrapper commentStamp: '<historical>' prior: 0!
+UniString ropes are immutable.  Actual operatrions yield new UniStrings.
+
+A UniStringWrapper just keeps/remembers the last operation yielding a UniString.
+
+This allows one to keep a variable up to date.See use of #nextPut: in UniCodesTests>>testWrapper
+
+Use in place of WriteStream for #nextPut: and #nextPutAll.
+  i.e. 
+	RopeWrapper with: ('abc' asRope).
+ vs:
+	WriteStream on: 'abc',
 !
 
 !Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 14:08'!
@@ -269,6 +308,11 @@ asUniString
 
 	^UniString fromString: self! !
 
+!Symbol methodsFor: '*unicodes' stamp: 'KenD 3/20/2013 22:16'!
+asUniString
+
+	^UniString fromString: self asString! !
+
 !UChar16 methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:11'!
 icon
 
@@ -302,17 +346,34 @@ icon
 
 	^ (self codePoint) > (aCharacter asUniChar codePoint) " NB: Insensitive to case"! !
 
-!UniChar methodsFor: 'converting' stamp: 'KenD 2/17/2013 19:56'!
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/13/2013 17:04'!
 asCharacter
 
-	"@@Fixme: BOGUS@@"
-	^self codePoint asCharacter ! !
+	(codePoint < 255)
+	ifTrue: [ ^ codePoint asCharacter ]
+	ifFalse: [ DomainError signal: 'Unicode code point out of range for ISO 8859-15' ]! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/13/2013 17:15'!
+asCursor
+
+	"Answer my 16 x 16 form as a Cursor"
+	
+"
+	16r2740 asUniChar asCursor beCursor.    " "Flower 'dingbat'.""
+	16r2764 asUniChar asCursor beCursor.    " "Heart 'dingbat'""
+"
+	^ CursorWithMask derivedFrom: self form! !
 
 !UniChar methodsFor: 'converting' stamp: 'KenD 2/26/2013 15:32'!
 asInteger
 
 	"Answer my value as an integer"
 	^self codePoint! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/18/2013 21:41'!
+asLowercase
+
+	^self toLower! !
 
 !UniChar methodsFor: 'converting' stamp: 'KenD 2/17/2013 14:42'!
 asUniChar
@@ -324,15 +385,33 @@ asUniString
 
 	^ UniString fromCodePointCollection: {self codePoint} ! !
 
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/18/2013 21:41'!
+asUppercase
+
+	^self toUpper! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:53'!
+canBeGlobalVarInitial
+
+	"Answer if I can be the start of a Smalltalk global identifier name"
+	^self isUppercase! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/9/2013 10:32'!
+caseFold
+
+	^UniChar value: (ToCasefold at: self codePoint ifAbsent: [ ^self ])! !
+
 !UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 08:58'!
 codePoint
 
 	^codePoint! !
 
-!UniChar methodsFor: 'converting' stamp: 'KenD 2/24/2013 14:14'!
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/7/2013 08:23'!
 digitValue
 	"Answer value of chareacter taken as a decimal digit."
 	"Note that this differs in behavior from Character>>digitValue"
+	
+		"@@FIXME: Chinese numeric chars are discontiguous and need separate lookup"
 "
 	$2 asUniChar digitValue
 "
@@ -349,6 +428,224 @@ form
 	ifTrue: [ ^UniForms formForCodePoint: (Character space asUniChar codePoint) ] 
 	ifFalse: [ ^aForm ]! !
 
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:52'!
+generalCategory
+
+	"Answer name of category code"
+	^ PropertyNames at: (self generalCategoryCode)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/13/2013 13:30'!
+generalCategoryCode
+
+	(self isCJKIdeograph)
+	ifTrue: [ ^ Lo bitAnd: (ID bitShift: 16) ]
+	ifFalse: [ ^(GeneralCategory at: codePoint ifAbsent: [ Cn ]) bitAnd: 16r00FFFF]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:43'!
+hasTagControl
+
+	^ (self generalCategoryCode = Cc)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:43'!
+hasTagDecimalNumber
+
+	^ ((self generalCategoryCode) = Nd)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:43'!
+hasTagEnclosingMark
+
+	^ ((self generalCategoryCode) = Me)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:44'!
+hasTagFormat
+
+	^ ((self generalCategoryCode) = Cf)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:45'!
+hasTagLineSeparator
+
+	^ ((self generalCategoryCode) = Zl)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:45'!
+hasTagLowercase
+
+	^ ((self generalCategoryCode) = Ll)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:46'!
+hasTagNonspacingMark
+
+	^ ((self generalCategoryCode) = Mn)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:46'!
+hasTagOtherNumber
+
+	^ ((self generalCategoryCode) = No)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:47'!
+hasTagParagraphSeparator
+
+	^ ((self generalCategoryCode) = Zp)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:47'!
+hasTagSpaceSeparator
+
+	^ ((self generalCategoryCode) = Zs)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:47'!
+hasTagSpacingMark
+
+	^ ((self generalCategoryCode) = Mc)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:47'!
+hasTagSurrogate
+
+	^ ((self generalCategoryCode) = Cs)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:48'!
+hasTagTitlecase
+
+	^ ((self generalCategoryCode) = Lt)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:48'!
+hasTagUppercase
+
+	^ ((self generalCategoryCode) = Lu)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:10'!
+hasTagWordALetter
+	"Word Property"
+
+	^ self isLetter! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:53'!
+hasTagWordExtend
+	"Word Property"
+
+	^ (self generalCategoryCode = Mn) or: [self generalCategoryCode = Mc]
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:27'!
+hasTagWordExtendedNumLet
+	"Word Property.  Nota Bene: Not  CR | LF"
+
+   ^ #(	16r005F.     " LOW LINE"
+		16r203F.	"UNDERTIE..CHARACTER TIE"
+		16r2040.	 "UNDERTIE..CHARACTER TIE"
+		16r2054.	" INVERTED UNDERTIE"
+		16rFE33.	"PRESENTATION FORM FOR VERTICAL LOW LINE"
+		16rFE34.   "PRESENTATION FORM FOR VERTICAL WAVY LOW LINE"
+		16rFE4D. 16rFE4E.	 "DASHED LOW LINE"
+		16rFE4F.	"WAVY LOW LINE"
+		16rFF3F.	"FULLWIDTH LOW LINE"
+	) includes: codePoint
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:49'!
+hasTagWordFormat
+	"Word Property"
+
+	^ (self generalCategoryCode = Cf) 
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 14:21'!
+hasTagWordKatakana
+	"Word Property"
+
+	"@@FIXME: use a faster lookup/test"
+	( #( 16r309B. 16r309C. 16r30A0. 
+		16r30FC. 16r30FD. 16r30FE.
+		16r30FF. 16rFF70. 16r1B000. ) includes: codePoint)
+	ifTrue: [ ^true ].
+
+	((16r3031 to: 16r3035) includes: codePoint) ifTrue: [ ^true ].
+	((16r30A1 to: 16r30FA) includes: codePoint) ifTrue: [ ^true ].
+	((16r31F0 to: 16r31FF) includes: codePoint) ifTrue: [ ^true ].
+	((16r32D0 to: 16r32FE) includes: codePoint) ifTrue: [ ^true ].
+	((16r3300 to: 16r3357) includes: codePoint) ifTrue: [ ^true ].
+	((16rFF66 to: 16rFF6F) includes: codePoint) ifTrue: [ ^true ].
+	((16rFF71 to: 16rFF9D) includes: codePoint) ifTrue: [ ^true ].
+
+	^false! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:48'!
+hasTagWordMinLetter
+	"Word Property"
+
+   ^ #(	16r003A.	"COLON"
+		16r00B7.	"MIDDLE DOT"
+		16r0387.	"GREEK ANO TELEIA"
+		16r05F4.	"HEBREW PUNCTUATION GERSHAYIM"
+		16r2027.	"HYPHENATION POINT"
+		16rFE13.	"PRESENTATION FORM FOR VERTICAL COLON"
+		16rFE55.	"SMALL COLON"
+		16rFF1A.	"FULLWIDTH COLON"
+	) includes: codePoint
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:46'!
+hasTagWordMinNum
+	"Word Property"
+
+   ^ #(	16r002C.	"COMMA"
+		16r003B .	"SEMICOLON"
+		16r037E.	"GREEK QUESTION MARK"
+		16r0589.	"ARMENIAN FULL STOP"
+		16r060C.	"ARABIC COMMA"
+		16r060D.	"ARABIC DATE SEPARATOR"
+		16r066C.	"ARABIC THOUSANDS SEPARATOR"
+		16r07F8.	"NKO COMMA"
+		16r2044.	"FRACTION SLASH"
+		16rFE10.	"PRESENTATION FORM FOR VERTICAL COMMA"
+		16rFE14.	"PRESENTATION FORM FOR VERTICAL SEMICOLON"
+		16rFE50.	"SMALL COMMA"
+		16rFE54.	"SMALL SEMICOLON"
+		16rFF0C.	"FULLWIDTH COMMA"
+		16rFF1B.	"FULLWIDTH SEMICOLON"
+	) includes: codePoint
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:42'!
+hasTagWordMinNumLet
+	"Word Property"
+
+   ^ #(	16r0027.	"APOSTROPHE"
+		16r002E.	"FULL STOP"
+		16r2018.	"LEFT SINGLE QUOTATION MARK"
+		16r2019.	"RIGHT SINGLE QUOTATION MARK"
+		16r2024.	"ONE DOT LEADER"
+		16rFE52.	"SMALL FULL STOP"
+		16rFF07.	"FULLWIDTH APOSTROPHE"
+		16rFF0E.	"FULLWIDTH FULL STOP"
+	) includes: codePoint
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:28'!
+hasTagWordNewline
+	"Word Property.  Nota Bene: Not  CR | LF"
+
+   ^ #( 16r000B.  "Control-B"
+	    16r000C.  "Control-C"
+	    16r0085 . "Control-85"
+	    16r2028.  "Line Separator"
+	    16r2029 . "Parageaph Separator"
+	) includes: codePoint
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:38'!
+hasTagWordNumeric
+	"Word Property"
+
+	 (16r066B = codePoint) ifTrue: [ ^true ].  "ARABIC DECIMAL SEPARATOR"
+	^ (self generalCategoryCode = Nd) 
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:36'!
+hasTagWordRegionlIndocator
+	"Word Property"
+
+	^ (16r1F1E6 <= codePoint) and: [codePoint <= 16r1F1FF]
+! !
+
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:25'!
 hash
 	"Hash is reimplemented because = is implemented."
@@ -360,9 +657,168 @@ icon
 
 	^self form! !
 
-!UniChar methodsFor: 'printing' stamp: 'KenD 3/3/2013 14:07'!
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:49'!
+isAlphaNumeric
+	"Answer whether the receiver is a letter or a digit."
+
+	^self isLetter or: [self isDigit]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/13/2013 13:26'!
+isCJKIdeograph
+
+	(codePoint between: 16r2E80 and: 16r303F) ifTrue: [ ^true ]. "CJK Ideographic"
+	(codePoint between:16r3300 and: 16r4DBF) ifTrue: [ ^true ]. "CJK Compatibility + Unified Ideographs Extension A"
+	(codePoint between:16r4E00 and: 16r9FFF) ifTrue: [ ^true ].  "CJK Unified Ideographs"
+	(codePoint between:16r20000 and: 16r2A6DF) ifTrue: [ ^true ].  "CJK Unified Ideographs Extension B"
+	(codePoint between:16r2A700 and: 16r2B81F) ifTrue: [ ^true ]. "CJK Unified Ideographs Extension C +  D"
+	(codePoint between:16r2F800 and: 16r2FA1F) ifTrue: [ ^true ]. "CJK Compatibility Ideographs Supplement"
+	
+	^ false! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/9/2013 13:00'!
+isCR
+
+	self codePoint = 16r000D! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:34'!
+isCasedLetter
+
+	^ (self generalCategoryCode  bitAnd: CasedLetterBit) = CasedLetterBit! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/19/2013 18:24'!
+isDigit
+
+	^ self isNumberChar! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/19/2013 18:50'!
+isGenerallyValidInIdentifiers
+	"Answer if generally valid Smalltalk identifier"
+	
+	"Can c be part of an identifier? (unary or keyword selector, or variable name)
+	Warning: Does not account for the fact that some classes could redefine 
+	#allowUnderscoreSelectors"
+	^self isAlphaNumeric or: [ self  = $_ and: [ Preferences allowUnderscoreSelectors ]]! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:53'!
+isGenerallyValidStartOfInIdentifiers
+	"Can c be the first character of an identifier? (unary or keyword selector, or variable name)
+	Warning: Does not account for the fact that some classes could redefine 
+	#allowUnderscoreSelectors"
+	^self isLetter or: [ self  = $_ and: [ Preferences allowUnderscoreSelectors ]]! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/9/2013 13:00'!
+isLF
+
+	self codePoint = 16r000A! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:33'!
+isLetter
+
+	^ ((self generalCategoryCode) bitAnd: LetterBit) = LetterBit! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/20/2013 22:08'!
+isLineSeparator
+
+	"Answer true if Unicode Separator OR Smalltalk Line Separator"
+	^ self isSeparator or: [(self codePoint < 16rFF) and: [self asCharacter isLineSeparator]]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:49'!
+isLowercase
+
+	^ self hasTagLowercase! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:33'!
+isMark
+
+	^ ((self generalCategoryCode) bitAnd: MarkBit) = MarkBit ! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:34'!
+isNumberChar
+
+	^ ((self generalCategoryCode) bitAnd: NumberBit) = NumberBit ! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:34'!
+isOtherControl
+
+	^ ((self generalCategoryCode) bitAnd: ControlBit) = ControlBit! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:34'!
+isPunctuation
+
+	^ ((self generalCategoryCode) bitAnd: PunctuationBit) = PunctuationBit! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/20/2013 22:08'!
+isSeparator
+
+	"Answer true if Unicode Separator OR Smalltalk Separator"
+	^ (((self generalCategoryCode) bitAnd: SeparatorBit) = SeparatorBit)
+		or:  [(self codePoint < 16rFF) and: [self asCharacter isSeparator]]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/18/2013 16:30'!
+isSpace
+
+	^ self hasTagSpaceSeparator ! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:56'!
+isSpecial
+	"Answer whether the receiver is one of the Smalltalk special characters"
+	
+	"Nota Bene: This leaves out a lot of Unicode!!!!"
+
+	^ SmalltalkSpecialChars includes: self! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:35'!
+isSymbolGyph
+
+	"We can't use #isSymbol without confusion with Smalltalk Symbols"
+	^ ((self generalCategoryCode) bitAnd: SymbolBit) = SymbolBit! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:48'!
+isUppercase
+
+	^ self hasTagUppercase ! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:57'!
+isVowel
+	"Answer whether the receiver is one of the vowels, AEIOU, in upper or 
+	lower case, and with various diacritical marks."
+
+	^Character vowels asUniString includes: self! !
+
+!UniChar methodsFor: 'accessing' stamp: 'jmv 3/6/2013 15:26'!
+iso8859s15Code
+"Not really..."
+	^codePoint < 256 ifTrue: [ codePoint ]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:52'!
+lineBreakCategory
+
+	"Answer name of category code"
+	| indexCode |
+	indexCode :=  self lineBreakCategoryCode.
+	(indexCode isZero)
+	ifTrue: [ ^ #Unknown ]
+	ifFalse: [ ^ LineBreakProperties at: indexCode ]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/13/2013 13:31'!
+lineBreakCategoryCode
+
+	(self isCJKIdeograph)
+	ifTrue: [ ^ ID ]
+	ifFalse: [ ^ ((GeneralCategory at: codePoint ifAbsent: [ 0 ]) bitAnd: 16r00FF0000) bitShift: -16 ]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 16:11'!
+lineBreakTableAt: row at: col
+	"Answer the character specified"
+
+	"See comments in UniChar class>>initializeLineBreakTable"
+	
+	^ (LineBreakTable at: row) at: col! !
+
+!UniChar methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:32'!
 printOn: aStream
 
+	"Display for humans"
 	| codePoint |
 	codePoint := self codePoint.
 	
@@ -382,16 +838,527 @@ privateSetCodePoint: aCodePoint
 
 	codePoint := aCodePoint ! !
 
-!UniChar methodsFor: 'printing' stamp: 'KenD 2/17/2013 17:26'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/18/2013 09:09'!
+rangeInfo
+	"Answer something about me"
+
+"# Start Code..End Code; Block Name"
+	(codePoint  between: 16r0000 and: 16r007F) ifTrue: [ '0000..007F; Basic Latin'].
+	(codePoint  between: 16r0080 and: 16r00FF) ifTrue: [  '0080..00FF; Latin-1 Supplement'].
+	
+" @@FIXME@@@
+ => Latin 1
+
+0100..017F; Latin Extended-A
+0180..024F; Latin Extended-B
+0250..02AF; IPA Extensions
+
+  => LatinExtended1
+
+02B0..02FF; Spacing Modifier Letters
+0300..036F; Combining Diacritical Marks
+
+  => Modifiers
+
+0370..03FF; Greek and Coptic
+0400..04FF; Cyrillic
+0500..052F; Cyrillic Supplementary
+0530..058F; Armenian
+
+   => EuropeanAlphabetic1
+
+0590..05FF; Hebrew
+0600..06FF; Arabic
+0700..074F; Syriac
+0780..07BF; Thaana
+
+   => MiddleEastern
+
+0900..097F; Devanagari
+0980..09FF; Bengali
+0A00..0A7F; Gurmukhi
+0A80..0AFF; Gujarati
+0B00..0B7F; Oriya
+0B80..0BFF; Tamil
+0C00..0C7F; Telugu
+0C80..0CFF; Kannada
+0D00..0D7F; Malayalam
+0D80..0DFF; Sinhala
+
+  => South Asian1
+
+
+0E00..0E7F; Thai
+0E80..0EFF; Lao
+
+ => Southeastern 1
+
+0F00..0FFF; Tibetan
+
+  => South Asian1
+
+1000..109F; Myanmar
+
+ => Southeastern 1
+
+
+10A0..10FF; Georgian
+
+   => European Alphabetic 2
+
+1100..11FF; Hangul Jamo
+
+   => Korean
+
+1200..137F; Ethiopic
+13A0..13FF; Cherokee
+1400..167F; Unified Canadian Aboriginal Syllabics
+
+  => Additional1
+
+1680..169F; Ogham
+16A0..16FF; Runic
+
+  => European Alphabetic 3
+
+1700..171F; Tagalog
+1720..173F; Hanunoo
+1740..175F; Buhid
+1760..177F; Tagbanwa
+1780..17FF; Khmer
+
+  => Southeastern2
+
+1800..18AF; Mongolian
+
+  => Additional2
+
+1E00..1EFF; Latin Extended Additional
+1F00..1FFF; Greek Extended
+
+  => EuropeanAlphabetic4
+
+2000..206F; General Punctuation
+2070..209F; Superscripts and Subscripts
+20A0..20CF; Currency Symbols
+20D0..20FF; Combining Diacritical Marks for Symbols
+2100..214F; Letterlike Symbols
+2150..218F; Number Forms
+2190..21FF; Arrows
+2200..22FF; Mathematical Operators
+2300..23FF; Miscellaneous Technical
+2400..243F; Control Pictures
+2440..245F; Optical Character Recognition
+2460..24FF; Enclosed Alphanumerics
+2500..257F; Box Drawing
+2580..259F; Block Elements
+25A0..25FF; Geometric Shapes
+2600..26FF; Miscellaneous Symbols
+2700..27BF; Dingbats
+27C0..27EF; Miscellaneous Mathematical Symbols-A
+27F0..27FF; Supplemental Arrows-A
+2800..28FF; Braille Patterns
+2900..297F; Supplemental Arrows-B
+2980..29FF; Miscellaneous Mathematical Symbols-B
+2A00..2AFF; Supplemental Mathematical Operators
+
+  => Symbols2
+
+2E80..2EFF; CJK Radicals Supplement
+2F00..2FDF; Kangxi Radicals
+2FF0..2FFF; Ideographic Description Characters
+3000..303F; CJK Symbols and Punctuation
+3040..309F; Hiragana
+30A0..30FF; Katakana
+3100..312F; Bopomofo
+3130..318F; Hangul Compatibility Jamo
+3190..319F; Kanbun
+31A0..31BF; Bopomofo Extended
+31F0..31FF; Katakana Phonetic Extensions
+3200..32FF; Enclosed CJK Letters and Months
+3300..33FF; CJK Compatibility
+3400..4DBF; CJK Unified Ideographs Extension A
+4E00..9FFF; CJK Unified Ideographs
+A000..A48F; Yi Syllables
+A490..A4CF; Yi Radicals
+
+  => CJK
+
+AC00..D7AF; Hangul Syllables
+
+  => Korean
+
+D800..DB7F; High Surrogates
+DB80..DBFF; High Private Use Surrogates
+DC00..DFFF; Low Surrogates
+E000..F8FF; Private Use Area
+
+F900..FAFF; CJK Compatibility Ideographs
+
+  => CJK
+
+FB00..FB4F; Alphabetic Presentation Forms
+FB50..FDFF; Arabic Presentation Forms-A
+
+  => Middle Eastern 2
+
+FE00..FE0F; Variation Selectors
+FE20..FE2F; Combining Half Marks
+
+FE30..FE4F; CJK Compatibility Forms
+
+  => CJK
+
+FE50..FE6F; Small Form Variants
+
+ => Symbol3
+
+FE70..FEFF; Arabic Presentation Forms-B
+
+  => Middle Eastern 3
+
+FF00..FFEF; Halfwidth and Fullwidth Forms
+FFF0..FFFF; Specials
+
+  => Specials
+
+10300..1032F; Old Italic
+10330..1034F; Gothic
+10400..1044F; Deseret
+
+   => European
+
+1D000..1D0FF; Byzantine Musical Symbols
+1D100..1D1FF; Musical Symbols
+1D400..1D7FF; Mathematical Alphanumeric Symbols
+
+  => Symbols
+
+20000..2A6DF; CJK Unified Ideographs Extension B
+2F800..2FA1F; CJK Compatibility Ideographs Supplement
+
+  => CJK
+
+E0000..E007F; Tags
+F0000..FFFFF; Supplementary Private Use Area-A
+100000..10FFFF; Supplementary Private Use Area-B
+
+  => Special
+
+"! !
+
+!UniChar methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:33'!
 storeOn: aStream
 	"Character literals are preceded by '$'."
 
-	aStream nextPut: $$; nextPut: (self codePoint asCharacter) "@@@FIXME: Moby Bogus!!@@"! !
+	"store to be read back by computer"
+	(codePoint <= 16rFF)
+	ifTrue: [ aStream nextPut: $$; nextPut: codePoint asCharacter] "Character literal"
+	ifFalse: [aStream nextPutAll: '(UniChar fromCodePoint: '.
+			aStream nextPutAll: codePoint hex.
+			aStream nextPut: $). ]! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/9/2013 10:31'!
+toLower
+
+	^UniChar value: (ToLower at: self codePoint ifAbsent: [ ^self ])! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/9/2013 10:32'!
+toUpper
+
+	^UniChar value: (ToUpper at: self codePoint ifAbsent: [ ^self ])! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:58'!
+tokenish
+	"Answer whether the receiver is a valid token-character--letter, digit, or 
+	colon."
+
+	^self isGenerallyValidInIdentifiers or: [self = $:]! !
 
 !UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 17:18'!
 unicodeCodePoint
 
 	^self codePoint! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:23'!
+AI
+	^AL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+AL
+	^AL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:25'!
+B2
+	^B2! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+BA
+	^BA! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+BB
+	^BB! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+BK
+	^BK! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:10'!
+CB
+	^CB! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:26'!
+CJ
+	^CJ! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:05'!
+CL
+	^CL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+CM
+	^CM! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+CP
+	^CP! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+CR
+	^CR! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Cc
+	^Cc! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Cf
+	^Cf! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Cn
+	^Cn! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Co
+	^Co! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Cs
+	^Cs! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+EX
+	^EX! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+GL
+	^GL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+H2
+	^H2! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+H3
+	^H3! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+HL
+	^HL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+HY
+	^HY! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+ID
+	^ID! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+IN
+	^IN! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+IS
+	^IS! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+JL
+	^JL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+JT
+	^JT! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+JV
+	^JV! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+LF
+	^LF! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Ll
+	^Ll! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Lm
+	^Lm! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Lo
+	^Lo! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
+Lt
+	^Lt! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
+Lu
+	^Lu! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
+Mc
+	^Mc! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
+Me
+	^Me! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
+Mn
+	^Mn! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:10'!
+NL
+	^NL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+NS
+	^NS! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+NU
+	^NU! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
+Nd
+	^Nd! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
+Nl
+	^Nl! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
+No
+	^No! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:05'!
+OP
+	^OP! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+PO
+	^PO! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+PR
+	^PR! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
+Pc
+	^Pc! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
+Pd
+	^Pd! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Pe
+	^Pe! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Pf
+	^Pf! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Pi
+	^Pi! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Po
+	^Po! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Ps
+	^Ps! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+QU
+	^QU! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+RI
+	^RI! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:24'!
+SA
+	^SA! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+SG
+	^SG! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:10'!
+SP
+	^SP! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+SY
+	^SY! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Sc
+	^Sc! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Sk
+	^Sk! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Sm
+	^Sm! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+So
+	^So! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+WJ
+	^WJ! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:05'!
+XX
+	^XX! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+ZW
+	^ZW! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:57'!
+Zl
+	^Zl! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:57'!
+Zp
+	^Zp! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:57'!
+Zs
+	^Zs! !
 
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:36'!
 arrowDown
@@ -424,6 +1391,10 @@ crCharacter
 	"Answer the Character representing a carriage return."
 
 	^ (13 asUniChar)! !
+
+!UniChar class methodsFor: 'as yet unclassified' stamp: 'KenD 3/18/2013 17:12'!
+defaultFontClass
+	^UniTestFont! !
 
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:38'!
 delete
@@ -473,11 +1444,10 @@ home
 
 	^ (1 asUniChar)! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 2/24/2013 09:47'!
-initialize
-"
-	UniChar initialize.
-"
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/7/2013 08:22'!
+initZeroCodePoints
+	"Script digit ranges starting at zero"
+
 	ZeroCodePoints := #(
        16r0030                "DIGIT ZERO"
        16r0660                "ARABIC-INDIC DIGIT ZERO"
@@ -522,6 +1492,340 @@ initialize
        16r1D7EC               "MATHEMATICAL SANS-SERIF BOLD DIGIT ZERO"
        16r1D7F6               "MATHEMATICAL MONOSPACE DIGIT ZERO"
   ).
+! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/19/2013 18:55'!
+initialize
+"
+	UniChar initialize.
+"
+	SmalltalkSpecialChars := '+-/\*~<>=@,%|&?!!' asUniString.
+	self initZeroCodePoints.
+	self initializeGeneralPropertyEnums.
+	self initializeGeneralCharacterProperties.
+	self initializeCaseMappings. 
+	self initializeLineBreakProperties. "Must follow initializeGeneralCharacterProperties"
+	self initializeLineBreakTable.
+	
+	
+	! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/9/2013 09:41'!
+initializeCaseMappings
+	"UniChar initializeCaseMappings"
+ 	
+	 | slash |
+  	ToCasefold 	:= IdentityDictionary new.
+	ToUpper 		:= IdentityDictionary new.
+	ToLower 		:= IdentityDictionary new.
+	
+  	slash := FileDirectory slash.
+	
+	self parseCaseMappingFrom: (FileStream concreteStream readOnlyFileNamed:
+		'..', slash, 'Cuis-Unicode', slash, 'CaseFolding.txt')..
+	
+"
+@@FIXME: download using ProgressBarMorph
+
+	UIManager default informUserDuring: [:bar|
+		| stream |
+		bar value: 'Downloading Unicode data'.
+		stream := HTTPClient httpGet: 'http://www.unicode.org/Public/UNIDATA/CaseFolding.txt'.
+		(stream isKindOf: RWBinaryOrTextStream) ifFalse:[^self error: 'Download failed'].
+		stream reset.
+		bar value: 'Updating Case Mappings'.
+		self parseCaseMappingFrom: stream.
+	]
+".! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/7/2013 16:37'!
+initializeGeneralCharacterProperties
+
+ 	 | slash |
+    	slash := FileDirectory slash.
+	
+	self parseGeneralPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
+		'..', slash, 'Cuis-Unicode', slash, 'UnicodeData.txt')..
+		
+	"@@FIXME: Download from  http://unicode.org/Public/UNIDATA/UnicodeData.txt "! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/9/2013 09:39'!
+initializeGeneralPropertyEnums
+
+	"16 Bits for general properties.  Upper 8 is Category"
+	CasedLetterBit 	:= 1<<15.
+	LetterBit 			:= 1<<14.
+	MarkBit 			:= 1<<13.
+	NumberBit 		:= 1<<12.
+	PunctuationBit 	:= 1<<11.
+	SymbolBit 		:= 1<<10 .
+	SeparatorBit 	:= 1<<9.
+	ControlBit 		:= 1<<8.
+	
+	"Lower 8 bits have value"
+
+"	CasedLetter := Lu + Ll +  Lt.
+	Letter 		:= Lu + Ll + Lt + Lm + Lo.
+	Mark 		:= Mn + Mc + Me.
+	Number 	:= Nd + Nl + No.
+	Punctuation 	:= Pc + Pd + Ps + Pe + Pi + Pf + Po.
+	Symbol 		:= Sm + Sc + Sk + So .
+	Separator 	:= Zs + Zl + Zp.
+	Control 		:= Cc + Cf + Cs + Co + Cn.
+"
+	Cn 	:= ControlBit.
+ 	Cc 	:= ControlBit + 1.
+ 	Cf 	:= ControlBit + 2.
+ 	Co 	:= ControlBit + 3.
+ 	Cs 	:= ControlBit + 4.
+ 	Ll 	:= CasedLetterBit + LetterBit + 1.
+ 	Lm := LetterBit + 2.
+ 	Lo 	:= LetterBit + 3.
+ 	Lt 	:= CasedLetterBit + LetterBit + 4.
+ 	Lu 	:= CasedLetterBit + LetterBit + 5.
+ 	Mc := MarkBit + 1.
+ 	Me := MarkBit + 2.
+ 	Mn := MarkBit + 3.
+ 	Nd 	:= NumberBit + 1.
+ 	Nl 	:= NumberBit + 2.
+ 	No := NumberBit + 3.
+ 	Pc := PunctuationBit + 1.
+ 	Pd := PunctuationBit + 2.
+ 	Pe := PunctuationBit + 3.
+ 	Pf 	:= PunctuationBit + 4.
+ 	Pi 	:= PunctuationBit + 5.
+ 	Po 	:= PunctuationBit + 6.
+ 	Ps 	:= PunctuationBit + 7.
+ 	Sc 	:= SymbolBit + 1.
+ 	Sk 	:= SymbolBit + 2.
+ 	Sm := SymbolBit + 3.
+ 	So 	:= SymbolBit + 4.
+ 	Zl 	:= SeparatorBit + 1.
+ 	Zp 	:= SeparatorBit + 2.
+ 	Zs 	:= SeparatorBit + 3.
+
+	
+	PropertyNames := Dictionary new: 30.
+	PropertyNames at: Cn 	put: #Unassigned.
+	PropertyNames at: Cc 	put: #Control.
+ 	PropertyNames at: Cf 	put: #Format.
+ 	PropertyNames at: Co 	put: #PrivateUse.
+ 	PropertyNames at: Cs 	put: #Surrogate.
+ 	PropertyNames at: Ll 	put: #LowercaseLetter .
+ 	PropertyNames at: Lm 	put: #ModifierLetter.
+ 	PropertyNames at: Lo 	put: #OtherLetter.
+ 	PropertyNames at: Lt 	put: #TitlecaseLetter..
+ 	PropertyNames at: Lu 	put: #UppercaseLetter .
+ 	PropertyNames at: Mc 	put: #SpacingMark..
+ 	PropertyNames at: Me 	put: #EnclosingMark.
+ 	PropertyNames at: Mn 	put: #NonspacingMark.
+ 	PropertyNames at: Nd 	put: #DecimalNumber.
+ 	PropertyNames at: Nl 	put: #LetterNumber.
+ 	PropertyNames at: No 	put: #OtherNumber.
+ 	PropertyNames at: Pc 	put: #ConnectorPunctuation.
+ 	PropertyNames at: Pd 	put: #DashPunctuation.
+ 	PropertyNames at: Pe 	put: #ClosePunctuation.
+ 	PropertyNames at: Pf 	put: #FinalPunctuation.
+ 	PropertyNames at: Pi 	put: #InitialPunctuation.
+ 	PropertyNames at: Po 	put: #OtherPunctuation.
+ 	PropertyNames at: Ps 	put: #OpenPunctuation.
+ 	PropertyNames at: Sc 	put: #CurrencySymbol.
+ 	PropertyNames at: Sk 	put: #ModifierSymbol.
+ 	PropertyNames at: Sm 	put: #MathSymbol.
+ 	PropertyNames at: So 	put: #OtherSymbol.
+ 	PropertyNames at: Zl 	put: #LineSeparator.
+ 	PropertyNames at: Zp 	put: #ParagraphSeparator.
+ 	PropertyNames at: Zs 	put: #SpaceSeparator.
+	! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/13/2013 13:24'!
+initializeLineBreakProperties
+"
+	UniChar initializeLineBreakProperties.
+"
+	"Values in byte 16r00FF0000"
+	| slash |
+	
+	LineBreakProperties := Array new: 47.
+	LineBreakTypeNames := #( BreakAfter DontbreakAfter 
+									BreakBefore DontbreakBefore
+									BreakForPair DontbreakForPair  ).
+	
+	XX := 0. "unused/don't care"
+	
+	"LineBreakProperties used as table indices"
+	OP := 1.
+	LineBreakProperties at: OP put: #OpenPunctuation . "DontbreakAfter"
+	CL := 2.
+	LineBreakProperties at: CL put: #ClosePunctuation . "DontbreakBefore"
+	CP := 3.
+	LineBreakProperties at: CP put: #CloseParenthesis . "DontbreakBefore"
+	QU := 4.
+	LineBreakProperties at: QU put: #Quotation . "DontbreakBefore | DontbreakAfter"
+	GL := 5.
+	LineBreakProperties at: GL put: #Glue . "DontbreakBefore | DontbreakAfter"
+	NS := 6.
+	LineBreakProperties at: NS put: #NonStarters . "DontbreakBefore"
+	EX := 7.
+	LineBreakProperties at: EX put: #ExclamationInterrogation . "DontbreakBefore"
+	SY := 8.
+	LineBreakProperties at: SY put: #Symbols . "BreakAfter"
+	IS := 9.
+	LineBreakProperties at: IS put: #InfixNumericSeparator . "DontbreakBefore"
+	PR := 10.
+	LineBreakProperties at: PR put: #PrefixNumeric . "DontbreakAfter"
+	PO := 11.
+	LineBreakProperties at: PO put: #PostfixNumeric . "DontbreakBefore"
+	NU := 12.
+	LineBreakProperties at: NU put: #Numeric . "DontbreakForPair"
+	AL := 13.
+	LineBreakProperties at: AL put: #Alphabetic . "DontbreakForPair"
+	HL := 14.
+	LineBreakProperties at: HL put: #HebrewLetter . "DontbreakBefore"
+	ID := 15.
+	LineBreakProperties at: ID put: #Ideographic . "BreakBefore | BreakAfter"
+	IN := 16.
+	LineBreakProperties at: IN put: #InseparableCharacters . "DontbreakForPair"
+	HY := 17.
+	LineBreakProperties at: HY put: #Hyphen . "DontbreakBefore"
+	BA := 18.
+	LineBreakProperties at: BA put: #BreakAfter . "BreakAfter"
+	BB := 19.
+	LineBreakProperties at: BB put: #BreakBefore . "BreakBefore"
+	B2 := 20.
+	LineBreakProperties at: B2 put: #BeforeAndAfter . "BreakBefore | DontbreakForPair | BreakAfter"
+	ZW := 21.
+	LineBreakProperties at: ZW put: #ZeroWidthSpace . "BreakAfter"
+	CM := 22.
+	LineBreakProperties at: CM put: #CombiningMark . "DontbreakBefore"
+	WJ := 23.
+	LineBreakProperties at: WJ put: #WordJoiner . "DontbreakBefore | DontbreakAfter"
+	H2 := 24.
+	LineBreakProperties at: H2 put: #HangulLV . "BreakBefore | BreakAfter"
+	H3 := 25.
+	LineBreakProperties at: H3 put: #HangulLVT . "BreakBefore | BreakAfter"
+	JL := 26.
+	LineBreakProperties at: JL put: #HangulLJamo . "BreakBefore"
+	JV := 27.
+	LineBreakProperties at: JV put: #HangulVJamo . "DontbreakBefore | DontbreakAfter"
+	JT := 28.
+	LineBreakProperties at: JT put: #HangulTJamo . "BreakAfter"
+	RI := 29.
+	LineBreakProperties at: RI put: #RegionalIndicator . "BreakBefore | DontbreakForPair | BreakAfter"
+	
+	"LineBreakProperties NOT used as table indices"
+	BK := 30.
+	LineBreakProperties at: BK put: #MandatoryBreak . "BreakAfter"
+	CR := 31. 
+	LineBreakProperties at: CR put: #CarrageReturn . "Always Break unless followed by LF"
+	LF := 40.
+	LineBreakProperties at: LF put: #LineFeed . "Always Break unless followed by CR"
+	SG := 41.
+	LineBreakProperties at: SG put: #Surrogate . "DontbreakForPair"
+	CB := 42.
+	LineBreakProperties at: CB put: #ContingentBreak . "BreakBefore | BreakAfter"
+	SP := 43.
+	LineBreakProperties at: SP put: #Space . "BreakAfter"
+	NL := 44.
+	LineBreakProperties at: NL put: #NextLine . "BreakAfter"
+	SA := 45.
+	LineBreakProperties at: SA put: #SoutheastAsian . "Complex Context Dependent"
+	CJ := 46.
+	LineBreakProperties at: CJ put: #ConditionalJapaneseStarted .
+	AI := 47.
+	LineBreakProperties at: AI put: #AlphaOrIdeograph . "Ambiguous"
+	
+  	slash := FileDirectory slash.
+	
+	self parseLineBreakPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
+		'..', slash, 'Cuis-Unicode', slash, 'LineBreak.txt')..
+
+	"Add break properties to CJK"
+"	setPropToID := [ :codePoint | | otherProps |
+		otherProps := GeneralCategory at: codePoint ifAbsent: [ Cn ].
+		GeneralCategory at: codePoint put: (otherProps + (ID  bitShift: 16)).
+	].
+
+""    CJK Unified Ideographs Extension A:       U+3400..U+4DBF"
+"	(16r3400 to: 16r4DBF) do: setPropToID.
+""     CJK Unified Ideographs:                   U+4E00..U+9FFF"
+"	(16r4E00 to: 16r9FFF) do: setPropToID.
+""     CJK Compatibility Ideographs:             U+F900..U+FAFF"
+"	(16rF900 to: 16rFAFF) do: setPropToID.
+""     CJK Unified Ideographs Extension B:      U+20000..U+2A6DF "
+"	(16r20000 to: 16r2A6DF) do: setPropToID.
+""     CJK Unified Ideographs Extension C:      U+2A700..U+2B73F"
+"	(16r2A700 to: 16r2B73F) do: setPropToID.
+""     CJK Unified Ideographs Extension D:      U+2B740..U+2B81F"
+"	(16r2B740 to: 16r2B81F) do: setPropToID.
+""     CJK Compatibility Ideographs Supplement: U+2F800..U+2FA1F"
+"	(16r2F800 to: 16r2FA1F) do: setPropToID.
+""     and any other reserved code points on"
+"         Planes 2 and 3:                      U+20000..U+2FFFD"
+"                                              U+30000..U+3FFFD"
+
+"	(16r20000 to: 16r2FFFD) do: setPropToID.
+	(16r30000 to: 16r3FFFD) do: setPropToID.
+"	
+
+
+! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/11/2013 09:25'!
+initializeLineBreakTable
+	"From  Unicode Standard Annex #14: Unicode Line Breaking Algorithm"
+
+	LineBreakTable := Array new: 29.
+"
+    Resolved outside the pair table:  AI, BK, CB, CJ, CR,  LF, NL, SA, SG, SP, XX
+
+    ^ denotes a prohibited break: B ^ A is equivalent to B SP* � X A; in other words, never break before A and after B, even if one or more spaces intervene.
+
+    % denotes an indirect break opportunity: B % A is equivalent to B × A and  B SP+ ÷ A; in other words, do not break before A, unless one or more spaces follow B.
+
+    @ denotes a prohibited break for combining marks: B @ A is equivalent to B SP* × A, where A is of class CM. For more details, see Section 7.5, Combining Marks.
+
+    # denotes an indirect break opportunity for combining marks following a space: B # A is equivalent to (B × A and  B SP+ ÷  A), where A is of class CM.
+
+    _ denotes a direct break opportunity (equivalent to  / as defined above).
+"
+	LineBreakTable at: OP put: '^^^^^^^^^^^^^^^^^^^^^@^^^^^^^'. 
+	LineBreakTable at: CL put: '_^^%%^^^^%%_____%%__^#^______'.
+	LineBreakTable at: CP put: '_^^%%^^^^%%%%%__%%__^#^______'.
+	LineBreakTable at: QU put: '^^^%%%^^^%%%%%%%%%%%^#^%%%%%%'.
+	LineBreakTable at: GL put: '%^^%%%^^^%%%%%%%%%%%^#^%%%%%%'.
+	LineBreakTable at: NS put: '_^^%%%^^^_______%%__^#^______'.
+	LineBreakTable at: EX put: '_^^%%%^^^_______%%__^#^______'.
+	LineBreakTable at: SY put: '_^^%%%^^^__%____%%__^#^______'.
+	LineBreakTable at: IS put: '_^^%%%^^^__%%%__%%__^#^______'.
+	LineBreakTable at: PR put: '%^^%%%^^^__%%%%_%%__^#^%%%%%_'.
+	LineBreakTable at: PO put: '%^^%%%^^^__%%%__%%__^#^______'.
+	LineBreakTable at: NU put: '%^^%%%^^^%%%%%_%%%__^#^______'.
+	LineBreakTable at: AL put: '%^^%%%^^^__%%%_%%%__^#^______'.
+	LineBreakTable at: HL put: '%^^%%%^^^__%%%_%%%__^#^______'.
+	LineBreakTable at: ID put: '_^^%%%^^^_%____%%%__^#^______'.
+	LineBreakTable at: IN put: '_^^%%%^^^______%%%__^#^______'.
+	LineBreakTable at: HY put: '_^^%_%^^^__%____%%__^#^______'.
+	LineBreakTable at: BA put: '_^^%_%^^^_______%%__^#^______'.
+	LineBreakTable at: BB put: '%^^%%%^^^%%%%%%%%%%%^#^%%%%%%'.
+	LineBreakTable at: B2 put: '_^^%%%^^^_______%%_^^#^______'.
+	LineBreakTable at: ZW put: '____________________^________'.
+	LineBreakTable at: CM put: '%^^%%%^^^__%%%_%%%__^#^______'.
+	LineBreakTable at: WJ put: '%^^%%%^^^%%%%%%%%%%%^#^%%%%%%'.
+	LineBreakTable at: H2 put: '_^^%%%^^^_%____%%%__^#^___%%_'.
+	LineBreakTable at: H3 put: '_^^%%%^^^_%____%%%__^#^____%_'.
+	LineBreakTable at: JL put: '_^^%%%^^^_%____%%%__^#^%%%%__'.
+	LineBreakTable at: JV put: '_^^%%%^^^_%____%%%__^#^___%%_'.
+	LineBreakTable at: JT put: '_^^%%%^^^_%____%%%__^#^____%_'.
+	LineBreakTable at: RI put: '_^^%%%^^^_______%%__^#^_____%'.
+
+	LineBreakNames := IdentityDictionary new: 6.
+	LineBreakNames at: $_ put: #DirectBreak.
+	LineBreakNames at: $% put: #IndirectBreak.
+	LineBreakNames at: $# put: #CombiningIndirectBreak.
+	LineBreakNames at: $@ put: #CombiningProhibitedBreak.
+	LineBreakNames at: $^ put: #ProhibitedBreak.
+	LineBreakNames at: $!! put: #ExplicitBreak.  "Not in table, but occurs in rules"	
 ! !
 
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
@@ -571,6 +1875,152 @@ pageUp
 
 	^ (11 asUniChar)! !
 
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/9/2013 10:27'!
+parseCaseMappingFrom: stream
+	"Parse the Unicode casing mappings from the given stream.
+	Handle only the simple mappings"
+	"
+		UniChar initializeCaseMappings.
+	"
+	|  toNumber |
+	toNumber := [:quad | ('16r', quad) asNumber].
+	
+	ToCasefold 	:= IdentityDictionary new: 2048.
+	ToUpper 		:= IdentityDictionary new: 2048.
+	ToLower 		:= IdentityDictionary new: 2048.
+
+	[stream atEnd] whileFalse:[
+		| fields line srcCode dstCode |
+		line := stream nextLine copyUpTo: $#.
+		fields := line withBlanksTrimmed findTokens: $;.
+		(fields size > 2 and: [#('C' 'S') includes: (fields at: 2) withBlanksTrimmed]) ifTrue:[
+			srcCode := toNumber value:(fields at: 1) withBlanksTrimmed.
+			dstCode := toNumber value: (fields at: 3) withBlanksTrimmed..
+			ToCasefold at: srcCode put: dstCode.
+		].
+	].
+
+	ToCasefold keysAndValuesDo:
+		[:k :v |
+		((self value: k) isUppercase)
+			ifTrue:
+				["In most cases, uppercase letter are folded to lower case"
+				ToUpper at: v put: k.
+				ToLower at: k put: v].
+		((self value: k) isLowercase)
+			ifTrue:
+				["In a few cases, two lower case letters are folded to the same lower case.
+				We must find an upper case letter folded to the same letter"
+				| up |
+				up := ToCasefold keys detect: [:e | ((self value: e) isUppercase) 
+													and: [(ToCasefold at: e) = v]] ifNone: [nil].
+				up ifNotNil: [ToUpper at: k put: up]]].
+! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/13/2013 15:31'!
+parseGeneralPropertiesFrom: aStream
+
+	|  toNumber |
+	toNumber := [:quad | ('16r', quad) asNumber].
+
+	GeneralCategory := IdentityDictionary new: 24430..
+	
+	[aStream atEnd] whileFalse:[
+		| fields line codePoint generalCategory  |
+		line := aStream nextLine.
+		fields := line withBlanksTrimmed findTokens: $;.
+		(fields size > 3) ifTrue: [.
+			codePoint := toNumber value: (fields at: 1).
+			(codePoint asUniChar isCJKIdeograph) ifFalse: [ "add it"
+				generalCategory := self perform: ((fields at: 3) asSymbol).
+				GeneralCategory at: codePoint put: generalCategory
+			]
+		]
+	].
+! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/13/2013 15:28'!
+parseLineBreakPropertiesFrom: aStream
+
+	|  toNumber  |
+	toNumber := [:quad | ('16r', quad) asNumber].
+
+	"GeneralCategory initialized before this is invoked"
+	
+	[aStream atEnd] whileFalse:[
+		| fields line codePoint  lbCategory otherInfo |
+		line := aStream nextLine copyUpTo: $#.
+		fields := line withBlanksTrimmed findTokens: $; .
+		(fields size > 1) ifTrue: [.
+			codePoint := toNumber value: (fields at: 1).
+			(codePoint asUniChar isCJKIdeograph) ifFalse: [ "add it"
+				lbCategory := self perform: ((fields at: 2) asSymbol).
+				(lbCategory isZero) ifFalse: [
+					otherInfo := GeneralCategory at: codePoint ifAbsent: [ Cn ].
+					GeneralCategory at: codePoint put: (otherInfo + (lbCategory bitShift: 16)).
+				]
+			]
+		].
+	].
+! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/11/2013 17:30'!
+propNamesForCode: propCode
+	
+	| lineBreakProp lineBreakPropName generalPropName |
+	generalPropName := PropertyNames at: (propCode bitAnd: 16r00FFFF).
+	lineBreakProp := ((propCode bitAnd: 16r00FF0000) bitShift: -16).
+	(lineBreakProp isZero) 
+	ifTrue: [ lineBreakPropName := #Unknown]
+	ifFalse: [ lineBreakPropName := LineBreakProperties at: lineBreakProp].
+
+	^ { generalPropName.  lineBreakPropName }! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/13/2013 13:32'!
+propStats
+"
+	UniChar propStats.
+"
+
+	| propCountsDict "countsDict" valueCounterProc |
+	
+	valueCounterProc :=
+		[ :dict | | countDict |
+			countDict := IdentityDictionary new.
+			dict valuesDo: [ :val |
+				countDict at: val
+						   put: (1 + (countDict at: val ifAbsent: [0]))
+		].
+		countDict
+	].
+
+	"Count shared codePoints"
+	propCountsDict := valueCounterProc value: GeneralCategory.
+	
+	Transcript newLine .
+	propCountsDict keysAndValuesDo: [ :key :count |
+		(count > 900)
+		ifTrue: [
+				Transcript newLine.
+				Transcript show: 'Count: ', 
+								count asString , 
+								' PropCode: ', 
+								key hex,
+								'  ', 
+								((UniChar propNamesForCode: key) asString).
+		]
+	].
+	Transcript newLine .
+
+	"Count number of times a codepoint is shared with the same count"
+"
+	countsDict := valueCounterProc value: propCountsDict.
+	
+	^ { propCountsDict. countsDict. }
+"
+	^ propCountsDict 
+			! !
+
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
 space
 	"Answer the Character representing a space."
@@ -583,7 +2033,12 @@ tab
 
 	^ (9 asUniChar)! !
 
-!UniChar class methodsFor: 'accessing' stamp: 'KenD 2/24/2013 09:36'!
+!UniChar class methodsFor: 'instance creation' stamp: 'KenD 3/11/2013 09:49'!
+value: aCodePoint
+
+	^self fromCodePoint: aCodePoint asNumber! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 2/24/2013 09:36'!
 zeroCodePoints
 	
 	^ZeroCodePoints! !
@@ -613,6 +2068,11 @@ at: index put: aCharacter
 	^ (self copyFrom: 1 to: (index - 1)) ,
 	   aCharacter asUniString ,
 	   (self copyFrom: (index + 1) to: (self size))! !
+
+!UniFlat methodsFor: 'private' stamp: 'KenD 3/18/2013 21:50'!
+balanceAsRequired
+
+	^self "No action required"! !
 
 !UniFlat methodsFor: 'private' stamp: 'KenD 2/17/2013 16:09'!
 charBlock
@@ -677,15 +2137,25 @@ substringFrom: startIndex length: numChars
 	]
 	ifFalse: [self errorSubscriptBounds: startIndex]! !
 
-!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 2/27/2013 21:12'!
+!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 3/18/2013 16:57'!
 with: aCharBlock
 
 	| blockClass |
 	blockClass := aCharBlock class.
+	
+	(blockClass == String) ifTrue: [ charBlock := aCharBlock asByteArray. ^self ].
+	
 	((blockClass == ByteArray) or: [(blockClass == ShortWordArray) or: [ blockClass == WordArray]])
-	ifTrue: [	 charBlock := aCharBlock. "Nota Bene: immutable"
-			^self]
+	ifTrue: [	 charBlock := aCharBlock. ^self]  "Nota Bene: assumed immutable"
+
 	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
+
+!UniFlat class methodsFor: 'user interface' stamp: 'KenD 3/18/2013 16:52'!
+fromString: aString
+	"Answer a new UniString.
+	As the string must be immutable, we will keep a copy."
+	
+	^ (self new initialize with: (aString asString copy); yourself)! !
 
 !UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 21:52'!
 at: anIndex
@@ -718,6 +2188,11 @@ at: index put: aCharacter
 	^ (self copyFrom: 1 to: (index - 1)) ,
 	   aCharacter asUniString ,
 	   (self copyFrom: (index + 1) to: self size )! !
+
+!UniFlatSlice methodsFor: 'private' stamp: 'KenD 3/18/2013 21:51'!
+balanceAsRequired
+
+	^self "No action required"! !
 
 !UniFlatSlice methodsFor: 'private' stamp: 'KenD 2/17/2013 16:32'!
 charBlock
@@ -803,6 +2278,12 @@ size
 startIndex
 
 	^startIndex! !
+
+!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 3/18/2013 15:36'!
+string
+
+	"Answer my slice [a UniFlat]"
+	^ (charBlock from: startIndex to: (startIndex + length - 1)) as: UniString! !
 
 !UniForms class methodsFor: 'private' stamp: 'KenD 3/3/2013 22:36'!
 array16FromHexString: aString
@@ -1048,6 +2529,15 @@ balanceAsRequired
 	ifTrue:  [ ^ self rebalance ]
 	ifFalse: [ ^ self ]! !
 
+!UniSplice methodsFor: 'accessing' stamp: 'KenD 3/19/2013 16:29'!
+codePointAt: anIndex
+
+	| leftLength |
+	leftLength := self leftRope size.
+	(anIndex <= leftLength)
+	ifTrue:  [^leftRope  codePointAt: anIndex]
+	ifFalse: [^rightRope codePointAt: (anIndex - leftLength)]! !
+
 !UniSplice methodsFor: 'enumerating' stamp: 'KenD 2/17/2013 21:40'!
 codePointDo: aBlock
 	"aBlock takes each codePoint in me as an argument"
@@ -1116,7 +2606,7 @@ size
 
 	^totalLength! !
 
-!UniSplice methodsFor: 'initialize-release' stamp: 'KenD 2/17/2013 20:32'!
+!UniSplice methodsFor: 'initialize-release' stamp: 'KenD 3/19/2013 21:02'!
 withLeft: aRope andRight: anotherRope
 
 	leftRope := aRope asUniString .
@@ -1135,7 +2625,7 @@ withLeft: aRope andRight: anotherRope
 	ifTrue: [
 		^((UniSplice 
 			splice: (leftRope leftRope) "LeftRope's left child"
-			with: rightRope
+			with: (UniFlat fromString:  (leftRope rightRope asString) , (rightRope asString)  )
 		    ) balanceAsRequired)
 	].
 
@@ -1180,25 +2670,343 @@ splice: aUniString with: anotherUniString
 	"Non-trivial. Answer a new instance"	
 	^(self new initialize withLeft: aUniString andRight: anotherUniString) "NB: may return a FlatRope"! !
 
+!UniSplice class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:41'!
+with:  aUniString with: anotherUniString
+
+	"Answer a new UniString"
+
+	^ self splice: aUniString with: anotherUniString ! !
+
 !UniString methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:40'!
 , aStringOrUniString
 	^ (UniSplice splice: self with: aStringOrUniString).! !
+
+!UniString methodsFor: 'comparing' stamp: 'KenD 3/19/2013 12:27'!
+< aString
+
+	"Compare codePoints"
+	^(self compare: aString) = 1! !
+
+!UniString methodsFor: 'comparing' stamp: 'KenD 3/19/2013 12:28'!
+<= aString
+
+	"Compare codePoints"
+	^(self compare: aString) < 3! !
+
+!UniString methodsFor: 'comparing' stamp: 'KenD 3/19/2013 12:27'!
+= aString
+
+	"Compare codePoints"
+"	| otherUniString |
+	otherUniString := aString asUniString.
+	(self size = otherUniString size) ifFalse: [ ^false ].
+	(self size isZero) ifTrue: [ ^true ].
+	1 to: self size do: [ :index |
+		(self codePointAt: index) = (otherUniString codePointAt: index)
+		ifFalse: [ ^false ]
+	].
+	^ true
+"
+	^ (self compare: aString) = 2! !
+
+!UniString methodsFor: 'comparing' stamp: 'KenD 3/19/2013 12:27'!
+> aString
+
+	"Compare codePoints"
+	^(self compare: aString) = 3! !
+
+!UniString methodsFor: 'comparing' stamp: 'KenD 3/19/2013 12:28'!
+>= aString
+
+	"Compare codePoints"
+	^(self compare: aString) > 1! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/18/2013 16:12'!
+adaptToCollection: rcvr andSend: selector
+	"If I am involved in arithmetic with a collection, convert me to a number."
+
+	^ rcvr perform: selector with: self asNumber! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/18/2013 16:12'!
+adaptToNumber: rcvr andSend: selector
+	"If I am involved in arithmetic with a number, convert me to a number."
+
+	^ rcvr perform: selector with: self asNumber! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/18/2013 16:12'!
+adaptToPoint: rcvr andSend: selector
+	"If I am involved in arithmetic with a point, convert me to a number."
+
+	^ rcvr perform: selector with: self asNumber! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/19/2013 19:11'!
+asCamelCase
+	"Answer a new String, without any whitespace, and with words capitalized (Except for the first one)"
+"
+	' how do you do? ' asUniString asCamelCase
+"
+	| result capitalize wroteSome inStream |
+	result := UniStringWrapper new.
+	wroteSome _ false.
+	capitalize _ false.
+	inStream _ self readStream.
+	
+	[ inStream atEnd ] whileFalse: [ | c |
+		c _ inStream next.
+		c isSeparator
+		ifTrue: [ capitalize _ true ]
+		ifFalse: [
+			capitalize & wroteSome ifTrue: [ c _ c asUppercase ].
+			result nextPut: c.
+			wroteSome _ true.
+			capitalize _ false 
+		]
+	].
+	^ result asUniString ! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/19/2013 20:09'!
+asFileName
+	"Answer a String made up from the receiver that is an acceptable file 
+	name."
+
+	^FileDirectory checkName: self fixErrors: true! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/19/2013 19:04'!
+asIdentifier: shouldBeCapitalized
+	"Return a legal identifier, with first character in upper case if shouldBeCapitalized is true, else lower case.  This will always return a legal identifier, even for an empty string"
+
+	| aRope firstChar firstLetterPosition |
+	aRope _ self select: [:el | el isGenerallyValidInIdentifiers].
+	firstLetterPosition _ aRope findFirst: [:ch | ch isGenerallyValidStartOfInIdentifiers].
+	aRope _ firstLetterPosition = 0
+		ifFalse:
+			[aRope copyFrom: firstLetterPosition to: aRope size]
+		ifTrue:
+			['a' asUniString , aRope].
+	firstChar _ shouldBeCapitalized ifTrue: [aRope first asUppercase] ifFalse: [aRope first asLowercase].
+
+	^ firstChar asUniString , (aRope copyFrom: 2 to: aRope size)
+"
+'234Fred987' asRope asIdentifier: false.  
+'235Fred987'  asRope asIdentifier: true
+''  asRope asIdentifier: true. 
+'()87234'  asRope asIdentifier: false. 
+'())z>=PPve889  U >'  asRope asIdentifier: false. 
+
+"! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 22:20'!
+asInteger 
+	"Answer the Integer created by interpreting the receiver as the string representation of an integer.  Answer nil if no digits, else find the first digit and then all consecutive digits after that"
+
+	| startPosition tail endPosition |
+	startPosition _ self findFirst: [:ch | ch isDigit].
+	startPosition = 0 ifTrue: [^ nil].
+	tail _ self copyFrom: startPosition to: self size.
+	endPosition _ tail findFirst: [:ch | ch isDigit not].
+	endPosition = 0 ifTrue: [endPosition _ tail size + 1].
+	^ Number readFrom: (tail copyFrom: 1 to: endPosition - 1) readStream
+
+"
+'1796exportFixes-tkMX' asUniString asInteger
+'1848recentLogFile-sw'  asUniString asInteger
+'donald'  asUniString asInteger
+'abc234def567' asUniString asInteger
+"! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/19/2013 20:16'!
+asLegalSelector
+
+	"Answer as much of me as possible as a legal Smalltalk selector"
+	| toUse |
+	toUse _ UniStringWrapper new.
+	self do:
+		[:char | char isGenerallyValidInIdentifiers ifTrue: [ toUse nextPut: char]].
+		
+	(self size = 0 or: [self first isGenerallyValidStartOfInIdentifiers not])
+	ifTrue:	[ toUse _ ( 'v' asUniString) , (toUse asUniString)].
+
+	^ (toUse asUniString withFirstCharacterDownshifted )
+
+"
+'234znak 43 ) 2' asUniString asLegalSelector.
+"! !
+
+!UniString methodsFor: 'case' stamp: 'KenD 3/18/2013 21:41'!
+asLowercase
+
+	^ self collect: [ :uchar | uchar asLowercase ]! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/19/2013 18:22'!
+asNumber 
+	"Answer the Number created by interpreting the receiver as the string 
+	representation of a number."
+	
+	^Number readFrom: self readStream! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/19/2013 18:46'!
+asSignedInteger
+	"Answer the Integer created by interpreting the receiver as the string representation of an integer, possibly with a leading minus sign.  Answer nil if no digits, else find the first digit and then all consecutive digits after that"
+
+	| startPosition tail endPosition  |
+	startPosition _ self findFirst: [:ch | ch isDigit or: [ch = $-]].
+	startPosition = 0 ifTrue: [^ nil].
+	tail _ self copyFrom: startPosition to: self size.
+	endPosition _ tail findFirst: [:ch | ch isDigit not and: [(ch = $-) not]].
+	endPosition = 0 ifTrue: [endPosition _ tail size + 1].
+	( (tail at: 1) = $- ) "Negative?"
+	ifTrue: [ ^ (Number readFrom: (tail copyFrom: 2 to: endPosition - 1) readStream) negated]
+	ifFalse: [ ^ Number readFrom: (tail copyFrom: 1 to: endPosition - 1) readStream ].
+
+"
+'znak -58 to wit' asUniString asSignedInteger
+"! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/19/2013 21:06'!
+asSmalltalkComment
+	"Answer this UniString, munged so that it can be treated as a comment in Smalltalk code.  Quote marks are added to the beginning and end of the string, and whenever a solitary quote mark appears within the string, it is doubled"
+
+	| result |
+	
+	result := UniStringWrapper new.
+	
+	result nextPut: $" .
+
+	self do: [ :char |
+		result nextPut: char.
+		(char = $") ifTrue: [
+			result nextPut: char.
+		] 
+	]. 
+
+	result nextPut: $".
+
+	^ result asUniString
+	! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 2/17/2013 15:54'!
 asString
 
 	^self stringRepresentation! !
 
-!UniString methodsFor: 'converting' stamp: 'KenD 2/17/2013 15:54'!
+!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:18'!
+asStringOrText
+	"Answer this string."
+
+	^ self "@@@ ?asString? @@@"! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:18'!
+asSymbol
+	"Answer the unique Symbol whose characters are the characters of the 
+	string."
+
+	^Symbol intern: self asString! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:20'!
 asText
 	"Answer a Text whose ''string'' is the receiver."
 
-	^Text fromString: self! !
+	^Text fromString: (UniStringWrapper with: self)! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 2/17/2013 15:54'!
 asUniString
 
 	^self! !
+
+!UniString methodsFor: 'case' stamp: 'KenD 3/18/2013 21:41'!
+asUppercase
+
+	^ self collect: [ :uchar | uchar asUppercase ]! !
+
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/19/2013 16:29'!
+at: anIndex
+
+	self subclassResponsibility ! !
+
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/19/2013 16:30'!
+at: anIndex put: aValue
+
+	self subclassResponsibility ! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:25'!
+capitalized
+
+	"Answer me with the first letter capitalized"
+	self isEmpty ifTrue: [ ^self ].
+	((self at: 1) isUppercase)
+	ifTrue: [ ^self ]
+	ifFalse: [ ^ ((self at: 1) asUppercase asUniString) , (self copyFrom: 2 to: self size) ]
+	
+! !
+
+!UniString methodsFor: 'case' stamp: 'KenD 3/18/2013 21:37'!
+caseFold
+
+	^ self collect: [ :uchar | uchar caseFold ]! !
+
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/19/2013 16:29'!
+codePointAt: anIndex
+
+	self subclassResponsibility ! !
+
+!UniString methodsFor: 'enumerating' stamp: 'KenD 3/18/2013 15:56'!
+codePointDo: aBlock
+	"aBlock takes each codePoint in me as an argument"
+	
+	self subclassResponsibility ! !
+
+!UniString methodsFor: 'enumerating' stamp: 'KenD 3/18/2013 21:47'!
+collect: aBlock 
+	"Evaluate aBlock with each of the receiver's elements as the argument. 
+	Collect the resulting values into a collection like the receiver. Answer 
+	the new collection."
+
+	| result |
+	result _ UniStringWrapper new.
+	self do:
+		[ :uchar | result nextPut: (aBlock value: uchar) ].
+	^ result asUniString ! !
+
+!UniString methodsFor: 'comparing' stamp: 'KenD 3/19/2013 12:24'!
+compare:  otherString
+	"Return 1, 2 or 3, if self is <, =, or > otherString based on simple codePoints"
+	"NOTA BENE: No collation assumed"
+
+	| len1 len2 c1 c2 otherUni |
+	otherUni := otherString asUniString.
+
+	len1 _ self size.
+	len2 _ otherUni size.
+	1 to: (len1 min: len2) do: [ :index |
+		c1 _ self codePointAt: index.
+		c2 _ otherUni codePointAt: index.
+		c1 = c2 ifFalse: 
+			[c1 < c2 ifTrue: [^ 1] ifFalse: [^ 3]]
+	].
+	len1 = len2 ifTrue: [^ 2].
+	len1 < len2 ifTrue: [^ 1] ifFalse: [^ 3].
+! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/19/2013 20:02'!
+contractTo: smallSize
+	"return myself or a copy shortened by ellipsis to smallSize"
+	| leftSize |
+	self size <= smallSize
+		ifTrue: [^ self].  "short enough"
+	smallSize < 5
+		ifTrue: [^ self copyFrom: 1 to: smallSize].    "First N characters"
+	leftSize _ smallSize-2//2.
+	^ self copyReplaceFrom: leftSize+1		"First N/2 ... last N/2"
+		to: self size - (smallSize - leftSize - 3)
+		with: '...'
+"
+	'A clear but rather long-winded summary' contractTo: 18
+"! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/18/2013 16:08'!
+copyFrom: start to: stop
+
+	self subclassResponsibility ! !
 
 !UniString methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:41'!
 copyReplaceFrom: start to: stop with: aStringOrUniString
@@ -1247,21 +3055,136 @@ displayOn: aDisplayMedium from: start to: stop at: aPoint
 	
 	! !
 
-!UniString methodsFor: 'debugging' stamp: 'KenD 2/17/2013 22:06'!
+!UniString methodsFor: 'displaying' stamp: 'KenD 3/18/2013 17:11'!
+displayProgressAt: aPoint from: minVal to: maxVal during: workBlock
+	"Display this string as a caption over a progress bar while workBlock is evaluated.
+
+EXAMPLE (Select next 6 lines and Do It)
+
+['Now here''s some Real Progress' asUniString
+	displayProgressAt: Sensor mousePoint
+	from: 0 to: 100
+	during: [:bar |
+	1 to: 100 do: [:x | bar value: x.
+			(Delay forMilliseconds: 100) wait]].] fork
+	
+['Now here''s some Real Progress' asUniString
+	displayProgressAt: Sensor mousePoint
+	from: 0 to: 10
+	during: [:bar |
+	1 to: 30 do: [:x | bar value: x \\ 11.
+			(Delay forMilliseconds: 100) wait]]] fork
+
+'Now here''s some Real Progress' asUniString
+	displayProgressAt: Sensor mousePoint
+	from: 0 to: 10
+	during: [:bar |
+	1 to: 30 do: [:x | bar value: nil.
+			(Delay forMilliseconds: 200) wait]].
+
+HOW IT WORKS (Try this in any other language :-)
+Since your code (the last 2 lines in the above example) is in a block,
+this method gets control to display its heading before, and clean up 
+the screen after, its execution.
+The key, though, is that the block is supplied with an argument,
+named 'bar' in the example, which will update the bar image every 
+it is sent the message value: x, where x is in the from:to: range.
+
+The use of ProgressInitiationException allows for avoiding actual
+progress display, by catching the exception.
+"
+	^ProgressInitiationException 
+		display: self
+		at: aPoint 
+		from: minVal 
+		to: maxVal 
+		during: workBlock! !
+
+!UniString methodsFor: 'enumerating' stamp: 'KenD 3/18/2013 16:16'!
+do: aBlock
+	"aBlock takes each UniChar in me as an argument"
+	
+	self subclassResponsibility ! !
+
+!UniString methodsFor: 'debugging' stamp: 'KenD 3/18/2013 17:07'!
 doesNotUnderstand: aMessage
 
 	"See what is missing from UniStrings"
 	Transcript log: (String streamContents: [:s | aMessage storeOn: s]).
 	
-	"Do what a String would do"
+	"Try to do what a String would do"
 	aMessage sendTo: (self asString)! !
 
-!UniString methodsFor: 'private' stamp: 'KenD 2/17/2013 15:58'!
+!UniString methodsFor: 'user interface' stamp: 'KenD 3/18/2013 22:07'!
+edit
+"
+  (UniString fromCodePointCollection:  #( 16r4E7E 16r0020  16r5143 16r4EA8  16r5229 16r8C9E ) )  edit.
+"
+
+	self editLabel: 'Text Editor'! !
+
+!UniString methodsFor: 'user interface' stamp: 'KenD 3/18/2013 17:01'!
+editLabel: labelString
+
+	TextModel new contents: self; openLabel: labelString! !
+
+!UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:00'!
+encodeDoublingQuoteOn: aStream 
+	"Print inside string quotes, doubling embedded quotes."
+
+	aStream print: $'.
+	self do: [ :char  |
+		aStream print: char.
+		char == $' ifTrue: [aStream print: char]].
+	aStream print: $'! !
+
+!UniString methodsFor: 'accessing' stamp: 'jmv 3/5/2013 17:20'!
+encompassParagraph: anInterval
+"do it right"
+	^anInterval! !
+
+!UniString methodsFor: 'testing' stamp: 'KenD 3/19/2013 16:17'!
+endsWithDigit
+	"Answer whether the receiver's final character represents a digit.  3/11/96 sw"
+
+	^ self size > 0 and: [(self at: self size) isDigit]! !
+
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/19/2013 18:16'!
 first
-	"Answer first index -- like Text.
-	 Nota Bene  *NOT* first element"
-	
-	^1! !
+	"Answer first character"
+	(self size isZero)
+	ifTrue: [ ^nil ]
+	ifFalse: [ ^self at: 1 ]! !
+
+!UniString methodsFor: 'formatting' stamp: 'KenD 3/18/2013 16:19'!
+format: aCollection 
+	"format the receiver with aCollection  
+	 
+	simplest example:  
+	'foo {1} bar' format: {Date today}.
+	 
+	complete example:  
+	'\{ \} \\ foo {1} bar {2}' format: {12. 'string'}.  
+	"
+	| result stream |
+	result := String new writeStream.
+	stream := self readStream.
+
+	[stream atEnd]
+		whileFalse: [| currentChar | 
+			currentChar := stream next.
+			currentChar == ${
+				ifTrue: [| expression | 
+					expression := self getEnclosedExpressionFrom: stream.
+					result
+						nextPutAll: (self evaluateExpression: expression parameters: aCollection)]
+				ifFalse: [
+					currentChar == $\
+						ifTrue: [stream atEnd
+								ifFalse: [result nextPut: stream next]]
+						ifFalse: [result nextPut: currentChar]]].
+
+	^ result contents asUniString ! !
 
 !UniString methodsFor: 'accessing' stamp: 'KenD 2/17/2013 21:25'!
 hash
@@ -1270,6 +3193,66 @@ hash
 	hash _ self species hash.
 	self codePointDo: [ :codePoint | hash _ (hash + codePoint hash) hashMultiply].
 	^hash! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/19/2013 16:32'!
+indexOf: aChar
+
+	"Answer first index of aChar in self or zero"
+	^ self indexOf: aChar startingAt: 1! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/19/2013 16:32'!
+indexOf: aChar startingAt: startIndex
+
+	"Answer first index of aChar in self or zero"
+	| testVal |
+	testVal := aChar asUniChar codePoint.
+	startIndex to: self size do: [ :index | 
+		((self codePointAt: index) = testVal) ifTrue: [ ^index ].
+	].
+	^0! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/19/2013 18:14'!
+indexOf: aCharacter startingAt: start  ifAbsent: aBlock
+
+	| ans |
+	
+	ans _ self  indexOf: aCharacter startingAt: start.
+	(ans = 0)
+		ifTrue: [ ^ aBlock value ]
+		ifFalse: [ ^ ans ]! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:31'!
+initialIntegerOrNil
+	"Answer the integer represented by the leading digits of the receiver, or nil if the receiver does not begin with a digit"
+	| firstNonDigit |
+	(self size = 0 or: [self first isDigit not]) ifTrue: [^ nil].
+	firstNonDigit _ (self findFirst: [:m | m isDigit not]).
+	firstNonDigit = 0 ifTrue: [firstNonDigit _ self size + 1].
+	^ (self copyFrom: 1  to: (firstNonDigit - 1)) asNumber
+"
+'234Whoopie' asUniString initialIntegerOrNil
+'wimpy' asUniString  initialIntegerOrNil
+'234' asUniString  initialIntegerOrNil
+'2N'  asUniString  initialIntegerOrNil
+'2' asUniString  initialIntegerOrNil
+'  89Ten ' asUniString  initialIntegerOrNil
+'78 92' asUniString  initialIntegerOrNil
+"
+! !
+
+!UniString methodsFor: 'testing' stamp: 'KenD 3/18/2013 16:43'!
+isAllDigits
+	"whether the receiver is composed entirely of digits and has at least one digit"
+
+	self do: [:c | c isDigit ifFalse: [^ false]].
+	self ifEmpty: [^false].
+      ^ true! !
+
+!UniString methodsFor: 'testing' stamp: 'KenD 3/18/2013 16:43'!
+isAllSeparators
+	"whether the receiver is composed entirely of separators"
+	self do: [ :c | c isSeparator ifFalse: [ ^false ] ].
+	^true! !
 
 !UniString methodsFor: 'private' stamp: 'KenD 2/17/2013 21:23'!
 isBalanced
@@ -1281,22 +3264,113 @@ isBalanced
 	ifTrue:  [^false]
 	ifFalse: [^ (fib at: (self depth + 2)) <= self size]! !
 
-!UniString methodsFor: 'private' stamp: 'KenD 2/17/2013 15:58'!
+!UniString methodsFor: 'testing' stamp: 'KenD 3/18/2013 16:35'!
+isString
+	"@@This is called in a lot of places!!!!@@@"
+	"See what is missing from UniString.."
+	Transcript log: 'isString called on a UniString'.
+
+	^ false "NB: strings return true"! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 19:05'!
+keywords
+	"Answer an array of the keywords that compose the receiver."
+	| kwd char keywords |
+	keywords := Array streamContents:
+		[:kwds | kwd := UniStringWrapper new.
+		1 to: self size do:
+			[:i |
+			kwd nextPut: (char _ self at: i).
+			char = $: ifTrue: 
+					[kwds nextPut: kwd contents.
+					kwd := UniStringWrapper new]].
+		kwd isEmpty ifFalse: [kwds nextPut: kwd asUniString]].
+	(keywords size >= 1 and: [(keywords at: 1) = ':']) ifTrue:
+		["Has an initial keyword, as in #:if:then:else:"
+		keywords _ keywords allButFirst].
+	(keywords size >= 2 and: [(keywords at: keywords size - 1) = ':']) ifTrue:
+		["Has a final keyword, as in #nextPut::andCR"
+		keywords _ keywords copyReplaceFrom: keywords size - 1
+								to: keywords size with: {':' , keywords last}].
+	^ keywords collect: [ :str | str asUniString ]! !
+
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/19/2013 18:17'!
 last
-	"Answer last index -- like Text.  
-	Nota Bene  *NOT*  first element"
+	"Answer last character"
+	(self size isZero)
+	ifTrue: [ ^nil ]
+	ifFalse: [ ^self at: self size ]! !
+
+!UniString methodsFor: 'testing' stamp: 'KenD 3/18/2013 16:27'!
+lastSpacePosition
+	"Answer the character position of the final space or other separator character in the receiver, and 0 if none"
+	self size to: 1 by: -1 do:
+		[:index | ((self at: index) isSeparator) ifTrue: [^ index]].
+	^ 0
+
+"
+'fred the bear' asUniString lastSpacePosition
+'ziggie' asUniString lastSpacePosition
+'elvis ' asUniString lastSpacePosition
+'wimpy  ' asUniString lastSpacePosition
+''  asUniString lastSpacePosition
+"! !
+
+!UniString methodsFor: 'stream support' stamp: 'KenD 3/18/2013 16:44'!
+nextPut: aThing
+
+	^ self , (aThing asUniString)! !
+
+!UniString methodsFor: 'stream support' stamp: 'KenD 3/18/2013 16:45'!
+nextPutAll: aCollection
+
+	^ self , (aCollection as: UniString)! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 22:26'!
+padLeftTo: totalLength
+
+	^ self padded: #left  to: totalLength  with: Character space! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/18/2013 16:09'!
+padLeftTo: totalLength with: aChar
+
+	^ self padded: #left  to: totalLength  with: aChar! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 22:26'!
+padRightTo: totalLength
+
+	^ self padded: #right  to: totalLength  with: Character space.! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/18/2013 16:09'!
+padRightTo: totalLength with: aChar
+
+	^ self padded: #right  to: totalLength  with: aChar! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 22:26'!
+padded: leftOrRight to: length with: char
+
+	| padRope padLen |
+	padLen := length - (self size)..
+	padLen <= 0 ifTrue: [ ^self ].
 	
-	^self size! !
+	padRope := (String new: padLen withAll: char) asUniString .  "@@FIXME: for UniChars"
+	
+	leftOrRight = #left ifTrue:
+		[^ (padRope , self) ].
+	leftOrRight = #right ifTrue:
+		[^ (self ,  padRope) ].! !
 
-!UniString methodsFor: 'printing' stamp: 'KenD 2/17/2013 16:02'!
-printOn: aStream
-	"Look good in the inspector"
+!UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 16:47'!
+print
+	"Display self on the Transcript"
 
-	aStream nextPutAll: 'UniString('.
-	aStream nextPut: $' .
-	aStream nextPutAll: self stringRepresentation.
-	aStream nextPut: $' .
-	aStream nextPut: $)! !
+	Transcript addEntry: self. Transcript newLine ! !
+
+!UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:06'!
+printOn: aStream 
+	"Print inside string quotes, doubling inbedded quotes."
+
+	self storeOn: aStream! !
 
 !UniString methodsFor: 'printing' stamp: 'KenD 2/17/2013 15:55'!
 printString
@@ -1324,6 +3398,46 @@ rebalance
 	].
 	^ UniString merge: leafNodes start: 1 end: (leafNodes size).! !
 
+!UniString methodsFor: 'copying' stamp: 'KenD 3/18/2013 15:28'!
+replaceFrom: start to: stop with: replacement startingAt: repStart
+		"Answer a new UniString rope with the replacement.
+		Nota Bene: The String method with this name is destructive!!!!"
+		| repRope |
+		repRope := replacement asUniString.
+		
+		self halt: 
+'The String method with this name is destructive. The UniString version is not, Use UniStringWrapper'.
+		
+		^ self copyReplaceFrom: start to: stop with: (repRope copyFrom: repStart to: (repRope size)).! !
+
+!UniString methodsFor: 'enumerating' stamp: 'KenD 3/18/2013 21:53'!
+select: aBlock 
+	"Refer to the comment in Collection|select:."
+	| result |
+	result := UniStringWrapper new.
+	self do: [ :uchar | 
+		(aBlock value: uchar)
+			ifTrue: [result nextPut: uchar]].
+	^ result asUniString! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/19/2013 18:18'!
+species
+
+	"I abstract an array of codePoints"
+	^ UniString! !
+
+!UniString methodsFor: 'testing' stamp: 'KenD 3/18/2013 16:34'!
+startsWithDigit
+	"Answer whether the receiver's first character represents a digit"
+
+	^ self size > 0 and: [(self at: 1) isDigit]! !
+
+!UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:16'!
+storeOn: aStream 
+	"Print inside string quotes, doubling inbedded quotes."
+	
+	self stringRepresentation storeOn: aStream! !
+
 !UniString methodsFor: 'printing' stamp: 'KenD 2/19/2013 14:26'!
 stringRepresentation
 
@@ -1340,6 +3454,259 @@ stringRepresentation
 			]
 		]
 	]! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 22:53'!
+subStrings: collectionOfSeparators
+	"Answer an array of the substrings that compose the receiver."
+	| result sourceStream subStringStream separators |
+	separators := collectionOfSeparators as: UniString.
+	sourceStream := self readStream.
+	result := OrderedCollection new.
+	subStringStream := UniStringWrapper new.
+	[ sourceStream atEnd ] whileFalse: [
+		| char |
+		char := sourceStream next.
+		(separators includes: char)
+			ifTrue: [
+				subStringStream isEmpty ifFalse: [
+					result add: subStringStream asUniString.
+					subStringStream := UniStringWrapper new ] ]
+			ifFalse: [
+				subStringStream nextPut: char ] ].
+	subStringStream isEmpty ifFalse: [
+		result add: subStringStream asUniString ].
+	^ result asArray! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 22:51'!
+substrings
+	"Answer an array of the substrings that compose the receiver."
+	| result sourceStream subStringStream |
+
+	sourceStream := self readStream.
+	result := OrderedCollection new.
+	subStringStream := UniStringWrapper new.
+	[ sourceStream atEnd ] whileFalse: [
+		| char |
+		char := sourceStream next.
+		(char isSeparator)
+			ifTrue: [
+				subStringStream isEmpty ifFalse: [
+					result add: subStringStream asUniString.
+					subStringStream := UniStringWrapper new ] ]
+			ifFalse: [
+				subStringStream nextPut: char ] ].
+	subStringStream isEmpty ifFalse: [
+		result add: subStringStream asUniString ].
+	^ result asArray! !
+
+!UniString methodsFor: 'enumerating' stamp: 'KenD 3/18/2013 21:56'!
+tabDelimitedFieldsDo: aBlock
+	"Considering the receiver as a holder of tab-delimited fields, evaluate execute aBlock with each field in this string.  The separatilng tabs are not included in what is passed to aBlock"
+
+	| start end |
+	"No senders but was useful enough in earlier work that it's retained for the moment."
+	start _ 1.
+	[start <= self size] whileTrue: 
+		[end _ self indexOf: Character tab startingAt: start ifAbsent: [self size + 1].
+		end _ end - 1.
+		aBlock value: (self copyFrom: start  to: end).
+		start _ end + 2]
+
+"
+'fred	charlie	elmo		2' asUniString  tabDelimitedFieldsDo: [:aField |  Transcript newLine; show: aField]
+"! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:36'!
+trimBoth
+	"Trim separators from both sides of the receiving string."
+
+"
+`	'  a bc  ' asUniString trimBoth.
+"
+	^ self trimBoth: [ :char | char isSeparator ]! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:18'!
+trimBoth: aBlock
+	"Trim characters satisfying the condition given in aBlock from both sides of the receiving string."
+
+	^ self trimLeft: aBlock right: aBlock! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:18'!
+trimLeft
+	"Trim separators from the left side of the receiving string."
+	
+	^ self trimLeft: [ :char | char isSeparator ] ! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:17'!
+trimLeft: aBlock
+	"Trim characters satisfying the condition given in aBlock from the left side of the receiving string."
+	
+	^ self trimLeft: aBlock right: [ :char | false ]! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:17'!
+trimLeft: aLeftBlock right: aRightBlock
+	"Trim characters satisfying the condition given in aLeftBlock from the left side and aRightBlock from the right sides of the receiving string."
+
+	| left right |
+	left := 1.
+	right := self size.
+	
+	[ left <= right and: [ aLeftBlock value: (self at: left) ] ]
+		whileTrue: [ left := left + 1 ].
+		
+	[ left <= right and: [ aRightBlock value: (self at: right) ] ]
+		whileTrue: [ right := right - 1 ].
+		
+	^ self copyFrom: left to: right! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:17'!
+trimRight
+	"Trim separators from the right side of the receiving string."
+	
+	^ self trimRight: [ :char | char isSeparator ]! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:17'!
+trimRight: aBlock
+	"Trim characters satisfying the condition given in aBlock from the right side of the receiving string."
+	
+	^ self trimLeft: [ :char | false ] right: aBlock! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:18'!
+truncateTo: smallSize
+	"return myself or a copy shortened to smallSize"
+
+	^ self size <= smallSize
+		ifTrue:
+			[self]
+		ifFalse:
+			[self copyFrom: 1 to: smallSize]! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:33'!
+withBlanksCondensed
+	"Return a copy of the receiver with leading/trailing blanks removed
+	 and consecutive white spaces condensed as a single space."
+
+	| trimmed lastWasBlank result |
+	trimmed _ self withBlanksTrimmed.
+	result := UniStringWrapper new.
+		
+	lastWasBlank _ false.
+	trimmed do: [ :c |
+		(c isSeparator)
+			ifTrue: [ lastWasBlank ifFalse: [ result nextPut: UniChar space ]]
+			ifFalse: [ result nextPut: c ].
+		lastWasBlank _ c isSeparator 
+	].
+	^ result asUniString 
+
+	" 
+	' abc  d   ' asUniString withBlanksCondensed
+	' abc  d
+	s
+	as   zz 	q 			q' asUniString withBlanksCondensed
+	"! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:37'!
+withBlanksTrimmed
+	"Return a copy of the receiver from which leading and trailing blanks have been trimmed."
+
+	^self trimBoth
+
+"
+	 ' abc  d   ' asUniString withBlanksTrimmed
+"
+! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/18/2013 16:42'!
+withFirstCharacterDownshifted
+
+	"Answer an object like the receiver but with first character downshifted if necesary"
+	(self size isZero) ifTrue: [ ^self ].
+	((self at: 1) isLowercase) ifTrue: [ ^self ].
+	
+	^ ((self at: 1) toLower asUniString) , (self copyFrom: 2 to: self size) ! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:27'!
+withNewLines
+	"Return a copy of the receiver in which backslash (\) characters have been replaced with newLine (i.e. Lf)."
+
+	^ self collect: [ :c | c = $\ ifTrue: [ Character newLineCharacter ] ifFalse: [ c ]].! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:25'!
+withoutLeadingDigits
+	"Answer the portion of the receiver that follows any leading series of digits and blanks.  If the receiver consists entirely of digits and blanks, return an empty string.
+	See withoutTrailingDigits"
+	| firstNonDigit |
+	firstNonDigit _ (self findFirst: [ :m | m isDigit not and: [ m isSpace not  ]]).
+	^ firstNonDigit > 0
+		ifTrue: [ self copyFrom: firstNonDigit  to: self size ]
+		ifFalse: [ UniString emptyString ]
+
+"
+'234Whoopie' asRope withoutLeadingDigits
+' 4321 BlastOff!!'  asRope withoutLeadingDigits
+'wimpy'  asRope withoutLeadingDigits
+'  89Ten 12   ' asRope withoutLeadingDigits
+'78 92' asRope withoutLeadingDigits
+'9876 and with several words 9876' asRope withoutLeadingDigits
+' 123another one123 '  asRope withoutLeadingDigits
+"! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:25'!
+withoutTrailingBlanks
+	"Return a copy of the receiver from which trailing blanks have been trimmed."
+
+	| last |
+	last _ self findLast: [:c | c isSeparator not].
+	last = 0 ifTrue: [^ UniString emptyString ].  "no non-separator character"
+	^ self copyFrom: 1 to: last
+
+"
+	 ' abc  d   ' asUniString withoutTrailingBlanks
+"
+! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:25'!
+withoutTrailingDigits
+	"Answer the portion of the receiver that precedes any trailing series of digits and blanks.  If the receiver consists entirely of digits and blanks, return an empty string.
+	See #withoutLeadingDigits"
+	| lastNonDigit |
+	lastNonDigit _ (self findLast: [ :m | m isDigit not and: [ m isSpace not ]]).
+	^ lastNonDigit > 0
+		ifTrue: [ self copyFrom: 1 to: lastNonDigit ]
+		ifFalse: [ '' ]
+
+"
+'Whoopie234' asRope withoutTrailingDigits
+'BlastOff!! 4321 ' asRope withoutTrailingDigits
+'wimpy' asRope withoutTrailingDigits
+'  89Ten 12   ' asRope withoutTrailingDigits
+'78 92' asRope withoutTrailingDigits
+'and with several words 9876' asRope withoutTrailingDigits
+' 123another one123 ' asRope withoutTrailingDigits
+"
+! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:46'!
+crString
+	"Answer a string containing a single carriage return character."
+
+	^ ( Character crCharacter asUniString )! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:47'!
+crlfString
+	"Answer a UniString containing a carriage return and a linefeed."
+
+	^ ( String crlfString asUniString )! !
+
+!UniString class methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:50'!
+defaultFontClass
+	^UniTestFont! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:23'!
+emptyString
+
+	^ EmptyString ! !
 
 !UniString class methodsFor: 'private' stamp: 'KenD 2/17/2013 15:51'!
 fibonacci
@@ -1381,6 +3748,12 @@ fromCodePointCollection: anIntegerCollection
 	^ (UniFlat new initialize with: charBlock) 
 ! !
 
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:47'!
+fromPacked: aLong
+	"Convert from a longinteger to a UniString of length 4."
+	
+	^ (String fromPacked: aLong) asUniString ! !
+
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 14:13'!
 fromString: aString
 	"Answer a new UniString"
@@ -1395,27 +3768,50 @@ fromString: aString
 	]
 ! !
 
-!UniString class methodsFor: 'private' stamp: 'KenD 2/19/2013 14:07'!
-fromUtf8: aByteArray hex: useHexForNCRs trimLastNull: doTrimLastNullChar
-	"Convert the given string from UTF-8 to  UniString"
-	
-	"@@FIXME: Slow but correct"
-	| codePointsColl bytes codePoint |
-	codePointsColl := OrderedCollection new initialize.
-	bytes _ aByteArray readStream.
-	[ bytes atEnd ] whileFalse: [
-		codePoint _ (UniChar nextUnicodeCodePointFromUtf8: bytes).
-		codePoint ifNotNil: [  codePointsColl addLast: codePoint ]. "@@FIXME: ignore errors??"
-	].
-	(doTrimLastNullChar and: [ codePoint = 0 ]) ifTrue: [
-				codePointsColl removeLast ].
-	^ (self fromCodePointCollection: codePointsColl)! !
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:48'!
+fromUtf8: aByteArray
+	"Convert the given bytes from UTF-8 to  the internal encoding: ISO Latin 9 (ISO 8859-15).
+	See #asUtf8 "
+	"For any unicode chars not in ISO Latin 9 (ISO 8859-15), embed an NCR.
+	See http://en.wikipedia.org/wiki/Numeric_character_reference"
 
-!UniString class methodsFor: 'class initialization' stamp: 'KenD 2/17/2013 21:26'!
+	^ (String fromUtf8: aByteArray hex: false trimLastNull: false) asUniString ! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:49'!
+fromUtf8: aByteArray hex: useHexForNCRs trimLastNull: doTrimLastNullChar
+	"Convert the given string from UTF-8 to  the internal encoding: ISO Latin 9 (ISO 8859-15)"
+	"For unicode chars not in ISO Latin 9 (ISO 8859-15), embed Decimal NCRs or Hexadecimal NCRs according to useHex.
+	
+	See http://en.wikipedia.org/wiki/Numeric_character_reference
+	See http://rishida.net/tools/conversion/. Tests prepared there.
+	
+	Note: The conversion of NCRs is reversible. See #asUtf8:
+	This allows handling the full Unicode in Cuis tools, that can only display the Latin alphabet, by editing the NCRs.
+	The conversions can be done when reading / saving files, or when pasting from Clipboard and storing back on it."
+
+	^ (String fromUtf8: aByteArray hex: useHexForNCRs trimLastNull: doTrimLastNullChar) asUniString ! !
+
+!UniString class methodsFor: 'searching' stamp: 'KenD 3/18/2013 15:58'!
+indexOfCodePoint: anInteger inString: aString startingAt: start
+
+	| uniString stringSize |
+
+	stringSize _ aString size.
+	uniString := aString asUniString .
+	
+	start to: stringSize do: [:pos |
+		((uniString at: pos) codePoint = anInteger) ifTrue: [^ pos]].
+
+	^ 0
+! !
+
+!UniString class methodsFor: 'class initialization' stamp: 'KenD 3/18/2013 15:23'!
 initialize
 "
 	UniString initialize.
 "
+	EmptyString := UniString fromString: ''.
+
 	Fibonacci :=   #( 0  1  1  2  3  5  8  13  21  34  55  89  144  233  377  610  987  1597  2584  4181  6765  10946  17711  28657  46368  75025  121393  196418  317811  514229  832040  1346269  2178309  3524578  5702887  9227465  14930352  24157817  39088169  63245986  102334155  165580141  267914296  433494437  701408733  1134903170  1836311903  2971215073  4807526976  7778742049  12586269025  20365011074  32951280099  53316291173  86267571272  139583862445  225851433717  365435296162  591286729879  956722026041  1548008755920  2504730781961  4052739537881  6557470319842  10610209857723  17167680177565  27777890035288  44945570212853  72723460248141  117669030460994  190392490709135  308061521170129  498454011879264  806515533049393  1304969544928657  2111485077978050  3416454622906707  5527939700884757  8944394323791464  14472334024676221  23416728348467685  37889062373143906  61305790721611591  99194853094755497  160500643816367088  259695496911122585  420196140727489673  679891637638612258  1100087778366101931  1779979416004714189  2880067194370816120  4660046610375530309  7540113804746346429 ).
 	
 	MaxRopeDepth := 96.  "rebalance ropes whose depth exceeds this"! !
@@ -1453,14 +3849,17 @@ merge: leafNodes start: start end: end
 	   (self merge: leafNodes start: middle end: end)
 ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/3/2013 22:45'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/20/2013 22:44'!
 newFrom: aCollection
 	"Answer  <acollection of codePoints or Characters> as: UniString"
 
 "
 	 { 16r4E7E. 16r0020. 16r5143. 16r4EA8. 16r5229. 16r8C9E  } as: UniString
 "
-	^ UniString fromCodePointCollection: ( aCollection collect: [ :whatever | whatever asInteger ])
+	| newArray |
+	newArray _ Array new: aCollection size.
+	1 to: aCollection size do: [:i | newArray at: i put: (aCollection at: i) asInteger].
+	^ UniString fromCodePointCollection: newArray
 	! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 13:25'!
@@ -1469,7 +3868,7 @@ newLineString
 
 	^ (Character newLineCharacter asUniString)! !
 
-!UniString class methodsFor: 'user interface' stamp: 'KenD 2/18/2013 15:38'!
+!UniString class methodsFor: 'user interface' stamp: 'KenD 3/18/2013 16:06'!
 openTextEditor
 
 "
@@ -1477,15 +3876,162 @@ openTextEditor
 "
 	SystemWindow 
 		editText: (TextModel 
-			withText: (UniFlat fromString: 'Let us see what these UniString things can do.')) 
+			withText: (
+			 	('Given enough rope' asUniString) , 
+				(UniString newLineString) ,
+				('you can write a text editor!!' asUniString)
+				)) 
 			label: 'Text Editor' 
 			wrap: true! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:49'!
+readFrom: inStream
+	"Answer an instance of me that is determined by reading the stream, 
+	inStream. Embedded double quotes become the quote Character."
+	
+	^ self fromString: (String readFrom: inStream)! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:49'!
+space
+	"Answer a string containing a single tab character."
+
+	^ ( Character space asUniString )! !
+
+!UniString class methodsFor: 'as yet unclassified' stamp: 'KenD 3/18/2013 16:04'!
+stringHash: aString initialHash: speciesHash
+
+	|  hash low |
+
+	hash _ speciesHash bitAnd: 16rFFFFFFF.
+	
+	"@@FIXME: assumes ASCII"
+
+	aString asUniString codePointDo: [ :codePoint  |
+		hash _ hash + codePoint.
+		"Begin hashMultiply"
+		low _ hash bitAnd: 16383.
+		hash _ (16r260D * low 
+			+ ((16r260D * (hash bitShift: -14) 
+			+ (16r0065 * low) bitAnd: 16383) * 16384)) bitAnd: 16r0FFFFFFF.
+	].
+	^ hash! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 13:26'!
 tab
 	"Answer a string containing a single tab character."
 
 	^ (Character tab asUniString)! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:51'!
+value: anInteger
+
+	^  (UniChar value: anInteger) asUniString ! !
+
+!UniStringWrapper methodsFor: 'conversion' stamp: 'KenD 3/18/2013 15:21'!
+asUniString
+
+	"Answer the UniString I currently wrap"
+	^uniString ! !
+
+!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/18/2013 15:19'!
+doesNotUnderstand: aMessage
+	"Delegate operations to uniString and Answer the result.
+	Ir a result is a new UniString, remember that as theRope"
+
+	| result |
+	result := aMessage sendTo: uniString .
+	
+	(result isKindOf: UniString) ifTrue: [ uniString := result ].
+	
+	^ result! !
+
+!UniStringWrapper methodsFor: 'initialize-release' stamp: 'KenD 3/18/2013 15:24'!
+initialize
+
+	"default"
+	uniString := UniString emptyString.! !
+
+!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/19/2013 21:02'!
+printString
+
+	^uniString printString! !
+
+!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/18/2013 15:30'!
+replaceFrom: start to: stop with: replacement startingAt: repStart 
+		"Answer a new UniString rope with the replacement.
+		Nota Bene: The String method with this name is destructive!!"
+		| repRope |
+		repRope := replacement asUniString .
+
+	uniString := uniString copyReplaceFrom: start to: stop with: (repRope copyFrom: repStart to: (repRope size)).
+	
+	^ uniString! !
+
+!UniStringWrapper methodsFor: 'initialize-release' stamp: 'KenD 3/18/2013 15:24'!
+with: aString
+	"Initialize uniString"
+
+	uniString := aString asUniString.! !
+
+!UniStringWrapper class methodsFor: 'instance creation' stamp: 'KenD 3/20/2013 08:21'!
+fromString: aString
+
+	^ self with: aString! !
+
+!UniStringWrapper class methodsFor: 'instance creation' stamp: 'KenD 3/20/2013 08:21'!
+with: aString
+
+	^ self basicNew with: (aString asUniString)! !
+
+!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:54'!
+ascent
+	^16! !
+
+!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:48'!
+baseFont
+	^self! !
+
+!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 15:33'!
+descent
+	^0! !
+
+!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 15:34'!
+descentKern
+	^0! !
+
+!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:53'!
+emphasis
+	^0! !
+
+!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:48'!
+emphasized: code
+	^self! !
+
+!UniTestFont methodsFor: 'as yet unclassified' stamp: 'KenD 3/18/2013 18:19'!
+height
+	^16! !
+
+!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 15:29'!
+widthOf: anUniChar
+	^16! !
+
+!UniTestFont class methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:51'!
+default
+	^self new! !
+
+!UniTestFont class methodsFor: 'as yet unclassified' stamp: 'KenD 3/18/2013 18:21'!
+height
+	^16! !
+
+!UniTestFont class methodsFor: 'as yet unclassified' stamp: 'KenD 3/18/2013 18:22'!
+widthOfString: aString
+	"Measure the length of the given string between start and stop index"
+	^ (16 * (aString length))! !
+
+!UniTestFont class methodsFor: 'as yet unclassified' stamp: 'KenD 3/18/2013 17:16'!
+widthOfString: aString from: firstIndex to: lastIndex
+	"Measure the length of the given string between start and stop index"
+	^ (16 * (lastIndex - firstIndex + 1))! !
 UniChar initialize!
 UniForms initialize!
 UniSplice initialize!
