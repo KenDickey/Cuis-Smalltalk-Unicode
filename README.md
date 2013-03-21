@@ -24,7 +24,7 @@ The code presented here has very limited ambitions:
 	
 The support of Unicode text display is minimal.  Fonts are not yet supported.
 
-Bitmap glyphs are from http://www.unifoundry.com/unifont.html 
+Bitmap glyphs (16 x 16 forms) are from http://www.unifoundry.com/unifont.html 
 
 The basic strategy is as follows:
 - The main useful classes are UniChar and UniString.  Others are helper subclasses.
