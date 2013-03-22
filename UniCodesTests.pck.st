@@ -1,5 +1,15 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 20 March 2013 at 10:56:28 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 21 March 2013 at 7:46:15 pm'!
 'Description Tests for UniCodes '!
+!classDefinition: #UniCodePerformance category: #UniCodesTests!
+TestCase subclass: #UniCodePerformance
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodesTests'!
+!classDefinition: 'UniCodePerformance class' category: #UniCodesTests!
+UniCodePerformance class
+	instanceVariableNames: ''!
+
 !classDefinition: #UniCodesTests category: #UniCodesTests!
 TestCase subclass: #UniCodesTests
 	instanceVariableNames: 'flatRope longFlat shortFlat subRope concRope1 concRope2 concRope3 YiJing'
@@ -11,8 +21,153 @@ UniCodesTests class
 	instanceVariableNames: ''!
 
 
+!UniCodePerformance commentStamp: '<historical>' prior: 0!
+UniCodes performance measures.!
+
 !UniCodesTests commentStamp: '<historical>' prior: 0!
-Tests for UniCodes -- Unicode code points!
+Performance Tests for UniCodes -- Unicode code points!
+
+!UniCodePerformance methodsFor: 'performance' stamp: 'KenD 3/21/2013 16:34'!
+setUp
+	
+	Transcript showOnDisplay: true.  "Display Performance Test Results"! !
+
+!UniCodePerformance methodsFor: 'performance' stamp: 'KenD 3/21/2013 16:05'!
+testConcatTime
+	"self new testConcatTime"
+
+	| r r2 result africanProverb interpretation |
+	africanProverb :=  'A hundred pieces of elephant (reed) grass cannot cause the one fetching water to fall down on the way.'.
+	interpretation := 'If you are serious about doing something, nothing can prevent you from doing it.'.
+	
+	r := UniString fromString: africanProverb.
+	r2 := UniString fromString: interpretation.
+	
+	Transcript newLine.
+	Transcript show: 'concat time for UniStrings: ',  [500000 timesRepeat: [ result := r2, r]] timeToRun asString, 'ms'.
+	Transcript newLine.
+	
+	Transcript show: 'concat time for Strings: ',  
+					[500000 timesRepeat: [ result := interpretation, africanProverb]] timeToRun asString, 'ms'.
+	Transcript newLine.
+	
+	
+	africanProverb :=  'A hundred pieces of elephant (reed) grass cannot cause the one fetching water to fall down on the way.'.
+	interpretation := 'If you are serious about doing something, nothing can prevent you from doing it.'.
+	
+	
+	r := UniString fromString: africanProverb.
+	r2 := UniString fromString: interpretation.
+	
+	
+	result := UniString fromString: ''.
+	Transcript show: 'concat time for UniStrings: ',  [1000 timesRepeat: [ result := r2, r, result]] timeToRun asString, 'ms'.
+	Transcript newLine.
+	
+	result := ''.
+	Transcript show: 'concat time for Strings: ',  
+			[1000 timesRepeat: [ result := interpretation, africanProverb, result]] timeToRun asString, 'ms'.
+	Transcript newLine.
+	
+	
+	
+	! !
+
+!UniCodePerformance methodsFor: 'performance' stamp: 'KenD 3/21/2013 16:06'!
+testInjectInto
+	"self new testInjectInto"
+
+  	| ropeResult stringResult |
+	
+	Transcript newLine.
+	ropeResult := '#inject:into: for UniStrings: ' asUniString,  
+		([(1 to: 10000) inject: (UniString new) into: [ :left :right | left , right asUniString ]] 
+			timeToRun asUniString), 
+		'ms' asUniString, 
+		UniString  newLineString.
+	Transcript show: ropeResult. Transcript newLine.
+
+	ropeResult := '#inject:into: for UniStringWrapper: ' asUniString,  
+		([(1 to: 10000) inject: (UniStringWrapper new) into: [ :left :right | left , right asUniString ]] 
+			timeToRun asUniString), 
+		'ms' asUniString, 
+		UniString  newLineString.
+	Transcript show: ropeResult. Transcript newLine.
+
+	stringResult := 
+		'#inject:into: for Strings: ',  
+		([ (1 to: 10000) inject: (String new) into: [ :left :right | left , right asString ]]
+			 timeToRun asString), 
+		'ms', 
+		String newLineString.
+	Transcript show: stringResult. 
+
+	Transcript newLine.	
+	.
+
+	! !
+
+!UniCodePerformance methodsFor: 'performance' stamp: 'KenD 3/21/2013 16:07'!
+testIterationTime
+	"self new testIterationTime"
+
+	| r r2 ropeTest stringTest africanProverb interpretation ropeResult stringResult ir is|
+	africanProverb :=  'A hundred pieces of elephant (reed) grass cannot cause the one fetching water to fall down on the way.'.
+	interpretation := 'If you are serious about doing something, nothing can prevent you from doing it.'.
+	
+	r := UniString fromString: africanProverb.
+	r2 := UniString fromString: interpretation.
+	
+	Transcript newLine.
+	ropeResult := 'concat time for UniStrings: ',  
+		[500000 timesRepeat: [ ropeTest := r2, r]] timeToRun asString, 'ms', String newLineString.
+		ropeResult	:=	ropeResult, '  time for #do: loop: ',
+		[ ir:=0. ropeTest do: [ :ch | ir := ir + 1. 10000 timesRepeat: [ir=ir "busy waiting"]]] 
+			timeToRun asString, 'ms'.
+	Transcript show: ropeResult. Transcript newLine.
+	
+
+	stringResult	:=	'concat time for Strings: ',
+	    [500000 timesRepeat: [ stringTest := interpretation, africanProverb]] timeToRun asString, 'ms',
+	             String newLineString.
+	    stringResult	:=	stringResult, '  time for #do: loop: ',
+		[ is:=0. stringTest do: [ :ch | is := is + 1. 10000 timesRepeat: [is=is "busy waiting"]]] 
+		timeToRun asString, 'ms'.
+	Transcript show: stringResult. Transcript newLine.
+	
+	self assert: is = ir. "the end indices of the string and the UniString must be equal"
+	
+	
+	
+	
+! !
+
+!UniCodePerformance methodsFor: 'performance' stamp: 'KenD 3/21/2013 16:20'!
+testWriteStream
+	"self new testWriteStreamOnRope"
+
+  	| ws ropeResult stringResult |
+	
+	Transcript newLine.
+	stringResult := '#nextPutAll: for Strings: ',  
+		[ws := WriteStream on: String  new.
+      	1 to: 100000 do: [ :i | ws nextPutAll: i asString]] timeToRun asString, 'ms', String newLineString.
+	Transcript show: stringResult. 
+
+	Transcript newLine.	
+	ropeResult := '#nextPutAll: for UniStrings ' asUniString,  
+		[ws := UniString  new.
+      	1 to: 100000 do: [ :i | ws nextPutAll: i asUniString]] timeToRun asUniString, 'ms', UniString  newLineString.
+	Transcript show: ropeResult. Transcript newLine.
+
+	"@@FIXME The run time for the following is really dreadful!!"
+"
+	ropeResult := '#nextPutAll: for UniStringWrapper: ' asUniString,  
+		[ws :=UniStringWrapper  new.
+      	1 to: 100000 do: [ :i | ws nextPutAll: i asUniString]] timeToRun asUniString,
+			 'ms', UniString  newLineString.
+	Transcript show: ropeResult. Transcript newLine.
+"! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/3/2013 22:40'!
 setUp
@@ -224,18 +379,18 @@ b' asUniString encompassParagraph: (3 to: 3)) = (3 to: 3).
 self assert: ('a
 b' asUniString encompassParagraph: (4 to: 3)) = (3 to: 3).! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:55'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/21/2013 19:11'!
 testFormat
 
 	self
-		assert: ('This is {1} !!' asUniString format: #('a test'))
+		assert: (('This is {1} !!' asUniString) format: #('a test'))
 		equals: 'This is a test !!'.
 
  	{ 
- 		[ '\{ \} \\ foo {1} bar {2}' asUniString format: { 12. 'string' } ] -> '{ } \ foo 12 bar string'. 
- 		[ '\{ \} \\ foo {2} bar {1}' asUniString format: { 'string'. 12 } ] -> '{ } \ foo 12 bar string'. 
- 		[ '\{1}' asUniString format: {} ] -> '{1}'. 
- 		[ '\{1}{1}' asUniString format: { $a } ] -> '{1}a'. 
+ 		[ ('\{ \} \\ foo {1} bar {2}' asUniString) format: { 12. 'string' } ] -> '{ } \ foo 12 bar string'. 
+ 		[ ('\{ \} \\ foo {2} bar {1}' asUniString) format: { 'string'. 12 } ] -> '{ } \ foo 12 bar string'. 
+ 		[ ( '\{1}' asUniString) format: {} ] -> '{1}'. 
+ 		[ ('\{1}{1}' asUniString) format: { $a } ] -> '{1}a'. 
  	} do: [ :each | 
 		self assert: each key value equals: each value ]! !
 
@@ -279,7 +434,7 @@ testLineSeparators
 	self assert: linesBounds second second = (linesBounds second first-1) description: 'Second line is empty'.
 	self assert: linesBounds second third = (linesBounds second second+0) description: 'Second line is not terminated by ab Lf'.! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:53'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/21/2013 18:59'!
 testMatch
 
 	self assert: ((UniString fromString: '*'	)		match: 'zort' ).
@@ -298,10 +453,17 @@ testMatch
 	self assert: ((UniString fromString: '*foo#zort')	match: 'afoo3zortthenfoo3zort'  ).
 	self assert: ((UniString fromString: '*foo*zort')		match: 'afoodezortorfoo3zort'  ).
 	
-	#('*' 'f*'  'f*o' 'f*' '*f*' 'f#*' 'f##' '*oo' '#oo' '*o*' '#o#' '#o*' '*o#' 'fo*' 'fo#' '*foo*' '###' '#*'  'f#*' 'f#*o')
+	#('*' 'f*'  'f*o' 'f*' '*f*' 'f#*' 'f##' '*oo' '#oo' '*o*' '#o#' '#o*' 
+		'*o#' 'fo*' 'fo#' '*foo*' '###' '#*'  'f#*' 'f#*o')
 		do: [ :each | self assert: (each asUniString match: 'foo') ].
-	#('bar' 'foo#' '#foo' '*foo#' '#foo*' '*bar*') do: [ :each |
-		self deny: (each asUniString match: 'foo') ]! !
+	
+	#('bar' 'foo#' '#foo' '*foo#' '#foo*' '*bar*') 
+		do: [ :each | self deny: (each asUniString match: 'foo') ].
+	
+	self assert: ((('abcdefabcd'  asUniString) findSubstring: 'abc' startingAt: 1 caseSensitive: true) = 1)..
+	self assert: ((('ABCdefabcd'  asUniString) findSubstring: 'abc' startingAt: 1 caseSensitive: true) = 7).
+	self assert: ((('ABCdefabcd'  asUniString) findSubstring: 'abc' startingAt: 1 caseSensitive: false) = 1).
+	self assert: ((('ABCdefabcd'  asUniString) findSubstring: 'xyz' startingAt: 1 caseSensitive: false) = 0).! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:51'!
 testMeld
@@ -347,52 +509,52 @@ testMutation
 	self assert: ((concRope3 at: (concRope1 size) put: $0) asString =   'Now is the time abcd5678hij0' ).
 ! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:42'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/21/2013 19:45'!
 testNumArgs
 	"This is about http://code.google.com/p/pharo/issues/detail?id=237"
 	
 	| binary |
-	binary := '*+-/\~=<>&@%,|' asRope.
+	binary := '*+-/\~=<>&@%,|' asUniString.
 	self assert: (binary allSatisfy: [:char1 |
-			(String with: char1) numArgs = 1 and: [binary allSatisfy: [:char2 |
-				(String with: char1 with: char2) numArgs = 1 and: [binary allSatisfy: [:char3 |
-					(String with: char1 with: char2 with: char3) numArgs = 1]]]]])
+			(UniString with: char1) numArgs = 1 and: [binary allSatisfy: [:char2 |
+				(UniString with: char1 with: char2) numArgs = 1 and: [binary allSatisfy: [:char3 |
+					(UniString with: char1 with: char2 with: char3) numArgs = 1]]]]])
 		description: 'binary selectors have 1 argument'.
 		
-	self assert: 'x' asUniString numArgs = 0
+	self assert: ( 'x' asUniString) numArgs = 0
 		description: 'unary selectors have 0 arguments'.
-	self assert: 'x0' asUniString numArgs = 0
+	self assert: (  'x0' asUniString) numArgs = 0
 		description: 'unary selectors have 0 arguments'.
-	self assert: 'yourself' asUniString numArgs = 0
+	self assert: (  'yourself' asUniString) numArgs = 0
 		description: 'unary selectors have 0 arguments'.
 		
-	self assert: 'x:' asUniString numArgs = 1
+	self assert: (  'x:' asUniString) numArgs = 1
 		description: 'keyword selectors have as many elements as colons characters'.
-	self assert: 'x:y:' asUniString numArgs = 2
+	self assert: ( 'x:y:' asUniString) numArgs = 2
 		description: 'keyword selectors have as many elements as colons characters'.
-	self assert: 'at:put:' asUniString numArgs = 2
+	self assert: ( 'at:put:' asUniString) numArgs = 2
 		description: 'keyword selectors have as many elements as colons characters'.
 			
-	self assert: 'x_y_z' asUniString numArgs = 0
+	self assert: (  'x_y_z' asUniString) numArgs = 0
 		description: 'selectors can contain underscores'.
-	self assert: '_x' asUniString numArgs = 0
+	self assert: (  '_x' asUniString) numArgs = 0
 		description: 'selectors can begin with an underscore'.
-	self assert: '_:_:' asUniString numArgs = 2
+	self assert: (  '_:_:' asUniString) numArgs = 2
 		description: 'keyword selectors can contain underscores'.
 		
-	self assert: 'at:withoutTrailingColon' asUniString numArgs = -1
+	self assert: (  'at:withoutTrailingColon' asUniString) numArgs = -1
 		description: 'keyword selectors should have a trailing colon character'.
 		
-	self assert: ':x' asUniString numArgs = -1
+	self assert: ( ':x' asUniString) numArgs = -1
 		description: 'keyword selectors cannot begin with a colon character'.
 		
-	self assert: 'x::y:' asUniString numArgs = -1
+	self assert: (  'x::y:' asUniString) numArgs = -1
 		description: 'keyword selectors cannot have two consecutive colon characters'.
 		
-	self assert: '0x' asUniString numArgs = -1
+	self assert: (  '0x' asUniString) numArgs = -1
 		description: 'selectors cannot begin with a digit'.
 		
-	self assert: 'x::0y:' asUniString numArgs = -1
+	self assert: (  'x::0y:' asUniString) numArgs = -1
 		description: 'keyword selectors cannot have any key beginning with a digit'.
 	
 	! !

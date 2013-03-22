@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 20 March 2013 at 10:56:31 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 21 March 2013 at 7:46:12 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -285,6 +285,12 @@ asUniChar
 
 	^UniChar fromCodePoint: self! !
 
+!Number methodsFor: '*unicodes' stamp: 'KenD 3/21/2013 16:17'!
+asUniString
+	"Answer a UniString representing me"
+
+	^ UniString fromString: (self asString).! !
+
 !Number methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 08:49'!
 classForCodePoint
 	"Answer a class which will hold this 8, 16, or 32 bit code point or signal a domain error"
@@ -401,12 +407,42 @@ caseFold
 
 	^UniChar value: (ToCasefold at: self codePoint ifAbsent: [ ^self ])! !
 
+!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:50'!
+caseInsensitiveEqual:  aCharacter 
+	"Answer true if codePoints are equal"
+
+	^ (self caseFold codePoint ) = (aCharacter asUniChar caseFold codePoint)! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:17'!
+caseInsensitiveGreater: aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self caseFold codePoint ) > (aCharacter asUniChar caseFold codePoint)! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:16'!
+caseInsensitiveGreaterOrEqual: aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self caseFold codePoint ) >= (aCharacter asUniChar caseFold codePoint)! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:16'!
+caseInsensitiveLess: aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self caseFold codePoint ) < (aCharacter asUniChar caseFold codePoint)! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:16'!
+caseInsensitiveLessOrEqual: aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self caseFold codePoint ) <= (aCharacter asUniChar caseFold codePoint)! !
+
 !UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 08:58'!
 codePoint
 
 	^codePoint! !
 
-!UniChar methodsFor: 'converting' stamp: 'KenD 3/7/2013 08:23'!
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/21/2013 19:20'!
 digitValue
 	"Answer value of chareacter taken as a decimal digit."
 	"Note that this differs in behavior from Character>>digitValue"
@@ -415,7 +451,9 @@ digitValue
 "
 	$2 asUniChar digitValue
 "
-	^ self codePoint uniDigit ! !
+	(codePoint < 16rFF)
+	ifTrue: [ ^ self asCharacter digitValue ]
+	ifFalse: [ ^ self codePoint uniDigit ]! !
 
 !UniChar methodsFor: 'accessing' stamp: 'KenD 3/2/2013 20:49'!
 form
@@ -2987,6 +3025,29 @@ compare:  otherString
 	len1 < len2 ifTrue: [^ 1] ifFalse: [^ 3].
 ! !
 
+!UniString methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:22'!
+compare:  otherString caseSensitive: aBool
+	"Return 1, 2 or 3, if self is <, =, or > otherString based on simple codePoints"
+	"NOTA BENE: No collation assumed"
+
+	| len1 len2 c1 c2 otherUni |
+	aBool ifTrue: [^ self compare: otherString ].
+	
+	"OK, do case insensitive compare"
+	otherUni := otherString asUniString.
+
+	len1 _ self size.
+	len2 _ otherUni size.
+	1 to: (len1 min: len2) do: [ :index |
+		c1 _ self codePointAt: index.
+		c2 _ otherUni codePointAt: index.
+		(c1 caseInsensitiveEqual:  c2) ifFalse: 
+			[(c1 caseInsensitiveLess: c2) ifTrue: [^ 1] ifFalse: [^ 3]]
+	].
+	(len1 caseInsensitiveEqual: len2) ifTrue: [^ 2].
+	(len1 caseInsensitiveLess: len2) ifTrue: [^ 1] ifFalse: [^ 3].
+! !
+
 !UniString methodsFor: 'copying' stamp: 'KenD 3/19/2013 20:02'!
 contractTo: smallSize
 	"return myself or a copy shortened by ellipsis to smallSize"
@@ -3106,10 +3167,11 @@ do: aBlock
 	
 	self subclassResponsibility ! !
 
-!UniString methodsFor: 'debugging' stamp: 'KenD 3/18/2013 17:07'!
+!UniString methodsFor: 'debugging' stamp: 'KenD 3/21/2013 16:44'!
 doesNotUnderstand: aMessage
 
 	"See what is missing from UniStrings"
+	Transcript log: 'Unknown UniString message: ' , String newLineString.
 	Transcript log: (String streamContents: [:s | aMessage storeOn: s]).
 	
 	"Try to do what a String would do"
@@ -3149,6 +3211,71 @@ endsWithDigit
 
 	^ self size > 0 and: [(self at: self size) isDigit]! !
 
+!UniString methodsFor: 'private' stamp: 'KenD 3/21/2013 19:15'!
+evaluateExpression: aString parameters: aCollection 
+	"private - evaluate the expression aString with  
+	aCollection as the parameters and answer the  
+	evaluation result as an string"
+	| index |
+	index := ((UniString fromString: '0') , aString) asNumber.
+
+	index isZero
+		ifTrue: [^ '[invalid subscript: {1}]' format: {aString}].
+
+	index > aCollection size
+		ifTrue: [^ '[subscript is out of bounds: {1}]' format: {aString}].
+
+	^ (aCollection at: index) asUniString! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/21/2013 18:54'!
+findString: subString
+	"Answer the index of subString within the receiver, starting at start. If 
+	the receiver does not contain subString, answer 0."
+	
+	^self findString: subString startingAt: 1.! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/21/2013 18:54'!
+findString: subString startingAt: start 
+	"Answer the index of subString within the receiver, starting at start. If 
+	the receiver does not contain subString, answer 0."
+
+	^ self findSubstring: subString startingAt: start caseSensitive: true.! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/21/2013 18:53'!
+findString: key startingAt: start caseSensitive: caseSensitive
+	"Answer the index in this String at which the substring key first occurs, at or beyond start.  The match can be case-sensitive or not.  If no match is found, zero will be returned."
+
+	"Be backwards compatable"
+	^ self findSubstring: key startingAt: start caseSensitive: caseSensitive! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/21/2013 18:50'!
+findSubstring: matchStr startingAt: start caseSensitive: isCaseSensitive
+	"Answer the index in the string body at which the substring matchStr first occurs, at or beyond start.  
+	 If no match is found, zero will be returned."
+	
+	| index isEqual key |
+	matchStr size = 0 ifTrue: [^ 0].
+
+	key := matchStr asUniString.
+
+	(isCaseSensitive) 
+		ifTrue: [isEqual := [:a :b| a = b]] 
+		ifFalse: [isEqual := [:a :b | a caseInsensitiveEqual: b]].
+
+	start to: self size - key size + 1 do:
+		[:startIndex |
+		index _ 1.
+		[isEqual value: (self at: startIndex+index-1) value: (key at: index)] whileTrue:
+			[index = key size ifTrue: [^ startIndex].
+			index _ index+1]].
+	^ 0
+"
+('abcdefabcd'  asUniString) findSubstring: 'abc' startingAt: 1 caseSensitive: true.
+('ABCdefabcd'  asUniString) findSubstring: 'abc' startingAt: 1 caseSensitive: true.
+('ABCdefabcd'  asUniString) findSubstring: 'abc' startingAt: 1 caseSensitive: false.
+('ABCdefabcd'  asUniString) findSubstring: 'xyz' startingAt: 1 caseSensitive: false.
+"! !
+
 !UniString methodsFor: 'accessing' stamp: 'KenD 3/19/2013 18:16'!
 first
 	"Answer first character"
@@ -3156,7 +3283,7 @@ first
 	ifTrue: [ ^nil ]
 	ifFalse: [ ^self at: 1 ]! !
 
-!UniString methodsFor: 'formatting' stamp: 'KenD 3/18/2013 16:19'!
+!UniString methodsFor: 'formatting' stamp: 'KenD 3/21/2013 19:25'!
 format: aCollection 
 	"format the receiver with aCollection  
 	 
@@ -3167,24 +3294,37 @@ format: aCollection
 	'\{ \} \\ foo {1} bar {2}' format: {12. 'string'}.  
 	"
 	| result stream |
-	result := String new writeStream.
+	result := UniStringWrapper new.
 	stream := self readStream.
 
 	[stream atEnd]
 		whileFalse: [| currentChar | 
 			currentChar := stream next.
-			currentChar == ${
+			currentChar = ${
 				ifTrue: [| expression | 
 					expression := self getEnclosedExpressionFrom: stream.
 					result
 						nextPutAll: (self evaluateExpression: expression parameters: aCollection)]
 				ifFalse: [
-					currentChar == $\
+					currentChar = $\
 						ifTrue: [stream atEnd
 								ifFalse: [result nextPut: stream next]]
 						ifFalse: [result nextPut: currentChar]]].
 
 	^ result contents asUniString ! !
+
+!UniString methodsFor: 'private' stamp: 'KenD 3/21/2013 19:23'!
+getEnclosedExpressionFrom: aStream 
+	"private - get the expression enclosed between '{' and 
+	'}' and remove all the characters from the stream"
+	| result currentChar |
+	result := UniStringWrapper new..
+
+	[aStream atEnd 
+		or: [(currentChar := aStream next) = $}]]
+		whileFalse: [result nextPut: currentChar].
+
+	^ result asUniString withBlanksTrimmed! !
 
 !UniString methodsFor: 'accessing' stamp: 'KenD 2/17/2013 21:25'!
 hash
@@ -3193,6 +3333,11 @@ hash
 	hash _ self species hash.
 	self codePointDo: [ :codePoint | hash _ (hash + codePoint hash) hashMultiply].
 	^hash! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/21/2013 18:55'!
+includesSubString: subString
+
+	^ (self findString: subString startingAt: 1) > 0! !
 
 !UniString methodsFor: 'searching' stamp: 'KenD 3/19/2013 16:32'!
 indexOf: aChar
@@ -3316,6 +3461,32 @@ lastSpacePosition
 ''  asUniString lastSpacePosition
 "! !
 
+!UniString methodsFor: 'searching' stamp: 'KenD 3/21/2013 16:38'!
+match: text
+	"Answer whether text matches the pattern in this string.
+	Matching ignores upper/lower case differences.
+	Where this string contains #, text may contain any character.
+	Where this string contains *, text may contain any sequence of characters."
+
+	^ self startingAt: 1 match: text startingAt: 1
+"
+(UniString fromString: '*'	)		match: 'zort' true
+(UniString fromString: '*baz'	)	match: 'mobaz' true
+(UniString fromString: '*baz')		match: 'mobazo' false
+(UniString fromString: '*baz*'')		match: 'mobazo' true
+(UniString fromString: '*baz*'')		match: 'mozo' false
+(UniString fromString: 'foo*'')		match: 'foozo' true
+(UniString fromString: 'foo*'')		match: 'bozo' false
+(UniString fromString: 'foo*baz'')	match: 'foo23baz' true
+(UniString fromString: 'foo*baz'')	match: 'foobaz' true
+(UniString fromString: 'foo*baz'')	match: 'foo23bazo' false
+(UniString fromString: 'foo'')		match: 'Foo' true
+(UniString fromString: 'foo*baz*zort'') match: 'foobazort' false
+(UniString fromString: 'foo*baz*zort'') match: 'foobazzort' false
+(UniString fromString: '*foo#zort'')	match: 'afoo3zortthenfoo3zort' true
+(UniString fromString: '*foo*zort'')	match: 'afoodezortorfoo3zort' true
+"! !
+
 !UniString methodsFor: 'stream support' stamp: 'KenD 3/18/2013 16:44'!
 nextPut: aThing
 
@@ -3325,6 +3496,31 @@ nextPut: aThing
 nextPutAll: aCollection
 
 	^ self , (aCollection as: UniString)! !
+
+!UniString methodsFor: 'private' stamp: 'KenD 3/21/2013 19:35'!
+numArgs 
+	"Answer either the number of arguments that the receiver would take if considered a selector.  Answer -1 if it couldn't be a selector. It is intended mostly for the assistance of spelling correction."
+
+	| firstChar numColons start ix |
+	self size = 0 ifTrue: [^ -1].
+	firstChar := self at: 1.
+	(firstChar isLetter or: [ firstChar = $_]) ifTrue:
+		["Reject if any chars are non-alphanumeric"
+		2 to: self size do: [:i | (self at: i) tokenish ifFalse: [^ -1]].
+		"Fast colon count"
+		numColons := 0.  start := 1.
+		[(ix := self indexOf: $: startingAt: start) > 0]
+			whileTrue:
+				[(ix = start or: [(self at: start) isDigit]) ifTrue: [^-1].
+				numColons := numColons + 1.
+				start := ix + 1].
+		numColons = 0 ifTrue: [^ 0].
+		self last = $:
+			ifTrue: [^ numColons]
+			ifFalse: [^ -1]].
+	"Test case of binary selector, if self allSatisfy: #isSpecial (inlined for speed)"
+	1 to: self size do: [:i | (self at: i) isSpecial ifFalse: [^ -1]].
+	^1! !
 
 !UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 22:26'!
 padLeftTo: totalLength
@@ -3425,6 +3621,58 @@ species
 
 	"I abstract an array of codePoints"
 	^ UniString! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/21/2013 18:24'!
+startingAt: keyStart match: textPattern startingAt: textStart
+	"Answer whether textPattern matches the pattern in this string.
+	Matching ignores upper/lower case differences.
+	Where this string contains #, text may contain any character.
+	Where this string contains *, text may contain any sequence of characters."
+	| text anyMatch matchStart matchEnd i matchStr j ii jj |
+	text := textPattern asUniString.
+	i := keyStart.
+	j := textStart.
+
+	"Check for any #'s"
+	[i > self size ifTrue: [^ j > text size "Empty key matches only empty string"].
+	(self at: i) = $#] whileTrue:
+		["# consumes one char of key and one char of text"
+		j > text size ifTrue: [^ false "no more text"].
+		i := i+1.  j := j+1].
+
+	"Then check for *"
+	(self at: i) = $*
+		ifTrue: [i = self size ifTrue:
+					[^ true "Terminal * matches all"].
+				"* means next match string can occur anywhere"
+				anyMatch := true.
+				matchStart := i + 1]
+		ifFalse: ["Otherwise match string must occur immediately"
+				anyMatch := false.
+				matchStart := i].
+
+	"Now determine the match string"
+	matchEnd := self size.
+	(ii := self indexOf: $* startingAt: matchStart) > 0 ifTrue:
+		[ii = matchStart ifTrue: [self error: '** not valid -- use * instead'].
+		matchEnd := ii-1].
+	(ii := self indexOf: $# startingAt: matchStart) > 0 ifTrue:
+		[ii = matchStart ifTrue: [self error: '*# not valid -- use #* instead'].
+		matchEnd := matchEnd min: ii-1].
+	matchStr := self copyFrom: matchStart to: matchEnd.
+
+	"Now look for the match string"
+	[jj := text findString: matchStr startingAt: j caseSensitive: false.
+	anyMatch ifTrue: [jj > 0] ifFalse: [jj = j]]
+		whileTrue:
+		["Found matchStr at jj.  See if the rest matches..."
+		(self startingAt: matchEnd+1 match: text startingAt: jj + matchStr size) ifTrue:
+			[^ true "the rest matches -- success"].
+		"The rest did not match."
+		anyMatch ifFalse: [^ false].
+		"Preceded by * -- try for a later match"
+		j := j+1].
+	^ false "Failed to find the match string"! !
 
 !UniString methodsFor: 'testing' stamp: 'KenD 3/18/2013 16:34'!
 startsWithDigit
@@ -3926,6 +4174,21 @@ tab
 value: anInteger
 
 	^  (UniChar value: anInteger) asUniString ! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/21/2013 19:45'!
+with: aThing
+
+	^ aThing asUniString! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/21/2013 19:45'!
+with: aThing with: bThing
+
+	^ (aThing asUniString) , (bThing asUniString)! !
+
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/21/2013 19:45'!
+with: aThing with: bThing with: cThing
+
+	^ (aThing asUniString) , (bThing asUniString)  , (cThing asUniString)! !
 
 !UniStringWrapper methodsFor: 'conversion' stamp: 'KenD 3/18/2013 15:21'!
 asUniString
