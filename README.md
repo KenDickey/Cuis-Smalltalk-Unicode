@@ -22,9 +22,7 @@ The code presented here has very limited ambitions:
 - Allow programattic (code) manipulation of Unicode code points.
 - Implement reasonable sorting, searching, and other manipulation of code points.
 	
-The support of Unicode text display is minimal.  Fonts are not yet supported.
-
-Bitmap glyphs (16 x 16 forms) are from http://www.unifoundry.com/unifont.html 
+The support of Unicode text display is minimal.  Fonts are not yet supported.  Bitmap glyphs (16 x 16 forms) are from http://www.unifoundry.com/unifont.html 
 
 The basic strategy is as follows:
 - The main useful classes are UniChar and UniString.  Others are helper subclasses.
@@ -41,7 +39,8 @@ This means that the class UniChar does not inherit from Character and UniString 
 
 ### The grand plan
 
-- UniCodes	- Basic codepoint support (CodePoints: Characters, Ropes ["strings"]) The grand planidirectional, location based sorting; advanced algorithms
+- UniCodes	- Basic codepoint support (CodePoints: Characters, Ropes ["strings"]) 
+- UniUtils	- Bidirectional, language/locale based sorting; advanced algorithms
 - UniDisplay	- Character composition ; ligatures
 - UniInput	- Multilingual text input
 
