@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 21 March 2013 at 7:46:12 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 22 March 2013 at 5:37:09 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -328,6 +328,11 @@ icon
 icon
 
 	^self form! !
+
+!UChar8 methodsFor: 'accessing' stamp: 'KenD 3/21/2013 21:59'!
+asciiValue
+
+	^codePoint! !
 
 !UChar8 methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:12'!
 icon
@@ -3185,10 +3190,10 @@ edit
 
 	self editLabel: 'Text Editor'! !
 
-!UniString methodsFor: 'user interface' stamp: 'KenD 3/18/2013 17:01'!
+!UniString methodsFor: 'user interface' stamp: 'KenD 3/22/2013 16:36'!
 editLabel: labelString
 
-	TextModel new contents: self; openLabel: labelString! !
+	TextModel new contents: (UniStringWrapper with: self); openLabel: labelString! !
 
 !UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:00'!
 encodeDoublingQuoteOn: aStream 
@@ -3365,6 +3370,45 @@ indexOf: aCharacter startingAt: start  ifAbsent: aBlock
 	(ans = 0)
 		ifTrue: [ ^ aBlock value ]
 		ifFalse: [ ^ ans ]! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/22/2013 17:25'!
+indexOfAnyOf: aCharacterSet
+
+	"Answer the index of the first character in the given set.  Answer 0 if none are found"
+	^self indexOfAnyOf: aCharacterSet  startingAt: 1 ifAbsent: [ 0 ]! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/22/2013 17:23'!
+indexOfAnyOf: aCharacterSet  ifAbsent: aBlock
+
+	"returns the index of the first character in the given set.  Returns the evaluation of aBlock if none are found"
+	^self indexOfAnyOf: aCharacterSet  startingAt: 1  ifAbsent: aBlock! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/22/2013 17:26'!
+indexOfAnyOf: aCharacterSet  startingAt: start
+
+	"returns the index of the first character in the given set, starting from start.  Returns 0 if none are found"
+	^self indexOfAnyOf: aCharacterSet  startingAt: start  ifAbsent: [ 0 ]! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/22/2013 17:24'!
+indexOfAnyOf: aCharacterSet  startingAt: start ifAbsent: aBlock
+	"returns the index of the first character in the given set, starting from start"
+
+	| wanted |
+	wanted := aCharacterSet asUniString.
+	
+	1 to: self size do: [ :index | 
+		(wanted includes: (self at: index))  ifTrue: [ ^index ].
+	].
+
+	^aBlock value! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/22/2013 17:27'!
+indexOfSubCollection: sub startingAt: start ifAbsent: exceptionBlock
+
+	| index |
+	index _ self findSubstring: sub startingAt: start caseSensitive: true..
+	index = 0 ifTrue: [^ exceptionBlock value].
+	^ index! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:31'!
 initialIntegerOrNil
@@ -3935,6 +3979,11 @@ withoutTrailingDigits
 "
 ! !
 
+!UniString methodsFor: 'converting' stamp: 'KenD 3/22/2013 16:40'!
+wrapped
+
+	^UniStringWrapper with: self! !
+
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:46'!
 crString
 	"Answer a string containing a single carriage return character."
@@ -4116,7 +4165,7 @@ newLineString
 
 	^ (Character newLineCharacter asUniString)! !
 
-!UniString class methodsFor: 'user interface' stamp: 'KenD 3/18/2013 16:06'!
+!UniString class methodsFor: 'user interface' stamp: 'KenD 3/22/2013 16:30'!
 openTextEditor
 
 "
@@ -4126,7 +4175,7 @@ openTextEditor
 		editText: (TextModel 
 			withText: (
 			 	('Given enough rope' asUniString) , 
-				(UniString newLineString) ,
+				(UniString  crlfString) ,
 				('you can write a text editor!!' asUniString)
 				)) 
 			label: 'Text Editor' 
@@ -4196,6 +4245,11 @@ asUniString
 	"Answer the UniString I currently wrap"
 	^uniString ! !
 
+!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/21/2013 21:56'!
+at: index
+
+	^ uniString at: index! !
+
 !UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/18/2013 15:19'!
 doesNotUnderstand: aMessage
 	"Delegate operations to uniString and Answer the result.
@@ -4214,10 +4268,15 @@ initialize
 	"default"
 	uniString := UniString emptyString.! !
 
-!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/19/2013 21:02'!
+!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/22/2013 16:43'!
+printOn: aStream
+
+	uniString printOn: aStream ! !
+
+!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/22/2013 16:39'!
 printString
 
-	^uniString printString! !
+	^uniString printString ! !
 
 !UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/18/2013 15:30'!
 replaceFrom: start to: stop with: replacement startingAt: repStart 
@@ -4230,11 +4289,30 @@ replaceFrom: start to: stop with: replacement startingAt: repStart
 	
 	^ uniString! !
 
+!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/21/2013 21:54'!
+size
+
+	^ uniString size! !
+
+!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/22/2013 16:43'!
+storeOn: aStream
+
+	uniString storeOn: aStream ! !
+
+!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/22/2013 16:41'!
+stringRepresentation
+
+	^uniString stringRepresentation ! !
+
 !UniStringWrapper methodsFor: 'initialize-release' stamp: 'KenD 3/18/2013 15:24'!
 with: aString
 	"Initialize uniString"
 
 	uniString := aString asUniString.! !
+
+!UniStringWrapper class methodsFor: 'instance creation' stamp: 'KenD 3/21/2013 21:58'!
+defaultFontClass
+	^UniTestFont! !
 
 !UniStringWrapper class methodsFor: 'instance creation' stamp: 'KenD 3/20/2013 08:21'!
 fromString: aString

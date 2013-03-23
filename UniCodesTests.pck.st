@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 21 March 2013 at 7:46:15 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 22 March 2013 at 5:37:13 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -1090,8 +1090,20 @@ testWithoutTrailingDigits
 
 ! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:28'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/22/2013 17:36'!
 testindexOfstartingAt
 
 	self assert: ('aa aa éé aa aa' asUniString indexOf: $a startingAt: 8) = 12.
-	self assert: ('aa aa éé aa aa' asUniString indexOf: $z startingAt: 8) = 0.! !
+	self assert: ('aa aa éé aa aa' asUniString indexOf: $z startingAt: 8) = 0.
+	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'def') = 7.
+	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'zef') = 8.
+	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'zwf') = 9.
+	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'zwy') = 0.
+	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'zef' startingAt: 3) = 8.
+	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'zwf' startingAt: 3) = 9.
+	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'zwy' startingAt: 3) = 0.
+	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'def' ifAbsent: [666]) = 7.
+	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'zef' ifAbsent: [666]) = 8.
+	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'zwf' ifAbsent: [666]) = 9.
+	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'zwy' ifAbsent: [666]) = 666.
+! !
