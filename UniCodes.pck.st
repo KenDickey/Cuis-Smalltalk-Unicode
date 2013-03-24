@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 22 March 2013 at 5:37:09 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 23 March 2013 at 10:21:19 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -3232,6 +3232,17 @@ evaluateExpression: aString parameters: aCollection
 
 	^ (aCollection at: index) asUniString! !
 
+!UniString methodsFor: 'searching' stamp: 'KenD 3/23/2013 19:47'!
+findDelimiters: delimiters startingAt: start 
+	"Answer the index of the character within the receiver, starting at start, that matches one of the delimiters. If the receiver does not contain any of the delimiters, answer size + 1."
+
+	| delimiterCol |
+	delimiterCol := delimiters asUniString.
+	start to: self size do: [:i |
+		 (delimiterCol includes: (self at: i)) ifTrue: [^ i]
+	].
+	^ self size + 1! !
+
 !UniString methodsFor: 'searching' stamp: 'KenD 3/21/2013 18:54'!
 findString: subString
 	"Answer the index of subString within the receiver, starting at start. If 
@@ -3281,12 +3292,46 @@ findSubstring: matchStr startingAt: start caseSensitive: isCaseSensitive
 ('ABCdefabcd'  asUniString) findSubstring: 'xyz' startingAt: 1 caseSensitive: false.
 "! !
 
-!UniString methodsFor: 'accessing' stamp: 'KenD 3/19/2013 18:16'!
-first
-	"Answer first character"
-	(self size isZero)
-	ifTrue: [ ^nil ]
-	ifFalse: [ ^self at: 1 ]! !
+!UniString methodsFor: 'searching' stamp: 'KenD 3/22/2013 21:27'!
+findTokens: delimiters
+	"Answer the collection of tokens that result from parsing self.  Return strings between the delimiters.  Any character in the Collection delimiters marks a border.  Several delimiters in a row are considered as just one separation.  Also, allow delimiters to be a single character."
+
+	| tokens keyStart keyStop separators |
+
+	tokens _ OrderedCollection new.
+	separators _ delimiters asUniString.
+	keyStop _ 1.
+	[keyStop <= self size] whileTrue:
+		[keyStart _ self skipDelimiters: separators startingAt: keyStop.
+		keyStop _ self findDelimiters: separators startingAt: keyStart.
+		keyStart < keyStop
+			ifTrue: [tokens add: (self copyFrom: keyStart to: (keyStop - 1))]].
+	^tokens! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/22/2013 21:37'!
+findTokens: delimiters includes: subString
+	"Divide self into pieces using delimiters.  Return the piece that includes subString anywhere in it.  Is case sensitive (say asLowercase to everything beforehand to make insensitive)."
+
+^ (self findTokens: delimiters) 
+	detect: [:str | (str includesSubString: subString)] 
+	ifNone: nil! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/22/2013 21:35'!
+findTokens: delimiters keep: keepers
+	"Answer the collection of tokens that result from parsing self.  The tokens are seperated by delimiters, any of a string of characters.  If a delimiter is also in keepers, make a token for it.  (Very useful for carriage return.  A sole return ends a line, but is also saved as a token so you can see where the line breaks were.)"
+
+	| tokens keyStart keyStop  |
+	tokens _ OrderedCollection new.
+	keyStop _ 1.
+	[keyStop <= self size] whileTrue:
+		[keyStart _ self skipDelimiters: delimiters startingAt: keyStop.
+		keyStop to: keyStart-1 do: [:ii | 
+			(keepers includes: (self at: ii)) ifTrue: [
+				tokens add: (self copyFrom: ii to: ii)]].	"Make this keeper be a token"
+		keyStop _ self findDelimiters: delimiters startingAt: keyStart.
+		keyStart < keyStop
+			ifTrue: [tokens add: (self copyFrom: keyStart to: (keyStop - 1))]].
+	^tokens! !
 
 !UniString methodsFor: 'formatting' stamp: 'KenD 3/21/2013 19:25'!
 format: aCollection 
@@ -3483,13 +3528,6 @@ keywords
 								to: keywords size with: {':' , keywords last}].
 	^ keywords collect: [ :str | str asUniString ]! !
 
-!UniString methodsFor: 'accessing' stamp: 'KenD 3/19/2013 18:17'!
-last
-	"Answer last character"
-	(self size isZero)
-	ifTrue: [ ^nil ]
-	ifFalse: [ ^self at: self size ]! !
-
 !UniString methodsFor: 'testing' stamp: 'KenD 3/18/2013 16:27'!
 lastSpacePosition
 	"Answer the character position of the final space or other separator character in the receiver, and 0 if none"
@@ -3504,6 +3542,97 @@ lastSpacePosition
 'wimpy  ' asUniString lastSpacePosition
 ''  asUniString lastSpacePosition
 "! !
+
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/23/2013 21:38'!
+lineCount
+
+	"Answer the number of lines represented by the receiver, where every cr adds one line. "
+	| count |
+	count _ 0.
+	self lineIndicesDo: [ :start :endWithoutDelimiters :end | count _ count + 1 ].
+	
+	^ count
+
+"
+'Fred
+the
+Bear' asUniString lineCount
+"! !
+
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/23/2013 21:52'!
+lineIndicesDo: aBlock
+
+	"execute aBlock with 3 arguments for each line:
+	- start index of line
+	- end index of line without line delimiter(s)
+	- end index of line including line delimiter(s) 
+	
+	Delimiters include lineBreak properties BK CR LF NL "
+	| breakProps startPos curPos isHardBreak |
+	breakProps := { UniChar BK. UniChar CR. UniChar LF. UniChar NL. }.  "??add CB??"
+	curPos := startPos := 1.
+	isHardBreak :=  [ :index | breakProps includes: ((self at: index) lineBreakCategoryCode)].
+	
+	(self size isZero) ifTrue: [ aBlock value: 0 value: 0 value: 0. ^self ].
+	
+	[curPos <= self size]
+		whileTrue: [ | bkPos endPos |
+			(isHardBreak value: curPos) "found break?"
+			ifFalse: [ curPos := curPos + 1 ] "No; keep looking"
+			ifTrue: [
+				"remember last character position before break"
+				bkPos := curPos - 1. 
+				"find last break in set"
+				curPos := curPos + 1.
+				[(curPos < self size) and: [isHardBreak value: curPos]]
+					whileTrue: [ curPos := curPos + 1].
+			
+				endPos := curPos - 1.
+			
+				"Do the deed"
+				aBlock value: startPos value: bkPos value: endPos..
+		
+				"Ready for next search"
+				startPos := curPos.
+			]
+		].
+	"End of string may not have a line break.  Don't forget the last line."
+	(startPos + 1 < curPos) ifTrue: [ aBlock value: startPos value: (curPos - 1) value: (curPos - 1)]
+
+	! !
+
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/23/2013 21:36'!
+lineNumber: anIndex
+	"Answer a string containing the characters in the given line number. "
+	| i |
+	i _ 1.
+	self lineIndicesDo: [ :start :endWithoutDelimiters :end |
+		i = anIndex ifTrue: [
+			^ self copyFrom: start to: endWithoutDelimiters ].
+		i _ i + 1 ].
+	^nil
+	
+"
+'Fred
+the
+Bear' asUniString lineNumber: 3
+".! !
+
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/23/2013 21:35'!
+lines
+	"Answer an array of lines composing this receiver without the line ending delimiters."
+
+	^Array
+		streamContents: [ :lines | self linesDo: [ :aLine | lines nextPut: aLine ]]
+		estimatedSize: (self size // 60 max: 16)! !
+
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/23/2013 21:37'!
+linesDo: aBlock
+	"execute aBlock with each line in this string.  The terminating CR's are not included in what is passed to aBlock"
+	
+	self lineIndicesDo: [ :start :endWithoutDelimiters :end |
+		aBlock value: (self copyFrom: start  to: endWithoutDelimiters) ]
+		! !
 
 !UniString methodsFor: 'searching' stamp: 'KenD 3/21/2013 16:38'!
 match: text
@@ -3659,6 +3788,18 @@ select: aBlock
 		(aBlock value: uchar)
 			ifTrue: [result nextPut: uchar]].
 	^ result asUniString! !
+
+!UniString methodsFor: 'searching' stamp: 'KenD 3/22/2013 21:31'!
+skipDelimiters: delimiters startingAt: start 
+	"Answer the index of the character within the receiver, starting at start, that does NOT match one of the delimiters. If the receiver does not contain any of the delimiters, answer size + 1.  Assumes the delimiters to be a non-empty string."
+
+	| delimColl |
+	delimColl := delimiters asUniString.
+	
+	start to: self size do: [:i |
+		delimColl detect: [:delim | delim = (self at: i)]
+				ifNone: [^ i]].
+	^ self size + 1! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 3/19/2013 18:18'!
 species

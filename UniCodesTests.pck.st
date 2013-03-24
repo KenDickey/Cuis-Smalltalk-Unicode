@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 22 March 2013 at 5:37:13 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 23 March 2013 at 10:21:22 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -287,6 +287,22 @@ testComparing
 	self assert: ({ $c. $a. $t.} as: UniString ) = 'cat'.
 	! !
 
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/23/2013 19:52'!
+testDelimiters
+
+	self assert: ('some little token:string:' asUniString findDelimiters: ':; '  startingAt: 16) = 18.
+	self assert: ('some little token:string:' asUniString findDelimiters: ':; '  startingAt: 10) = 12.
+	self assert: (';;;::  some little token:string:' asUniString skipDelimiters: ':; '  startingAt: 1) =  8.
+	
+	"FindTokens uses findDelimiters & skipDelimiters"
+	self assert: ('some little token:string:' asUniString findTokens: Character space) asArray
+		=  #('some' 'little' 'token:string:').
+	self assert: ('some little token:string:' asUniString findTokens: ' :;' ) asArray
+		=  #('some' 'little' 'token' 'string').
+	self assert: ('some little token:string:' asUniString findTokens: ' :;'  includes: 'stri')
+		= 'string' .
+.! !
+
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 20:05'!
 testEncompassParagraph1
 	"copied from Cuis 4.1 class StringTest"
@@ -403,6 +419,32 @@ testIsAllDigits
 	self deny: ( '-123' asUniString isAllDigits).
 	self assert: ('0123456789' asUniString isAllDigits).! !
 
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/23/2013 22:21'!
+testLineEnumeration
+
+	| someLines |
+	someLines :=  'Some day
+one will find
+a way to do this' asUniString.
+
+	self assert: ((someLines lines) = #( 'Some day' 'one will find' 'a way to do this' ) ).
+	self assert: ((someLines lineNumber: 3) = 'a way to do this').
+	self assert: (someLines lineCount = 3).
+	self assert: ([ | count | 
+					count := 0. 
+					someLines linesDo: [ :l | count := count + 1]. 
+					count
+				] value
+			= 3).
+	self assert: ([ | aCol | 
+					aCol := OrderedCollection new.
+			. 		someLines linesDo: [ :l | aCol add: l ].
+					aCol
+				] value asArray
+			= (someLines lines)).
+
+! !
+
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 21:20'!
 testLineSeparators
 	"
@@ -434,16 +476,16 @@ testLineSeparators
 	self assert: linesBounds second second = (linesBounds second first-1) description: 'Second line is empty'.
 	self assert: linesBounds second third = (linesBounds second second+0) description: 'Second line is not terminated by ab Lf'.! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/21/2013 18:59'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/23/2013 19:58'!
 testMatch
 
 	self assert: ((UniString fromString: '*'	)		match: 'zort' ).
 	self assert: ((UniString fromString: '*baz'	)	match: 'mobaz' ).
 	self deny:   ((UniString fromString: '*baz')		match: 'mobazo' ).
-	self assert: ((UniString fromString: '*baz*')		match: 'mobazo' ).
-	self deny:   ((UniString fromString: '*baz*')		match: 'mozo'  ).
+	self assert: ((UniString fromString: '*baz*')	match: 'mobazo' ).
+	self deny:   ((UniString fromString: '*baz*')	match: 'mozo'  ).
 	self assert: ((UniString fromString: 'foo*')		match: 'foozo'  ).
-	self deny:    ((UniString fromString: 'foo*')		match: 'bozo'  ).
+	self deny:    ((UniString fromString: 'foo*')	match: 'bozo'  ).
 	self assert: ((UniString fromString: 'foo*baz')	match: 'foo23baz'  ).
 	self assert: ((UniString fromString: 'foo*baz')	match: 'foobaz'  ).
 	self deny:   ((UniString fromString: 'foo*baz')	match: 'foo23bazo'  ).
@@ -451,7 +493,7 @@ testMatch
 	self deny:   ((UniString fromString: 'foo*baz*zort') match: 'foobazort'  ).
 	self assert: ((UniString fromString: 'foo*baz*zort') match: 'foobazzort'  ).
 	self assert: ((UniString fromString: '*foo#zort')	match: 'afoo3zortthenfoo3zort'  ).
-	self assert: ((UniString fromString: '*foo*zort')		match: 'afoodezortorfoo3zort'  ).
+	self assert: ((UniString fromString: '*foo*zort')	match: 'afoodezortorfoo3zort'  ).
 	
 	#('*' 'f*'  'f*o' 'f*' '*f*' 'f#*' 'f##' '*oo' '#oo' '*o*' '#o#' '#o*' 
 		'*o#' 'fo*' 'fo#' '*foo*' '###' '#*'  'f#*' 'f#*o')
@@ -1090,11 +1132,23 @@ testWithoutTrailingDigits
 
 ! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/22/2013 17:36'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/22/2013 21:22'!
 testindexOfstartingAt
 
 	self assert: ('aa aa éé aa aa' asUniString indexOf: $a startingAt: 8) = 12.
 	self assert: ('aa aa éé aa aa' asUniString indexOf: $z startingAt: 8) = 0.
+	self assert: ((UniString fromCodePointCollection:  
+		#( 16r4E7E 16r0020  16r5143 16r4EA8  16r5229 16r8C9E ) ) 
+		indexOf: (16r5229 asUniChar)) = 5.
+	self assert: ((UniString fromCodePointCollection:  
+		#( 16r4E7E 16r0020  16r5143 16r4EA8  16r5229 16r8C9E ) ) 
+		indexOf: (16r52300 asUniChar)) = 0.
+	self assert: ((UniString fromCodePointCollection:  
+		#( 16r4E7E 16r0020  16r5143 16r4EA8  16r5229 16r8C9E ) ) 
+		indexOf: (16r5229 asUniChar) startingAt: 2) = 5.
+	self assert: ((UniString fromCodePointCollection:  
+		#( 16r4E7E 16r0020  16r5143 16r4EA8  16r5229 16r8C9E ) ) 
+		indexOf: (16r5229 asUniChar) startingAt: 6) = 0.
 	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'def') = 7.
 	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'zef') = 8.
 	self assert: ('abacabdefghi23lst' asUniString indexOfAnyOf: 'zwf') = 9.
