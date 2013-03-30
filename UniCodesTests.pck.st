@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 23 March 2013 at 10:21:22 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 30 March 2013 at 4:36:03 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -419,10 +419,21 @@ testIsAllDigits
 	self deny: ( '-123' asUniString isAllDigits).
 	self assert: ('0123456789' asUniString isAllDigits).! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/23/2013 22:21'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/30/2013 16:35'!
+testLineBreaks
+
+	| str |
+	str := '123a b567c 
+d90!! foo, Yes bar. then x.
+' asUniString.
+
+	self assert: ( (str possibleLineBreaksBetween: 1 and: str size) =  #(6 13 18 23 27 32 37 40) ).
+! !
+
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/28/2013 16:02'!
 testLineEnumeration
 
-	| someLines |
+	| someLines moreLines |
 	someLines :=  'Some day
 one will find
 a way to do this' asUniString.
@@ -442,39 +453,19 @@ a way to do this' asUniString.
 					aCol
 				] value asArray
 			= (someLines lines)).
-
-! !
-
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 21:20'!
-testLineSeparators
-	"
-	Test that #newLineCharacter is considered a line separator and not a line terminator.
-	This means that the last line never ends with a #newLineCharacter (although it might be empty!!)
-	StringTest new testLineSeparators
-	"
-	"copied from Cuis 4.1 class StringTest"
-	"self new testLineSeparators"
+	"line break at end is same as not"
+	self assert: ((someLines, UniString crlfString) lineCount = 3).
+	self assert: ((someLines, UniString lfString) lineCount = 3).
+	self assert: ((someLines, UniString crString) lineCount = 3).
 	
-	| justAnLf linesBounds |
-	
-	self error: '@@FIXME: NYI'.
-	
-	linesBounds _ OrderedCollection new.
-	justAnLf _ '
-' asUniString .
-	justAnLf lineIndicesDo: [ :start :endWithoutDelimiters :end |
-		linesBounds add: { start . endWithoutDelimiters. end }.
-		].
+	"multiple line breaks are multiple lines"
+	self assert: ((someLines, UniString crlfString, UniString crlfString, UniString crlfString) lineCount = 5).
+	self assert: ((someLines, UniString lfString, UniString lfString, UniString lfString) lineCount = 5).
 
-	self assert: linesBounds size = 2 description: 'There should be two lines.'.
-
-	self assert: linesBounds first first = 1 description: 'First line starts at position 1'.
-	self assert: linesBounds first second = (linesBounds first first-1) description: 'First line is empty'.
-	self assert: linesBounds first third = (linesBounds first second+1) description: 'First line is terminated by ab Lf'.
-
-	self assert: linesBounds second first = ( linesBounds first third+1) description: 'Second line starts after end of first line'.
-	self assert: linesBounds second second = (linesBounds second first-1) description: 'Second line is empty'.
-	self assert: linesBounds second third = (linesBounds second second+0) description: 'Second line is not terminated by ab Lf'.! !
+	moreLines := someLines , UniString crlfString , 'More text goes here.' asUniString , UniString crlfString.
+	self assert: (moreLines lineCount = 4).
+	self assert: ((moreLines , UniString crlfString) lineCount= 5). "Empty line at end"
+	! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/23/2013 19:58'!
 testMatch
@@ -1032,7 +1023,7 @@ testUniStringRebalance
 	self assert: ( t2 depth = 11 ).
 	self assert: ( t2 rebalance depth = 4 ).! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:18'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/24/2013 10:25'!
 testUniStringWrapper
 
 	| wrapper |
@@ -1040,7 +1031,7 @@ testUniStringWrapper
 	wrapper nextPut: 'more and better.'.
 	self assert: (wrapper printString  = '''Test me more and better.'''  ).
 	wrapper nextPutAll: #( $f $u $n).
-	self assert:  (wrapper stringRepresentation  =  '''Test me more and better.fun''' ).
+	self assert:  ((wrapper stringRepresentation)  =  'Test me more and better.fun' ).
 	! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 2/17/2013 21:08'!
@@ -1093,18 +1084,31 @@ testUpTo
 	self assert: #at: asUniString keywords = #(at:).
 	! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 22:29'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/30/2013 16:35'!
 testWithNoLineLongerThan
 	"self run: #testWithNoLineLongerThan"
-	self assert: ('Hello World' asUniString withNoLineLongerThan: 5) = 
-	('Hello' asUniString , UniString newLineString, 'World').
-	self shouldnt: [UniString crlfString withNoLineLongerThan: 5] raise: Error.
-	self shouldnt: [('Hello'  asUniString, UniString newLineString , UniString newLineString,'World') withNoLineLongerThan: 5] raise: Error.
-	self assert: ('Sample text to line break at some point' asUniString withNoLineLongerThan:  28)
-		= ('Sample text to line break at', UniString newLineString, 'some point').
-	self assert: ('Sample text' asUniString , UniString newLineString, 'to line break', UniString newLineString, 'at some point' withNoLineLongerThan:  28)
-		= ('Sample text'asUniString , UniString newLineString, 'to line break', UniString newLineString, 'at some point').
-! !
+
+	| str1 str2 |
+	str1 := '123 5678 0123456 890' asUniString.
+	str2 := '123a b567c 
+d90!! foo, Yes bar. then x.
+' asUniString.
+	
+	self assert: ('Hello World' asUniString withNoLineLongerThan: 5) 
+		= ('Hello' asUniString , UniString newLineString, 'World').
+	self assert: ( 'Sample text to line break at some point' asUniString
+				   withNoLineLongerThan:  28)
+		= ('Sample text to line break' asUniString, UniString newLineString, 'at some point').
+	self assert: ( 'Sample text to line break at some point' asUniString
+				   withNoLineLongerThan:  12) lines
+		= { ('Sample text' asUniString).
+			('to line' asUniString).
+			('break at' asUniString).
+			('some point'asUniString).
+		 }.
+	self assert: (str1 wrapFrom: 1 to: 20 wrapLength: 8) lineCount = 4.
+	self assert: (str1 wrapFrom: 1 to: 20 wrapLength: 8) = (str1 withNoLineLongerThan: 8).
+	self assert: (str2 withNoLineLongerThan: 12) lineCount = 4.! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:30'!
 testWithoutLeadingDigits

@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 23 March 2013 at 10:21:19 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 30 March 2013 at 4:36:06 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -718,10 +718,10 @@ isCJKIdeograph
 	
 	^ false! !
 
-!UniChar methodsFor: 'testing' stamp: 'KenD 3/9/2013 13:00'!
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/28/2013 15:20'!
 isCR
 
-	self codePoint = 16r000D! !
+	^ codePoint = 16r000D! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:34'!
 isCasedLetter
@@ -749,21 +749,25 @@ isGenerallyValidStartOfInIdentifiers
 	#allowUnderscoreSelectors"
 	^self isLetter or: [ self  = $_ and: [ Preferences allowUnderscoreSelectors ]]! !
 
-!UniChar methodsFor: 'testing' stamp: 'KenD 3/9/2013 13:00'!
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/28/2013 15:21'!
 isLF
 
-	self codePoint = 16r000A! !
+	^ codePoint = 16r000A! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:33'!
 isLetter
 
 	^ ((self generalCategoryCode) bitAnd: LetterBit) = LetterBit! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/20/2013 22:08'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/28/2013 16:45'!
 isLineSeparator
-
-	"Answer true if Unicode Separator OR Smalltalk Line Separator"
-	^ self isSeparator or: [(self codePoint < 16rFF) and: [self asCharacter isLineSeparator]]! !
+	"Answer true if Unicode Line Separator OR Smalltalk Line Separator"
+	"Distinguish: isSeparator"
+	
+	^ (  "Unicode:  NextLine, LineSeparator, ParagraphSeparator"
+ 		#( 16r0085 16r2028 16r2029 ) includes: codePoint)
+		"Smalltalk:  LineFeed CarriageReturn FormFeed"
+		 	or: [(self codePoint < 16rFF) and: [self asCharacter isLineSeparator]] ! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:49'!
 isLowercase
@@ -790,12 +794,54 @@ isPunctuation
 
 	^ ((self generalCategoryCode) bitAnd: PunctuationBit) = PunctuationBit! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/20/2013 22:08'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/28/2013 13:43'!
 isSeparator
-
 	"Answer true if Unicode Separator OR Smalltalk Separator"
+
 	^ (((self generalCategoryCode) bitAnd: SeparatorBit) = SeparatorBit)
-		or:  [(self codePoint < 16rFF) and: [self asCharacter isSeparator]]! !
+		"LF, FF, Space, Tab, CR"
+		or: [codePoint = 16r0085] "NextLine"
+		or:  [(self codePoint < 16rFF) and: [self asCharacter isSeparator]]
+		
+" Separator = Zl + Zp + Zs:
+
+0020;SPACE;Zs;0;WS;;;;;N;;;;;
+00A0;NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;NON-BREAKING SPACE;;;;
+1680;OGHAM SPACE MARK;Zs;0;WS;;;;;N;;;;;
+180E;MONGOLIAN VOWEL SEPARATOR;Zs;0;WS;;;;;N;;;;;
+2000;EN QUAD;Zs;0;WS;2002;;;;N;;;;;
+2001;EM QUAD;Zs;0;WS;2003;;;;N;;;;;
+2002;EN SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2003;EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2004;THREE-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2005;FOUR-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2006;SIX-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2007;FIGURE SPACE;Zs;0;WS;<noBreak> 0020;;;;N;;;;;
+2008;PUNCTUATION SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2009;THIN SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+200A;HAIR SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+202F;NARROW NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;;;;;
+205F;MEDIUM MATHEMATICAL SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+
+3000;IDEOGRAPHIC SPACE;Zs;0;WS;<wide> 0020;;;;N;;;;;
+
+2028;LINE SEPARATOR;Zl;0;WS;;;;;N;;;;;
+
+2029;PARAGRAPH SEPARATOR;Zp;0;B;;;;;N;;;;;
+
+***Nota Bene***=== 
+**NOT** Classed as Separators by Unicode General Property:
+
+0009;<control>;Cc;0;S;;;;;N;CHARACTER TABULATION (HT);;;;
+000A;<control>;Cc;0;B;;;;;N;LINE FEED (LF);;;;
+000B;<control>;Cc;0;S;;;;;N;LINE TABULATION (VT);;;;
+000C;<control>;Cc;0;WS;;;;;N;FORM FEED (FF);;;;
+000D;<control>;Cc;0;B;;;;;N;CARRIAGE RETURN (CR);;;;
+
+0085;<control>;Cc;0;B;;;;;N;NEXT LINE (NEL);;;;
+==============================
+
+"! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/18/2013 16:30'!
 isSpace
@@ -1681,103 +1727,99 @@ initializeGeneralPropertyEnums
  	PropertyNames at: Zs 	put: #SpaceSeparator.
 	! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/13/2013 13:24'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/28/2013 23:35'!
 initializeLineBreakProperties
 "
 	UniChar initializeLineBreakProperties.
 "
 	"Values in byte 16r00FF0000"
 	| slash |
-	
-	LineBreakProperties := Array new: 47.
+	LineBreakProperties := Array new: 40.
 	LineBreakTypeNames := #( BreakAfter DontbreakAfter 
 									BreakBefore DontbreakBefore
 									BreakForPair DontbreakForPair  ).
-	
-	XX := 0. "unused/don't care"
-	
-	"LineBreakProperties used as table indices"
-	OP := 1.
-	LineBreakProperties at: OP put: #OpenPunctuation . "DontbreakAfter"
-	CL := 2.
-	LineBreakProperties at: CL put: #ClosePunctuation . "DontbreakBefore"
-	CP := 3.
-	LineBreakProperties at: CP put: #CloseParenthesis . "DontbreakBefore"
-	QU := 4.
-	LineBreakProperties at: QU put: #Quotation . "DontbreakBefore | DontbreakAfter"
-	GL := 5.
-	LineBreakProperties at: GL put: #Glue . "DontbreakBefore | DontbreakAfter"
-	NS := 6.
-	LineBreakProperties at: NS put: #NonStarters . "DontbreakBefore"
-	EX := 7.
-	LineBreakProperties at: EX put: #ExclamationInterrogation . "DontbreakBefore"
-	SY := 8.
-	LineBreakProperties at: SY put: #Symbols . "BreakAfter"
-	IS := 9.
-	LineBreakProperties at: IS put: #InfixNumericSeparator . "DontbreakBefore"
-	PR := 10.
-	LineBreakProperties at: PR put: #PrefixNumeric . "DontbreakAfter"
-	PO := 11.
-	LineBreakProperties at: PO put: #PostfixNumeric . "DontbreakBefore"
-	NU := 12.
-	LineBreakProperties at: NU put: #Numeric . "DontbreakForPair"
-	AL := 13.
+	AL := 1.
 	LineBreakProperties at: AL put: #Alphabetic . "DontbreakForPair"
-	HL := 14.
-	LineBreakProperties at: HL put: #HebrewLetter . "DontbreakBefore"
-	ID := 15.
-	LineBreakProperties at: ID put: #Ideographic . "BreakBefore | BreakAfter"
-	IN := 16.
-	LineBreakProperties at: IN put: #InseparableCharacters . "DontbreakForPair"
-	HY := 17.
-	LineBreakProperties at: HY put: #Hyphen . "DontbreakBefore"
-	BA := 18.
-	LineBreakProperties at: BA put: #BreakAfter . "BreakAfter"
-	BB := 19.
-	LineBreakProperties at: BB put: #BreakBefore . "BreakBefore"
-	B2 := 20.
+	B2 := 2.
 	LineBreakProperties at: B2 put: #BeforeAndAfter . "BreakBefore | DontbreakForPair | BreakAfter"
-	ZW := 21.
-	LineBreakProperties at: ZW put: #ZeroWidthSpace . "BreakAfter"
-	CM := 22.
-	LineBreakProperties at: CM put: #CombiningMark . "DontbreakBefore"
-	WJ := 23.
-	LineBreakProperties at: WJ put: #WordJoiner . "DontbreakBefore | DontbreakAfter"
-	H2 := 24.
-	LineBreakProperties at: H2 put: #HangulLV . "BreakBefore | BreakAfter"
-	H3 := 25.
-	LineBreakProperties at: H3 put: #HangulLVT . "BreakBefore | BreakAfter"
-	JL := 26.
-	LineBreakProperties at: JL put: #HangulLJamo . "BreakBefore"
-	JV := 27.
-	LineBreakProperties at: JV put: #HangulVJamo . "DontbreakBefore | DontbreakAfter"
-	JT := 28.
-	LineBreakProperties at: JT put: #HangulTJamo . "BreakAfter"
-	RI := 29.
-	LineBreakProperties at: RI put: #RegionalIndicator . "BreakBefore | DontbreakForPair | BreakAfter"
-	
-	"LineBreakProperties NOT used as table indices"
-	BK := 30.
+	BA := 3.
+	LineBreakProperties at: BA put: #BreakAfter . "BreakAfter"
+	BB := 4.
+	LineBreakProperties at: BB put: #BreakBefore . "BreakBefore"
+	BK := 5.
 	LineBreakProperties at: BK put: #MandatoryBreak . "BreakAfter"
-	CR := 31. 
-	LineBreakProperties at: CR put: #CarrageReturn . "Always Break unless followed by LF"
-	LF := 40.
-	LineBreakProperties at: LF put: #LineFeed . "Always Break unless followed by CR"
-	SG := 41.
-	LineBreakProperties at: SG put: #Surrogate . "DontbreakForPair"
-	CB := 42.
+	CB := 6.
 	LineBreakProperties at: CB put: #ContingentBreak . "BreakBefore | BreakAfter"
-	SP := 43.
-	LineBreakProperties at: SP put: #Space . "BreakAfter"
-	NL := 44.
+	CL := 7.
+	LineBreakProperties at: CL put: #ClosePunctuation . "DontbreakBefore"
+	CP := 8.
+	LineBreakProperties at: CP put: #CloseParenthesis . "DontbreakBefore"
+	CM := 9.
+	LineBreakProperties at: CM put: #CombiningMark . "DontbreakBefore"
+	CR := 10.
+	LineBreakProperties at: CR put: #CarrageReturn . "Always Break unless followed by LF"
+	EX := 11.
+	LineBreakProperties at: EX put: #ExclamationInterrogation . "DontbreakBefore"
+	GL := 12.
+	LineBreakProperties at: GL put: #Glue . "DontbreakBefore | DontbreakAfter"
+	H2 := 13.
+	LineBreakProperties at: H2 put: #HangulLV . "BreakBefore | BreakAfter"
+	H3 := 14.
+	LineBreakProperties at: H3 put: #HangulLVT . "BreakBefore | BreakAfter"
+	HL := 15.
+	LineBreakProperties at: HL put: #HebrewLetter . "DontbreakBefore"
+	HY := 16.
+	LineBreakProperties at: HY put: #Hyphen . "DontbreakBefore"
+	ID := 17.
+	LineBreakProperties at: ID put: #Ideographic . "BreakBefore | BreakAfter"
+	IN := 18.
+	LineBreakProperties at: IN put: #InseparableCharacters . "DontbreakForPair"
+	IS := 19.
+	LineBreakProperties at: IS put: #InfixNumericSeparator . "DontbreakBefore"
+	JL := 20.
+	LineBreakProperties at: JL put: #HangulLJamo . "BreakBefore"
+	JT := 21.
+	LineBreakProperties at: JV put: #HangulVJamo . "DontbreakBefore | DontbreakAfter"
+	JV := 22.
+	LineBreakProperties at: JT put: #HangulTJamo . "BreakAfter"
+	LF := 23.
+	LineBreakProperties at: LF put: #LineFeed . "Always Break unless followed by CR"
+	NL := 24.
 	LineBreakProperties at: NL put: #NextLine . "BreakAfter"
-	SA := 45.
-	LineBreakProperties at: SA put: #SoutheastAsian . "Complex Context Dependent"
-	CJ := 46.
-	LineBreakProperties at: CJ put: #ConditionalJapaneseStarted .
-	AI := 47.
+	NS := 25.
+	LineBreakProperties at: NS put: #NonStarters . "DontbreakBefore"
+	NU := 26.
+	LineBreakProperties at: NU put: #Numeric . "DontbreakForPair"
+	OP := 27.
+	LineBreakProperties at: OP put: #OpenPunctuation . "DontbreakAfter"
+	PO := 28.
+	LineBreakProperties at: PO put: #PostfixNumeric . "DontbreakBefore"
+	PR := 29.
+	LineBreakProperties at: PR put: #PrefixNumeric . "DontbreakAfter"
+	QU := 30.
+	LineBreakProperties at: QU put: #Quotation . "DontbreakBefore | DontbreakAfter"
+	SP := 31.
+	LineBreakProperties at: SP put: #Space . "BreakAfter"
+	SY := 32.
+	LineBreakProperties at: SY put: #Symbols . "BreakAfter"
+	WJ := 33.
+	LineBreakProperties at: WJ put: #WordJoiner . "DontbreakBefore | DontbreakAfter"
+	ZW := 34.
+	LineBreakProperties at: ZW put: #ZeroWidthSpace . "BreakAfter"
+	RI := 35.
+	LineBreakProperties at: RI put: #RegionalIndicator . "BreakBefore | DontbreakForPair | BreakAfter"
+	AI := 36.
 	LineBreakProperties at: AI put: #AlphaOrIdeograph . "Ambiguous"
-	
+	XX := 37.
+	LineBreakProperties at: XX put: #Unassigned . "Who knows? Who cares?"
+	SA := 38.
+	LineBreakProperties at: SA put: #SoutheastAsian . "Complex Context Dependent"
+	CJ := 39.
+	LineBreakProperties at: CJ put: #ConditionalJapaneseStarted .
+
+	SG := 40.
+	LineBreakProperties at: SG put: #Surrogate . "DontbreakForPair"
+
   	slash := FileDirectory slash.
 	
 	self parseLineBreakPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
@@ -1814,61 +1856,55 @@ initializeLineBreakProperties
 
 ! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/11/2013 09:25'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/29/2013 16:56'!
 initializeLineBreakTable
 	"From  Unicode Standard Annex #14: Unicode Line Breaking Algorithm"
 
-	LineBreakTable := Array new: 29.
-"
-    Resolved outside the pair table:  AI, BK, CB, CJ, CR,  LF, NL, SA, SG, SP, XX
+	LineBreakNames := IdentityDictionary new: 2.
+	LineBreakNames at: $x put: #BreakProhibited.
+	LineBreakNames at: $0 put: #BreakAllowed.
 
-    ^ denotes a prohibited break: B ^ A is equivalent to B SP* Ã X A; in other words, never break before A and after B, even if one or more spaces intervene.
-
-    % denotes an indirect break opportunity: B % A is equivalent to B Ã— A and  B SP+ Ã· A; in other words, do not break before A, unless one or more spaces follow B.
-
-    @ denotes a prohibited break for combining marks: B @ A is equivalent to B SP* Ã— A, where A is of class CM. For more details, see Section 7.5, Combining Marks.
-
-    # denotes an indirect break opportunity for combining marks following a space: B # A is equivalent to (B Ã— A and  B SP+ Ã·  A), where A is of class CM.
-
-    _ denotes a direct break opportunity (equivalent to  / as defined above).
-"
-	LineBreakTable at: OP put: '^^^^^^^^^^^^^^^^^^^^^@^^^^^^^'. 
-	LineBreakTable at: CL put: '_^^%%^^^^%%_____%%__^#^______'.
-	LineBreakTable at: CP put: '_^^%%^^^^%%%%%__%%__^#^______'.
-	LineBreakTable at: QU put: '^^^%%%^^^%%%%%%%%%%%^#^%%%%%%'.
-	LineBreakTable at: GL put: '%^^%%%^^^%%%%%%%%%%%^#^%%%%%%'.
-	LineBreakTable at: NS put: '_^^%%%^^^_______%%__^#^______'.
-	LineBreakTable at: EX put: '_^^%%%^^^_______%%__^#^______'.
-	LineBreakTable at: SY put: '_^^%%%^^^__%____%%__^#^______'.
-	LineBreakTable at: IS put: '_^^%%%^^^__%%%__%%__^#^______'.
-	LineBreakTable at: PR put: '%^^%%%^^^__%%%%_%%__^#^%%%%%_'.
-	LineBreakTable at: PO put: '%^^%%%^^^__%%%__%%__^#^______'.
-	LineBreakTable at: NU put: '%^^%%%^^^%%%%%_%%%__^#^______'.
-	LineBreakTable at: AL put: '%^^%%%^^^__%%%_%%%__^#^______'.
-	LineBreakTable at: HL put: '%^^%%%^^^__%%%_%%%__^#^______'.
-	LineBreakTable at: ID put: '_^^%%%^^^_%____%%%__^#^______'.
-	LineBreakTable at: IN put: '_^^%%%^^^______%%%__^#^______'.
-	LineBreakTable at: HY put: '_^^%_%^^^__%____%%__^#^______'.
-	LineBreakTable at: BA put: '_^^%_%^^^_______%%__^#^______'.
-	LineBreakTable at: BB put: '%^^%%%^^^%%%%%%%%%%%^#^%%%%%%'.
-	LineBreakTable at: B2 put: '_^^%%%^^^_______%%_^^#^______'.
-	LineBreakTable at: ZW put: '____________________^________'.
-	LineBreakTable at: CM put: '%^^%%%^^^__%%%_%%%__^#^______'.
-	LineBreakTable at: WJ put: '%^^%%%^^^%%%%%%%%%%%^#^%%%%%%'.
-	LineBreakTable at: H2 put: '_^^%%%^^^_%____%%%__^#^___%%_'.
-	LineBreakTable at: H3 put: '_^^%%%^^^_%____%%%__^#^____%_'.
-	LineBreakTable at: JL put: '_^^%%%^^^_%____%%%__^#^%%%%__'.
-	LineBreakTable at: JV put: '_^^%%%^^^_%____%%%__^#^___%%_'.
-	LineBreakTable at: JT put: '_^^%%%^^^_%____%%%__^#^____%_'.
-	LineBreakTable at: RI put: '_^^%%%^^^_______%%__^#^_____%'.
-
-	LineBreakNames := IdentityDictionary new: 6.
-	LineBreakNames at: $_ put: #DirectBreak.
-	LineBreakNames at: $% put: #IndirectBreak.
-	LineBreakNames at: $# put: #CombiningIndirectBreak.
-	LineBreakNames at: $@ put: #CombiningProhibitedBreak.
-	LineBreakNames at: $^ put: #ProhibitedBreak.
-	LineBreakNames at: $!! put: #ExplicitBreak.  "Not in table, but occurs in rules"	
+	LineBreakTable := Array new: 40.
+	LineBreakTable at: AL put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: B2 put: '0××0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: BA put: '00×0×0×××××0000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: BB put: '×××××0×××××××××××××××××××××××××××××××××x'.
+	LineBreakTable at: BK put: '000000000000000000000000000000000000000x'.
+	LineBreakTable at: CB put: '0000×0××××××000000×000××00000×××××00000x'.
+	LineBreakTable at: CL put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: CP put: '×0×0×0××××××00××00×000××××000×××××0××××x'.
+	LineBreakTable at: CM put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: CR put: '0000000000000000000000×0000000000000000x'.
+	LineBreakTable at: EX put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: GL put: '×××××××××××××××××××××××××××××××××××××××x'.
+	LineBreakTable at: H2 put: '00×0×0××××××000×0××0×××××00×0×××××0000×x'.
+	LineBreakTable at: H3 put: '00×0×0××××××000×0××0×0×××00×0×××××0000×x'.
+	LineBreakTable at: HL put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: HY put: '00×0×0×××××0000×00×000××××000×××××0000×x'.
+	LineBreakTable at: ID put: '00×0×0××××××000×0××000×××00×0×××××0000×x'.
+	LineBreakTable at: IN put: '00×0×0××××××000×0××000×××0000×××××0000×x'.
+	LineBreakTable at: IS put: '×0×0×0××××××00××00×000×××0000×××××0××××x'.
+	LineBreakTable at: JL put: '00×0×0××××××××0×0×××0××××00×0×××××0000×x'.
+	LineBreakTable at: JT put: '00×0×0××××××000×0××0×0×××00×0×××××0000×x'.
+	LineBreakTable at: JV put: '00×0×0××××××000×0××0×××××00×0×××××0000×x'.
+	LineBreakTable at: LF put: '000000000000000000000000000000000000000x'.
+	LineBreakTable at: NL put: '000000000000000000000000000000000000000x'.
+	LineBreakTable at: NS put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: NU put: '×0×0×0××××××00××0××000××××××××××××0××××x'.
+	LineBreakTable at: OP put: '×××××××××××××××××××××××××××××××××××××××x'.
+	LineBreakTable at: PO put: '×0×0×0××××××00××00×000××××000×××××0××××x'.
+	LineBreakTable at: PR put: '×0×0×0×××××××××××0××××××××000×××××0××××x'.
+	LineBreakTable at: QU put: '×××××××××××××××××××××××××××××××××××××××x'.
+	LineBreakTable at: SP put: '0000×0××0××0000000×000××000000××××00000x'.
+	LineBreakTable at: SY put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: WJ put: '×××××××××××××××××××××××××××××××××××××××x'.
+	LineBreakTable at: ZW put: '0000×0000×000000000000××000000×00×00000x'.
+	LineBreakTable at: RI put: '00×0×0××××××000×00×000×××0000××××××000×x'.
+	LineBreakTable at: AI put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: XX put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: SA put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: CJ put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: SG put: '×××××××××××××××××××××××××××××××××××××××'.
 ! !
 
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
@@ -1876,11 +1912,45 @@ insert
 
 	^ (5 asUniChar)! !
 
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 3/29/2013 16:56'!
+isLineBreakBetween: leftChar and:  rightChar
+	"Answer the character specified"
+
+	"See comments in UniChar class>>initializeLineBreakTable"
+	^ ((LineBreakTable at: (leftChar lineBreakCategoryCode))
+						   at: (rightChar lineBreakCategoryCode)) = $0! !
+
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
 lfCharacter
 	"Answer the Character representing a linefeed."
 
 	^ (10 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 3/24/2013 15:37'!
+lineBreakNameAt: anIndex
+
+	^ LineBreakNames at: anIndex! !
+
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 3/24/2013 21:38'!
+lineBreakPropNameAt: lineBreakPropertyCode
+
+	(lineBreakPropertyCode isZero)
+	ifTrue: [ ^ #Unknown ]
+	ifFalse: [ ^ LineBreakProperties at: lineBreakPropertyCode ]! !
+
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 3/24/2013 21:32'!
+lineBreakTableAt: row at: col
+	"Answer the character specified"
+
+	"See comments in UniChar class>>initializeLineBreakTable"
+	
+	^ (LineBreakTable at: row) at: col! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 3/27/2013 21:18'!
+lineSeparator
+	"Answer Unicode LS"
+
+	^ (2028 asUniChar)! !
 
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
 nbsp
@@ -1917,6 +1987,12 @@ pageDown
 pageUp
 
 	^ (11 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 3/27/2013 21:18'!
+paragraphSeparator
+	"Answer Unicode PS"
+
+	^ (2029 asUniChar)! !
 
 !UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/9/2013 10:27'!
 parseCaseMappingFrom: stream
@@ -3205,10 +3281,18 @@ encodeDoublingQuoteOn: aStream
 		char == $' ifTrue: [aStream print: char]].
 	aStream print: $'! !
 
-!UniString methodsFor: 'accessing' stamp: 'jmv 3/5/2013 17:20'!
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/29/2013 17:01'!
 encompassParagraph: anInterval
-"do it right"
-	^anInterval! !
+	"Return an interval that includes anInterval, and that comprises one or several whole paragraphs in the receiver.
+	Answer starts at the position following a newLine (or eventually 1) and ends at a newLine (or eventually at self size).
+	Look also for null characters. Never include null characters in the answer.
+	See also #encompassLine:"
+	
+	| left rightCr rightNull |
+	left _ (self lastIndexOf: Character newLineCharacter startingAt: anInterval first - 1 ifAbsent:[0]) + 1.
+	rightCr _ (self indexOf: Character newLineCharacter startingAt: (anInterval last max: anInterval first) ifAbsent: [self size]).
+	rightNull _ (self indexOf: Character null startingAt: (anInterval last max: anInterval first) ifAbsent: [self size+1])-1.
+	^left to: (rightCr min: rightNull)! !
 
 !UniString methodsFor: 'testing' stamp: 'KenD 3/19/2013 16:17'!
 endsWithDigit
@@ -3498,6 +3582,19 @@ isBalanced
 	ifTrue:  [^false]
 	ifFalse: [^ (fib at: (self depth + 2)) <= self size]! !
 
+!UniString methodsFor: 'testing' stamp: 'KenD 3/28/2013 15:34'!
+isCRLFAt: index
+	"Answer true if chars at index and index+1 are CR_LF or LF+CR"
+	
+		(index < self size) 
+		ifFalse: [ ^false ] "Only one character"
+		ifTrue: [ | thisCh nextCh |
+			thisCh := self at: index.
+			nextCh := self at: index + 1.
+			^ (thisCh isCR and: [nextCh isLF])
+				or: [thisCh isLF and: [nextCh isCR]] 
+		]! !
+
 !UniString methodsFor: 'testing' stamp: 'KenD 3/18/2013 16:35'!
 isString
 	"@@This is called in a lot of places!!!!@@@"
@@ -3559,7 +3656,7 @@ the
 Bear' asUniString lineCount
 "! !
 
-!UniString methodsFor: 'accessing' stamp: 'KenD 3/23/2013 21:52'!
+!UniString methodsFor: 'accessing' stamp: 'KenD 3/30/2013 08:18'!
 lineIndicesDo: aBlock
 
 	"execute aBlock with 3 arguments for each line:
@@ -3567,37 +3664,38 @@ lineIndicesDo: aBlock
 	- end index of line without line delimiter(s)
 	- end index of line including line delimiter(s) 
 	
-	Delimiters include lineBreak properties BK CR LF NL "
+	Delimiters include lineBreak properties BreaK CR LineFeed NextLine "
 	| breakProps startPos curPos isHardBreak |
-	breakProps := { UniChar BK. UniChar CR. UniChar LF. UniChar NL. }.  "??add CB??"
-	curPos := startPos := 1.
+	breakProps := { UniChar BK. UniChar CR. UniChar LF. UniChar NL. }.
 	isHardBreak :=  [ :index | breakProps includes: ((self at: index) lineBreakCategoryCode)].
 	
-	(self size isZero) ifTrue: [ aBlock value: 0 value: 0 value: 0. ^self ].
-	
+	(self size isZero) ifTrue: [ aBlock value: 1 value: 0 value: 0. ^self ]. "One empty string"
+
+	curPos := startPos := 1.
 	[curPos <= self size]
-		whileTrue: [ | bkPos endPos |
+		whileTrue: [ | endPos endBreak |
 			(isHardBreak value: curPos) "found break?"
 			ifFalse: [ curPos := curPos + 1 ] "No; keep looking"
 			ifTrue: [
 				"remember last character position before break"
-				bkPos := curPos - 1. 
-				"find last break in set"
-				curPos := curPos + 1.
-				[(curPos < self size) and: [isHardBreak value: curPos]]
-					whileTrue: [ curPos := curPos + 1].
-			
-				endPos := curPos - 1.
+				endPos := curPos - 1. 
+				endBreak := curPos.  "Only one break char unless changed"
+				
+				"Each Break counts as a new line, where CR+LF or LF+CR counts as one"
+				(self isCRLFAt: curPos)
+				ifTrue: [
+					endBreak := endBreak + 1. "A two character break"
+				]..
 			
 				"Do the deed"
-				aBlock value: startPos value: bkPos value: endPos..
+				aBlock value: startPos value: endPos value: endBreak..
 		
 				"Ready for next search"
-				startPos := curPos.
+				startPos := curPos :=  endBreak + 1.
 			]
 		].
 	"End of string may not have a line break.  Don't forget the last line."
-	(startPos + 1 < curPos) ifTrue: [ aBlock value: startPos value: (curPos - 1) value: (curPos - 1)]
+	(startPos + 1 <= curPos) ifTrue: [ aBlock value: startPos value: (curPos - 1) value: (curPos - 1)]
 
 	! !
 
@@ -3729,22 +3827,68 @@ padded: leftOrRight to: length with: char
 	leftOrRight = #right ifTrue:
 		[^ (self ,  padRope) ].! !
 
+!UniString methodsFor: 'unicode' stamp: 'KenD 3/30/2013 14:50'!
+possibleLineBreaksBetween: start and: stop
+	"Scan self between start and stop.
+	Answer an array of #(breakIndex).  Breaks should occure just before these indices"
+		
+	"Note Unicode Annex #14: Unicode Line Breaking Algorithm"
+	"Distinguish from WORD breaks [Unicode Annex #29: Unicode Text Segmentation]"
+	
+	| curPos endPos leftChar rightChar result |
+	
+	endPos := stop min: self size.
+	
+	(endPos < start) ifTrue: [ ^ #() ].  "Nothing to check"
+	
+	leftChar := self at: start.
+	
+	(endPos = start) ifTrue: [ "One character. No two characters to compare"
+		(leftChar isLineSeparator) 
+		ifTrue: [ ^ { 1 } ]
+		ifFalse: [ ^ #() ]
+	].
+	
+	result := OrderedCollection new.
+	
+	"(endPos > start) means at least two codePoints"
+	
+	curPos := start + 1.
+	[curPos <= endPos] whileTrue: [ 
+		rightChar := self at: curPos.
+		
+		(UniChar isLineBreakBetween: leftChar and: rightChar)
+			ifTrue: [result add: curPos].
+
+		leftChar := rightChar.
+		curPos := curPos + 1.
+	].
+	"Note that End Of Text is considered to have a line break."
+	(result includes: (self size)) ifFalse: [result add: self size + 1].
+	
+	^ result asArray
+	! !
+
 !UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 16:47'!
 print
 	"Display self on the Transcript"
 
 	Transcript addEntry: self. Transcript newLine ! !
 
-!UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:06'!
+!UniString methodsFor: 'printing' stamp: 'KenD 3/24/2013 10:12'!
 printOn: aStream 
-	"Print inside string quotes, doubling inbedded quotes."
+	"Look good in the inspector"
+"
+	'little string thing' asUniString inspect.
+"
+	aStream nextPutAll: 'UniString('.
+	self storeOn: aStream.
+	aStream nextPut: $)! !
 
-	self storeOn: aStream! !
-
-!UniString methodsFor: 'printing' stamp: 'KenD 2/17/2013 15:55'!
+!UniString methodsFor: 'printing' stamp: 'KenD 3/24/2013 10:13'!
 printString
 
-	^String streamContents: [:s | self printOn: s]! !
+	^String streamContents: [:s | self storeOn: s]! !
 
 !UniString methodsFor: 'private' stamp: 'KenD 2/17/2013 21:57'!
 rebalance
@@ -4065,6 +4209,27 @@ withNewLines
 
 	^ self collect: [ :c | c = $\ ifTrue: [ Character newLineCharacter ] ifFalse: [ c ]].! !
 
+!UniString methodsFor: 'converting' stamp: 'KenD 3/30/2013 16:24'!
+withNoLineLongerThan: maxCharsWanted
+	"Answer a string with the same content as receiver, 
+	but rewrapped so that no line has more characters than maxCharsWanted (an Integer)"
+	
+	| |
+	maxCharsWanted isNumber not | (maxCharsWanted < 1) ifTrue: [self error: 'too narrow'].
+"	
+	result := UniString emptyString.
+
+	self lineIndicesDo: [ :start :endWODelim :end |
+		((endWODelim - start + 1) > maxCharsWanted) ""Size larger than wanted?""
+		ifTrue: [result := result , 
+					(self wrapFrom: start to: endWODelim wrapLength: maxCharsWanted) 		]
+		ifFalse: [result := result , self copyFrom: start to: end] ""include line delimiter(s)""
+	].
+		
+	^ result 
+"
+	^ self wrapFrom: 1 to: self size wrapLength: maxCharsWanted ! !
+
 !UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 21:25'!
 withoutLeadingDigits
 	"Answer the portion of the receiver that follows any leading series of digits and blanks.  If the receiver consists entirely of digits and blanks, return an empty string.
@@ -4118,6 +4283,42 @@ withoutTrailingDigits
 'and with several words 9876' asRope withoutTrailingDigits
 ' 123another one123 ' asRope withoutTrailingDigits
 "
+! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 3/30/2013 16:22'!
+wrapFrom: start to: end wrapLength: maxLenWanted
+	"Answer a UniString with newlines such that no line is longer than maxLenWanted"
+	
+	| breaksForLine maxEnd breaks result |
+	maxEnd := (self size + 1) min: (start + maxLenWanted).
+	
+	breaksForLine := self possibleLineBreaksBetween: start and: end.
+	breaks := breaksForLine select: [ :index | (index > start) and: [index <= maxEnd]].
+	
+	"Nota Bene: Smalltalk want to break BRFORE spaces and eliminate spaces
+	 at start of  line.   Unicode wants to break AFTER spaces."
+
+	(breaks size isZero)
+	ifTrue: [ 
+		(breaksForLine size isZero)
+		ifTrue: [	 ^ self copyFrom: start to: (end min: self size) ]
+		ifFalse: [
+			^(self copyFrom: start to: (breaksForLine first - 1)) withBlanksTrimmed , 
+			  UniString newLineString ,
+			  (self wrapFrom: breaksForLine first to: end wrapLength: maxLenWanted)
+		]
+	]
+	ifFalse: [
+		"add line start before break"
+		result := (self copyFrom: start to: (breaks last - 1))  withBlanksTrimmed.
+		((breaks last) >= end)
+		ifTrue: [ ^ result ] "done"
+		ifFalse: [  "chunk through the rest"
+			^ result , 
+			   UniString newLineString ,
+			   (self wrapFrom: (breaks last) to: end wrapLength: maxLenWanted)  withBlanksTrimmed 
+		]
+	].
 ! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 3/22/2013 16:40'!
@@ -4409,12 +4610,18 @@ initialize
 	"default"
 	uniString := UniString emptyString.! !
 
-!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/22/2013 16:43'!
+!UniStringWrapper methodsFor: 'printing' stamp: 'KenD 3/24/2013 13:27'!
 printOn: aStream
+	"Look good in the inspector"
+"
+	(UniStringWrapper fromString: 'little wrapped thing') inspect.
+"
+	aStream nextPutAll: 'Uni*Wrap*('. "UniStringWrapper is very long"
+	uniString storeOn: aStream.
+	aStream nextPut: $)
+	! !
 
-	uniString printOn: aStream ! !
-
-!UniStringWrapper methodsFor: 'delegation' stamp: 'KenD 3/22/2013 16:39'!
+!UniStringWrapper methodsFor: 'printing' stamp: 'KenD 3/22/2013 16:39'!
 printString
 
 	^uniString printString ! !
