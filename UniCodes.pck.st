@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 30 March 2013 at 4:36:06 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 30 March 2013 at 4:58:40 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -1727,7 +1727,7 @@ initializeGeneralPropertyEnums
  	PropertyNames at: Zs 	put: #SpaceSeparator.
 	! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/28/2013 23:35'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/30/2013 16:58'!
 initializeLineBreakProperties
 "
 	UniChar initializeLineBreakProperties.
@@ -1779,9 +1779,9 @@ initializeLineBreakProperties
 	JL := 20.
 	LineBreakProperties at: JL put: #HangulLJamo . "BreakBefore"
 	JT := 21.
-	LineBreakProperties at: JV put: #HangulVJamo . "DontbreakBefore | DontbreakAfter"
-	JV := 22.
 	LineBreakProperties at: JT put: #HangulTJamo . "BreakAfter"
+	JV := 22.
+	LineBreakProperties at: JV put: #HangulVJamo . "DontbreakBefore | DontbreakAfter"
 	LF := 23.
 	LineBreakProperties at: LF put: #LineFeed . "Always Break unless followed by CR"
 	NL := 24.
