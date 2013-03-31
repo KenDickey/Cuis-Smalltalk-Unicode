@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 30 March 2013 at 4:58:40 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 30 March 2013 at 8:57:03 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -3021,11 +3021,11 @@ asSymbol
 
 	^Symbol intern: self asString! !
 
-!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:20'!
+!UniString methodsFor: 'converting' stamp: 'KenD 3/30/2013 20:40'!
 asText
 	"Answer a Text whose ''string'' is the receiver."
 
-	^Text fromString: (UniStringWrapper with: self)! !
+	^Text fromString: (UniString with: self)! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 2/17/2013 15:54'!
 asUniString
@@ -3150,8 +3150,13 @@ copyFrom: start to: stop
 
 	self subclassResponsibility ! !
 
-!UniString methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:41'!
+!UniString methodsFor: 'copying' stamp: 'KenD 3/30/2013 20:34'!
 copyReplaceFrom: start to: stop with: aStringOrUniString
+	"Answer a copy of the receiver satisfying the following conditions: If 
+	stop is less than start, then this is an insertion; stop should be exactly 
+	start-1, start = 1 means insert before the first character, start = size+1 
+	means append after last character. Otherwise, this is a replacement; start 
+	and stop have to be within the receiver's bounds."
 
 	^((self copyFrom: 1 to: (start - 1)) , aStringOrUniString asUniString , (self copyFrom: (stop + 1) to: (self size))) ! !
 
@@ -3266,10 +3271,15 @@ edit
 
 	self editLabel: 'Text Editor'! !
 
-!UniString methodsFor: 'user interface' stamp: 'KenD 3/22/2013 16:36'!
+!UniString methodsFor: 'user interface' stamp: 'KenD 3/30/2013 20:51'!
 editLabel: labelString
 
-	TextModel new contents: (UniStringWrapper with: self); openLabel: labelString! !
+	SystemWindow 
+		editText: 
+			(TextModel withText: self)
+			label: labelString
+			wrap: true
+! !
 
 !UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:00'!
 encodeDoublingQuoteOn: aStream 
@@ -4507,7 +4517,7 @@ newLineString
 
 	^ (Character newLineCharacter asUniString)! !
 
-!UniString class methodsFor: 'user interface' stamp: 'KenD 3/22/2013 16:30'!
+!UniString class methodsFor: 'user interface' stamp: 'KenD 3/30/2013 20:35'!
 openTextEditor
 
 "
@@ -4517,7 +4527,7 @@ openTextEditor
 		editText: (TextModel 
 			withText: (
 			 	('Given enough rope' asUniString) , 
-				(UniString  crlfString) ,
+				(UniString  newLineString ) ,
 				('you can write a text editor!!' asUniString)
 				)) 
 			label: 'Text Editor' 
