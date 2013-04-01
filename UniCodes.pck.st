@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 30 March 2013 at 8:57:03 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 31 March 2013 at 11:40:27 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -2725,7 +2725,7 @@ size
 
 	^totalLength! !
 
-!UniSplice methodsFor: 'initialize-release' stamp: 'KenD 3/19/2013 21:02'!
+!UniSplice methodsFor: 'initialize-release' stamp: 'KenD 3/31/2013 23:18'!
 withLeft: aRope andRight: anotherRope
 
 	leftRope := aRope asUniString .
@@ -2736,7 +2736,7 @@ withLeft: aRope andRight: anotherRope
 	
 	"Meld two short flat ropes"
 	(UniSplice shouldMeld: leftRope with: rightRope)
-	ifTrue: [ ^ UniFlat fromString: ((aRope asString) , (anotherRope asString))]. "'FIXME: optimize"
+	ifTrue: [ ^ (aRope meldWith: anotherRope) ].
 	
 	"If left rope has short right child and right rope is short, meld them"
 	((leftRope class == UniSplice )
@@ -2744,7 +2744,7 @@ withLeft: aRope andRight: anotherRope
 	ifTrue: [
 		^((UniSplice 
 			splice: (leftRope leftRope) "LeftRope's left child"
-			with: (UniFlat fromString:  (leftRope rightRope asString) , (rightRope asString)  )
+			with: ( (leftRope rightRope) meldWith: rightRope  )
 		    ) balanceAsRequired)
 	].
 
@@ -3003,7 +3003,7 @@ asSmalltalkComment
 	^ result asUniString
 	! !
 
-!UniString methodsFor: 'converting' stamp: 'KenD 2/17/2013 15:54'!
+!UniString methodsFor: 'converting' stamp: 'KenD 3/31/2013 22:59'!
 asString
 
 	^self stringRepresentation! !
@@ -3271,14 +3271,13 @@ edit
 
 	self editLabel: 'Text Editor'! !
 
-!UniString methodsFor: 'user interface' stamp: 'KenD 3/30/2013 20:51'!
+!UniString methodsFor: 'user interface' stamp: 'KenD 3/31/2013 22:38'!
 editLabel: labelString
 
 	SystemWindow 
-		editText: 
-			(TextModel withText: self)
-			label: labelString
-			wrap: true
+		editText: (TextModel withText: self)
+		label: labelString
+		wrap: true
 ! !
 
 !UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:00'!
@@ -3768,6 +3767,17 @@ match: text
 (UniString fromString: '*foo*zort'')	match: 'afoodezortorfoo3zort' true
 "! !
 
+!UniString methodsFor: 'private' stamp: 'KenD 3/31/2013 23:40'!
+meldWith: otherUniString
+	"Answer a new UniString from collected Codepoints of self and otherUniString"
+	
+	| coll |
+	coll := OrderedCollection new.
+	"Use #codePointDo: as could be a UniFlatSlice or a UniFlat"
+	self codePointDo: [ :n | coll add: n].
+	otherUniString asUniString codePointDo: [ :n | coll add: n].
+	^ UniString fromCodePointCollection: coll asArray! !
+
 !UniString methodsFor: 'stream support' stamp: 'KenD 3/18/2013 16:44'!
 nextPut: aThing
 
@@ -3885,7 +3895,7 @@ print
 
 	Transcript addEntry: self. Transcript newLine ! !
 
-!UniString methodsFor: 'printing' stamp: 'KenD 3/24/2013 10:12'!
+!UniString methodsFor: 'printing' stamp: 'KenD 3/31/2013 22:50'!
 printOn: aStream 
 	"Look good in the inspector"
 "
@@ -4025,7 +4035,7 @@ storeOn: aStream
 	
 	self stringRepresentation storeOn: aStream! !
 
-!UniString methodsFor: 'printing' stamp: 'KenD 2/19/2013 14:26'!
+!UniString methodsFor: 'printing' stamp: 'KenD 3/31/2013 22:48'!
 stringRepresentation
 
 	"Do what Cuis does in String>>fromUtf8:hex:trimLastNull: "
@@ -4517,7 +4527,7 @@ newLineString
 
 	^ (Character newLineCharacter asUniString)! !
 
-!UniString class methodsFor: 'user interface' stamp: 'KenD 3/30/2013 20:35'!
+!UniString class methodsFor: 'user interface' stamp: 'KenD 3/31/2013 17:33'!
 openTextEditor
 
 "
@@ -4530,8 +4540,8 @@ openTextEditor
 				(UniString  newLineString ) ,
 				('you can write a text editor!!' asUniString)
 				)) 
-			label: 'Text Editor' 
-			wrap: true! !
+		label: 'Text Editor' 
+		wrap: true! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:49'!
 readFrom: inStream
@@ -4682,8 +4692,9 @@ with: aString
 
 	^ self basicNew with: (aString asUniString)! !
 
-!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:54'!
+!UniTestFont methodsFor: 'as yet unclassified' stamp: 'KenD 3/31/2013 17:54'!
 ascent
+
 	^16! !
 
 !UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:48'!
@@ -4706,12 +4717,15 @@ emphasis
 emphasized: code
 	^self! !
 
-!UniTestFont methodsFor: 'as yet unclassified' stamp: 'KenD 3/18/2013 18:19'!
+!UniTestFont methodsFor: 'as yet unclassified' stamp: 'KenD 3/31/2013 17:53'!
 height
+
 	^16! !
 
-!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 15:29'!
+!UniTestFont methodsFor: 'as yet unclassified' stamp: 'KenD 3/31/2013 17:53'!
 widthOf: anUniChar
+	"@@FIXME: Zero (combining marks, zero width space, ..), 8 (half width :Latin), 16 (full width)"
+	
 	^16! !
 
 !UniTestFont class methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:51'!
