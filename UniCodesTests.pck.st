@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 30 March 2013 at 4:36:03 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 1 April 2013 at 8:47:53 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -498,7 +498,7 @@ testMatch
 	self assert: ((('ABCdefabcd'  asUniString) findSubstring: 'abc' startingAt: 1 caseSensitive: false) = 1).
 	self assert: ((('ABCdefabcd'  asUniString) findSubstring: 'xyz' startingAt: 1 caseSensitive: false) = 0).! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:51'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/1/2013 17:21'!
 testMeld
 	"Do we meld short ropes?"
 
@@ -519,6 +519,9 @@ testMeld
 	self assert: ( (shortFlat , shortFlat , shortFlat) depth = 0 ).
 	self assert: ((('Given enough rope' asUniString) ,  (UniString newLineString) , ('you can write a text editor!!' asUniString )) depth = 2).
 	self assert: ((('Given enough rope' asUniString) ,  (UniString newLineString) , ('you can write a text editor!!' asUniString)) size = 46).
+	self assert: (YiJing size = 6).
+	"(ShortWordArray new: 7) size. --> 8"
+	self assert: (('z' asUniString) , YiJing) size = 7. 
 ! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:50'!
@@ -924,7 +927,7 @@ testUniStringEnumeration
 	self assert: ((testStr collect: [ :uchar | uchar asUppercase]) =  (testStr asUppercase)).
 	self assert: ((testStr collect: [ :uchar | uchar asLowercase]) =  (testStr asLowercase)).! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 2/17/2013 20:57'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/1/2013 08:05'!
 testUniStringMeld
 	"Do we meld short ropes?"
 
@@ -943,7 +946,9 @@ testUniStringMeld
 	self assert: ( (shortFlat , shortFlat , longFlat) depth = 1 ).
 	self assert: ( (shortFlat , longFlat , shortFlat) depth = 2 ).
 	self assert: ( (shortFlat , shortFlat , shortFlat) depth = 0 ).
-! !
+	self assert: (subRope meldWith: ('xxx' asUniString)) = 'abcd5678hijkxxx'.
+	self assert:  (('xxx' asUniString) meldWith: subRope) = 'xxxabcd5678hijk'.
+	! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:10'!
 testUniStringMutation
@@ -985,7 +990,7 @@ testUniStringMutation
 	
 ! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/18/2013 21:27'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/1/2013 20:27'!
 testUniStringPrint
 	"What does it look like?"
 
@@ -1003,8 +1008,8 @@ testUniStringPrint
 				  '''abcd5678hijk new string tailabcd5678hijk new string tail''' ).
 	self assert: ((concRope3 printString) =  '''Now is the time abcd5678hijk''').
 	
-	self assert: (((UniString fromString: ($¤ asString)) stringRepresentation) = '&#x20AC; ' ).
-	self assert: (((UniString fromString: ($¤ asString)) printString) = '''&#x20AC; ''' ).
+	self assert: (((UniString fromString: ($¤ asString)) stringRepresentation) =  '&#x20AC;' ).
+	self assert: (((UniString fromString: ($¤ asString)) printString) =  '''&#x20AC;''' ).
 	self assert: ((YiJing stringRepresentation) =  '&#x4E7E; &#x5143;&#x4EA8;&#x5229;&#x8C9E;' ).
 
 ! !

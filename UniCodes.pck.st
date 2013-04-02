@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 31 March 2013 at 11:40:27 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 1 April 2013 at 8:47:50 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -63,7 +63,7 @@ UniString class
 
 !classDefinition: #UniFlat category: #UniCodes!
 UniString subclass: #UniFlat
-	instanceVariableNames: 'charBlock'
+	instanceVariableNames: 'charBlock length'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'UniCodes'!
@@ -2203,11 +2203,11 @@ codePointAt: anIndex
 	
 	^self charBlock at: anIndex! !
 
-!UniFlat methodsFor: 'enumerating' stamp: 'KenD 2/17/2013 21:41'!
+!UniFlat methodsFor: 'enumerating' stamp: 'KenD 4/1/2013 19:31'!
 codePointDo: aBlock
 	"aBlock takes each codePoint in me as an argument"
 
-	self charBlock do: aBlock ! !
+	(1 to: length) do: [ :index | aBlock value: (charBlock at: index)].! !
 
 !UniFlat methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:11'!
 copyFrom: start to: stop 
@@ -2236,16 +2236,22 @@ depth
 	
 	^0! !
 
-!UniFlat methodsFor: 'enumerating' stamp: 'KenD 2/17/2013 19:48'!
+!UniFlat methodsFor: 'enumerating' stamp: 'KenD 4/1/2013 19:32'!
 do: aBlock
 	"aBlock takes each Unicode character in me as an argument"
 
-	self charBlock do: [ :codePoint | aBlock value: (codePoint asUniChar) ]! !
+	self codePointDo: [ :codePoint | aBlock value: (codePoint asUniChar) ]! !
 
-!UniFlat methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:19'!
+!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 19:38'!
+initialize
+
+	super initialize.
+	length := 0. "default"! !
+
+!UniFlat methodsFor: 'accessing' stamp: 'KenD 4/1/2013 19:42'!
 size
 	
-	^ ( self charBlock size )! !
+	^ length ! !
 
 !UniFlat methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:13'!
 substringFrom: startIndex length: numChars
@@ -2256,25 +2262,48 @@ substringFrom: startIndex length: numChars
 	]
 	ifFalse: [self errorSubscriptBounds: startIndex]! !
 
-!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 3/18/2013 16:57'!
+!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 19:22'!
 with: aCharBlock
 
 	| blockClass |
 	blockClass := aCharBlock class.
-	
-	(blockClass == String) ifTrue: [ charBlock := aCharBlock asByteArray. ^self ].
+	"Nota Bene:  (ShortWordArray new: 7) size. ==> 8
+	Use #UniFlat:with:size:"
+	length := aCharBlock size. 
+
+	(blockClass == String) ifTrue: [ 
+		charBlock := aCharBlock asByteArray. 
+		^self 
+	].
 	
 	((blockClass == ByteArray) or: [(blockClass == ShortWordArray) or: [ blockClass == WordArray]])
 	ifTrue: [	 charBlock := aCharBlock. ^self]  "Nota Bene: assumed immutable"
 
 	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
 
-!UniFlat class methodsFor: 'user interface' stamp: 'KenD 3/18/2013 16:52'!
+!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 19:20'!
+with: aCharBlock size: size
+
+	| blockClass |
+	blockClass := aCharBlock class.
+	length := size.
+	
+	(blockClass == String) ifTrue: [ 
+		charBlock := aCharBlock asByteArray. 
+		^self 
+	].
+	
+	((blockClass == ByteArray) or: [(blockClass == ShortWordArray) or: [ blockClass == WordArray]])
+	ifTrue: [	 charBlock := aCharBlock. ^self]  "Nota Bene: assumed immutable"
+
+	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
+
+!UniFlat class methodsFor: 'user interface' stamp: 'KenD 4/1/2013 20:04'!
 fromString: aString
 	"Answer a new UniString.
 	As the string must be immutable, we will keep a copy."
 	
-	^ (self new initialize with: (aString asString copy); yourself)! !
+	^ (self new initialize with: (aString asString copy) size: aString size; yourself)! !
 
 !UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 21:52'!
 at: anIndex
@@ -2342,15 +2371,11 @@ codePointAt: anIndex
 
 	^self charBlock at: (anIndex + startIndex - 1)! !
 
-!UniFlatSlice methodsFor: 'enumerating' stamp: 'KenD 2/19/2013 15:44'!
+!UniFlatSlice methodsFor: 'enumerating' stamp: 'KenD 4/1/2013 19:34'!
 codePointDo: aBlock
 	"aBlock takes each codePoint in me as an argument"
 
-	| start end codePointBlock |
-	start := self startIndex.
-	end := start + self size - 1.
-	codePointBlock := self charBlock. "cache locally"
-	start to: end do: [ :index |  aBlock value: (codePointBlock at: index) ]! !
+	startIndex to: (startIndex + length - 1) do: [ :index |  aBlock value: (charBlock at: index) ]! !
 
 !UniFlatSlice methodsFor: 'copying' stamp: 'KenD 2/17/2013 22:07'!
 copyFrom: start to: stop 
@@ -2387,6 +2412,14 @@ do: aBlock
 	"aBlock takes each Unicode character in me as an argument"
 
 	self codePointDo: [ :codePoint |  aBlock value: (codePoint asUniChar) ]! !
+
+!UniFlatSlice methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 20:06'!
+initialize
+
+	super initialize.
+	"set defaults"
+	length := 0.
+	startIndex := 1.! !
 
 !UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:37'!
 size
@@ -3271,7 +3304,7 @@ edit
 
 	self editLabel: 'Text Editor'! !
 
-!UniString methodsFor: 'user interface' stamp: 'KenD 3/31/2013 22:38'!
+!UniString methodsFor: 'user interface' stamp: 'KenD 4/1/2013 16:54'!
 editLabel: labelString
 
 	SystemWindow 
@@ -3767,7 +3800,7 @@ match: text
 (UniString fromString: '*foo*zort'')	match: 'afoodezortorfoo3zort' true
 "! !
 
-!UniString methodsFor: 'private' stamp: 'KenD 3/31/2013 23:40'!
+!UniString methodsFor: 'private' stamp: 'KenD 4/1/2013 19:28'!
 meldWith: otherUniString
 	"Answer a new UniString from collected Codepoints of self and otherUniString"
 	
@@ -3776,6 +3809,7 @@ meldWith: otherUniString
 	"Use #codePointDo: as could be a UniFlatSlice or a UniFlat"
 	self codePointDo: [ :n | coll add: n].
 	otherUniString asUniString codePointDo: [ :n | coll add: n].
+
 	^ UniString fromCodePointCollection: coll asArray! !
 
 !UniString methodsFor: 'stream support' stamp: 'KenD 3/18/2013 16:44'!
@@ -3788,7 +3822,7 @@ nextPutAll: aCollection
 
 	^ self , (aCollection as: UniString)! !
 
-!UniString methodsFor: 'private' stamp: 'KenD 3/21/2013 19:35'!
+!UniString methodsFor: 'private' stamp: 'KenD 4/1/2013 20:44'!
 numArgs 
 	"Answer either the number of arguments that the receiver would take if considered a selector.  Answer -1 if it couldn't be a selector. It is intended mostly for the assistance of spelling correction."
 
@@ -3810,7 +3844,7 @@ numArgs
 			ifTrue: [^ numColons]
 			ifFalse: [^ -1]].
 	"Test case of binary selector, if self allSatisfy: #isSpecial (inlined for speed)"
-	1 to: self size do: [:i | (self at: i) isSpecial ifFalse: [^ -1]].
+	1 to: self size do: [:i | ((self at: i) isSpecial) ifFalse: [^ -1]].
 	^1! !
 
 !UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 22:26'!
@@ -4375,7 +4409,7 @@ fibonacci
 "
 	^Fibonacci ! !
 
-!UniString class methodsFor: 'private' stamp: 'KenD 2/27/2013 21:12'!
+!UniString class methodsFor: 'private' stamp: 'KenD 4/1/2013 19:27'!
 fromCodePointCollection: anIntegerCollection
 	"Answer a UniString"
 	
@@ -4404,7 +4438,7 @@ fromCodePointCollection: anIntegerCollection
 	"Pack 'em tight"
 	1 to: length do:	[ :index | charBlock at: index put: (anIntegerCollection at: index) ].
 	
-	^ (UniFlat new initialize with: charBlock) 
+	^ (UniFlat new initialize with: charBlock size: length) 
 ! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:47'!
@@ -4413,18 +4447,13 @@ fromPacked: aLong
 	
 	^ (String fromPacked: aLong) asUniString ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 14:13'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 4/1/2013 19:59'!
 fromString: aString
 	"Answer a new UniString"
 
 	(aString class == String)
 	ifFalse: [ DomainError signal: 'UniString fromString: requires a String argument' ]
-	ifTrue: [	 | codePointsColl |
-		codePointsColl := OrderedCollection new: (aString size).
-		1 to: (aString size) do: [ :index | codePointsColl addLast: (aString at: index) unicodeCodePoint ].
-		
-		^ (self fromCodePointCollection:codePointsColl)
-	]
+	ifTrue: [	 ^ self fromCodePointCollection: (aString asArray collect: [ :c | c unicodeCodePoint]) ]
 ! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:48'!
@@ -4508,17 +4537,14 @@ merge: leafNodes start: start end: end
 	   (self merge: leafNodes start: middle end: end)
 ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/20/2013 22:44'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 4/1/2013 20:31'!
 newFrom: aCollection
 	"Answer  <acollection of codePoints or Characters> as: UniString"
 
 "
-	 { 16r4E7E. 16r0020. 16r5143. 16r4EA8. 16r5229. 16r8C9E  } as: UniString
+	 { 16r4E7E. 16r0020. 16r5143. 16r4EA8. 16r5229. 16r8C9E  } as: UniString.
 "
-	| newArray |
-	newArray _ Array new: aCollection size.
-	1 to: aCollection size do: [:i | newArray at: i put: (aCollection at: i) asInteger].
-	^ UniString fromCodePointCollection: newArray
+	^ UniString fromCodePointCollection: (aCollection asArray collect: [ :elt | elt asInteger])
 	! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 13:25'!
