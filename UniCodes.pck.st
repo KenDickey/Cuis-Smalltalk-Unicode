@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1665] on 3 April 2013 at 4:45:42 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1661] on 3 April 2013 at 8:08:49 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -2619,12 +2619,12 @@ License for blanks.hex
 '
 ! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 3/3/2013 20:02'!
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/3/2013 20:08'!
 readFormsArray: fileName
 
 	| formsArray fileStream aLine |
 	formsArray := Array new: 16rFFFF + 1 withAll: nil.
-	fileStream := StandardFileStream oldFileNamed: fileName.
+	fileStream := FileStream concreteStream readOnlyFileNamed: fileName.
 	
 	aLine := fileStream nextLine.
 	"Each line is of form:  
