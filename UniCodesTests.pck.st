@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 1 April 2013 at 8:47:53 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1665] on 3 April 2013 at 4:26:43 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -1028,7 +1028,7 @@ testUniStringRebalance
 	self assert: ( t2 depth = 11 ).
 	self assert: ( t2 rebalance depth = 4 ).! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/24/2013 10:25'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/3/2013 16:26'!
 testUniStringWrapper
 
 	| wrapper |
@@ -1037,6 +1037,8 @@ testUniStringWrapper
 	self assert: (wrapper printString  = '''Test me more and better.'''  ).
 	wrapper nextPutAll: #( $f $u $n).
 	self assert:  ((wrapper stringRepresentation)  =  'Test me more and better.fun' ).
+	self assert: ((UniStringWrapper new: 10) copyReplaceFrom: 3 to: 5 with: 'abc')
+		= '  abc     '.
 	! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 2/17/2013 21:08'!

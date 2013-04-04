@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1626] on 1 April 2013 at 8:47:50 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1665] on 3 April 2013 at 4:45:42 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -3323,6 +3323,17 @@ encodeDoublingQuoteOn: aStream
 		char == $' ifTrue: [aStream print: char]].
 	aStream print: $'! !
 
+!UniString methodsFor: 'accessing' stamp: 'KenD 4/3/2013 16:00'!
+encompassLine: anInterval
+	"Return an interval that includes anInterval, and that comprises one or several whole paragraphs in the receiver.
+	Answer starts at the position following a newLine (or eventually 1) and ends before a newLine (or eventually at self size)
+	See also encompassParagraph:"
+	| left rightCr rightNull |
+	left _ (self lastIndexOf: Character newLineCharacter startingAt: anInterval first - 1 ifAbsent:[0]) + 1.
+	rightCr _ (self indexOf: Character newLineCharacter startingAt: (anInterval last max: anInterval first) ifAbsent: [self size+1])-1.
+	rightNull _ (self indexOf: Character null startingAt: (anInterval last max: anInterval first) ifAbsent: [self size+1])-1.
+	^left to: (rightCr min: rightNull)! !
+
 !UniString methodsFor: 'accessing' stamp: 'KenD 3/29/2013 17:01'!
 encompassParagraph: anInterval
 	"Return an interval that includes anInterval, and that comprises one or several whole paragraphs in the receiver.
@@ -3965,16 +3976,16 @@ rebalance
 	].
 	^ UniString merge: leafNodes start: 1 end: (leafNodes size).! !
 
-!UniString methodsFor: 'copying' stamp: 'KenD 3/18/2013 15:28'!
+!UniString methodsFor: 'copying' stamp: 'KenD 4/3/2013 15:53'!
 replaceFrom: start to: stop with: replacement startingAt: repStart
 		"Answer a new UniString rope with the replacement.
 		Nota Bene: The String method with this name is destructive!!!!"
 		| repRope |
 		repRope := replacement asUniString.
-		
+"	
 		self halt: 
 'The String method with this name is destructive. The UniString version is not, Use UniStringWrapper'.
-		
+"	
 		^ self copyReplaceFrom: start to: stop with: (repRope copyFrom: repStart to: (repRope size)).! !
 
 !UniString methodsFor: 'enumerating' stamp: 'KenD 3/18/2013 21:53'!
@@ -4409,16 +4420,17 @@ fibonacci
 "
 	^Fibonacci ! !
 
-!UniString class methodsFor: 'private' stamp: 'KenD 4/1/2013 19:27'!
+!UniString class methodsFor: 'private' stamp: 'KenD 4/3/2013 08:45'!
 fromCodePointCollection: anIntegerCollection
 	"Answer a UniString"
 	
 	"Determine size to allocate"
-	| length num8 num16 num32 charBlock |
+	| length allocLength num8 num16 num32 charBlock |
 	num8  := 0.
 	num16 := 0.
 	num32 := 0.
 	length := anIntegerCollection size.
+	allocLength := (length odd) ifTrue: [ length + 1] ifFalse: [length].
 	
 	anIntegerCollection do: [ :codePoint | 
 		(codePoint < 16rFF)
@@ -4430,9 +4442,9 @@ fromCodePointCollection: anIntegerCollection
 	].
 	"@@FIXME: is a small number of larger codepoints use UniSplice'd ropes"
 	(num32 > 0)
-	ifTrue: [charBlock := WordArray new: length]
+	ifTrue: [charBlock := WordArray new: allocLength]
 	ifFalse: [(num16 > 0)
-			ifTrue: [charBlock := ShortWordArray  new: length]
+			ifTrue: [charBlock := ShortWordArray  new: allocLength]
 			ifFalse: [charBlock := ByteArray new: length]
 	].
 	"Pack 'em tight"
@@ -4553,7 +4565,7 @@ newLineString
 
 	^ (Character newLineCharacter asUniString)! !
 
-!UniString class methodsFor: 'user interface' stamp: 'KenD 3/31/2013 17:33'!
+!UniString class methodsFor: 'user interface' stamp: 'KenD 4/3/2013 16:28'!
 openTextEditor
 
 "
@@ -4563,7 +4575,7 @@ openTextEditor
 		editText: (TextModel 
 			withText: (
 			 	('Given enough rope' asUniString) , 
-				(UniString  newLineString ) ,
+				(UniString  newLineString) ,
 				('you can write a text editor!!' asUniString)
 				)) 
 		label: 'Text Editor' 
@@ -4712,6 +4724,11 @@ defaultFontClass
 fromString: aString
 
 	^ self with: aString! !
+
+!UniStringWrapper class methodsFor: 'instance creation' stamp: 'KenD 4/3/2013 15:53'!
+new: aSize
+
+	^ UniStringWrapper fromString: (String new: aSize withAll: Character space)! !
 
 !UniStringWrapper class methodsFor: 'instance creation' stamp: 'KenD 3/20/2013 08:21'!
 with: aString
