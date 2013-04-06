@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1665] on 3 April 2013 at 4:26:43 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 5 April 2013 at 4:01:04 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -1089,6 +1089,16 @@ testUpTo
 	self assert: #copy:from:to: asUniString keywords = #(copy: from: to:).
 	self assert: #up asUniString keywords = #(up).
 	self assert: #at: asUniString keywords = #(at:).
+	! !
+
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/5/2013 16:00'!
+testUtf8Conversion
+
+	| utf8 |
+	
+	utf8 _ ByteArray readHexFrom: ('CE BC 20 CE A9 20 CF 89 20 54 68 65 20 64 65 63 6F 6D 70 6F 73 69 74 69 6F 6E 20 6D 61 70 70 69 6E 67 20 69 73 20 3C EC B8 A0 2C 20 E1 86 B8 3E 2C 20 61 6E 64 20 6E 6F 74 20 3C E1 84 8E 2C 20 E1 85 B3 2C 20 31 31 42 38 3E 2E 0A 3C 70 3E 54 68 65 20 74 69 74 6C 65 20 73 61 79 73 20 E2 80 AB D7 A4 D7 A2 D7 99 D7 9C D7 95 D7 AA 20 D7 94 D7 91 D7 99 D7 A0 D7 90 D7 95 D7 9D 2C 20 57 33 43 E2 80 AC 20 69 6E 20 48 65 62 72 65 77 3C 2F 70 3E 0A 61 62 63 E0 A4 95 E0 A4 96 E0 A5 80 E5 9C 8B E9 9A 9B F0 90 8E 84 F0 90 8E 94 F0 90 8E 98' reject: [ :char  | char isSeparator ]).
+
+	self assert: ((UniString fromUtf8: utf8) asUtf8) = utf8.
 	! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/30/2013 16:35'!

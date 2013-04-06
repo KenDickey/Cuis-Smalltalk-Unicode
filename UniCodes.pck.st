@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1661] on 3 April 2013 at 8:08:49 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 5 April 2013 at 6:22:55 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -226,7 +226,43 @@ asUniString
 
 	^UniString fromString: (self asString )! !
 
-!Integer methodsFor: '*unicodes' stamp: 'KenD 2/19/2013 14:04'!
+!Integer methodsFor: '*unicodes' stamp: 'KenD 4/5/2013 16:27'!
+asUtf8toStream: aStream
+	"Add self to aStream as a Utf8 Unicode code point"
+
+	self < 128 ifTrue: [ 
+		^ aStream nextPut: self ].
+	self < 2048 ifTrue: [ 
+		^ aStream 
+			nextPut: (2r11000000 + (self bitShift: -6)); 
+			nextPut: (2r10000000 + (self bitAnd: 2r111111)) ].
+	self < 65535 ifTrue: [ 
+		^ aStream 
+			nextPut: (2r11100000 + (self bitShift: -12));
+			nextPut: (2r10000000 + ((self bitShift: -6) bitAnd: 2r111111)); 
+			nextPut: (2r10000000 + (self bitAnd: 2r111111)) ].
+	self <= 16r10FFFF  ifTrue: [  "maximum UTF8 code point"
+		^ aStream 
+			nextPut: (2r11110000 + (self bitShift: -18));
+			nextPut: (2r10000000 + (self bitShift: -12));
+			nextPut: (2r10000000 + ((self bitShift: -6) bitAnd: 2r111111)); 
+			nextPut: (2r10000000 + (self bitAnd: 2r111111)) ].
+	self error: 'Unicode character code point outside range'! !
+
+!Integer methodsFor: '*unicodes' stamp: 'KenD 2/24/2013 09:48'!
+uniDigit
+	"This is a Unicode codePoint value representing a digit.  Return the corresponding digit value"
+	(UniChar zeroCodePoints) 
+		findBinary: [ :elt | self - elt ] "Compare block "
+	 	do: [ :exactMatch | ^exactMatch ]
+	 	ifNone: [ :low :high | ^ self - low ]
+		
+"
+16r32 uniDigit .  -> 2
+16r7C2 uniDigit -> 2.
+"! !
+
+!Integer class methodsFor: '*unicodes' stamp: 'KenD 4/5/2013 16:34'!
 nextUnicodeCodePointFromUtf8: anUtf8Stream
 	"anUtf8Stream can be over a ByteArray
 	Answer nil if conversion not possible, because of invalid UTF-8.
@@ -265,19 +301,6 @@ nextUnicodeCodePointFromUtf8: anUtf8Stream
 			+ (byte4 bitAnd: 63) ].
 
 	^nil! !
-
-!Integer methodsFor: '*unicodes' stamp: 'KenD 2/24/2013 09:48'!
-uniDigit
-	"This is a Unicode codePoint value representing a digit.  Return the corresponding digit value"
-	(UniChar zeroCodePoints) 
-		findBinary: [ :elt | self - elt ] "Compare block "
-	 	do: [ :exactMatch | ^exactMatch ]
-	 	ifNone: [ :low :high | ^ self - low ]
-		
-"
-16r32 uniDigit .  -> 2
-16r7C2 uniDigit -> 2.
-"! !
 
 !Number methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 09:02'!
 asUniChar
@@ -400,6 +423,31 @@ asUniString
 asUppercase
 
 	^self toUpper! !
+
+!UniChar methodsFor: 'streams' stamp: 'KenD 4/5/2013 16:36'!
+asUtf8toStream: aStream
+	"Add self to aStream as Utf8"
+	
+	"codePoint asUtf8toStream: aStream"
+
+	codePoint < 128 ifTrue: [ 
+		^ aStream nextPut: codePoint ].
+	codePoint < 2048 ifTrue: [ 
+		^ aStream 
+			nextPut: (2r11000000 + (codePoint bitShift: -6)); 
+			nextPut: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	codePoint < 65535 ifTrue: [ 
+		^ aStream 
+			nextPut: (2r11100000 + (codePoint bitShift: -12));
+			nextPut: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
+			nextPut: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	codePoint <= 16r10FFFF  ifTrue: [  "maximumUTF8Code"
+		^ aStream 
+			nextPut: (2r11110000 + (codePoint bitShift: -18));
+			nextPut: (2r10000000 + (codePoint bitShift: -12));
+			nextPut: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
+			nextPut: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	self error: 'Unicode character code point outside range'! !
 
 !UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:53'!
 canBeGlobalVarInitial
@@ -1972,6 +2020,51 @@ newPage
 
 	^ (12 asUniChar)! !
 
+!UniChar class methodsFor: 'streams' stamp: 'KenD 4/5/2013 16:41'!
+nextUniCharFromUtf8: anUtf8Stream
+	"anUtf8Stream can be over a ByteArray
+	Answer nil if conversion not possible, because of invalid UTF-8.
+	Also answer nil for codePoint U+FEFF (BOM, unneededly added by Win clipboard)"
+
+	| byte1 byte2 byte3 byte4 codePoint |
+	byte1 := anUtf8Stream next asInteger.
+	byte1 < 128 ifTrue: [ ^ byte1 asUniChar ]. "single byte"
+	
+	"At least 2 bytes"
+	byte2 := anUtf8Stream next asInteger.
+	(byte2 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
+	
+	(byte1 bitAnd: 16rE0) = 192 ifTrue: [ "two bytes"
+		codePoint :=  (((byte1 bitAnd: 31) bitShift: 6) 
+					 + (byte2 bitAnd: 63)).
+		^ codePoint asUniChar
+	].
+	
+	"At least 3 bytes"
+	byte3 := anUtf8Stream next asInteger.
+	(byte3 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
+	
+	(byte1 bitAnd: 16rF0) = 224 ifTrue: [ "three bytes"
+		codePoint :=  ((byte1 bitAnd: 15) bitShift: 12) 
+					+ ((byte2 bitAnd: 63) bitShift: 6) 
+					+ (byte3 bitAnd: 63).
+		^ codePoint asUniChar
+	].
+
+	"4 bytes"
+	byte4 := anUtf8Stream next asInteger.
+	(byte4 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
+	
+	(byte1 bitAnd: 16rF8) = 240 ifTrue: [  "four bytes"
+		codePoint :=  ((byte1 bitAnd: 16r7) bitShift: 18) 
+					+ ((byte2 bitAnd: 63)   bitShift: 12) 
+					+ ((byte3 bitAnd: 63)   bitShift:   6) 
+					+ (byte4 bitAnd: 63).
+		^ codePoint asUniChar
+	].
+
+	^nil! !
+
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:41'!
 null
 	"Answer the null Character."
@@ -2204,7 +2297,7 @@ codePointAt: anIndex
 	^self charBlock at: anIndex! !
 
 !UniFlat methodsFor: 'enumerating' stamp: 'KenD 4/1/2013 19:31'!
-codePointDo: aBlock
+codePointsDo: aBlock
 	"aBlock takes each codePoint in me as an argument"
 
 	(1 to: length) do: [ :index | aBlock value: (charBlock at: index)].! !
@@ -2240,7 +2333,7 @@ depth
 do: aBlock
 	"aBlock takes each Unicode character in me as an argument"
 
-	self codePointDo: [ :codePoint | aBlock value: (codePoint asUniChar) ]! !
+	self codePointsDo: [ :codePoint | aBlock value: (codePoint asUniChar) ]! !
 
 !UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 19:38'!
 initialize
@@ -2372,7 +2465,7 @@ codePointAt: anIndex
 	^self charBlock at: (anIndex + startIndex - 1)! !
 
 !UniFlatSlice methodsFor: 'enumerating' stamp: 'KenD 4/1/2013 19:34'!
-codePointDo: aBlock
+codePointsDo: aBlock
 	"aBlock takes each codePoint in me as an argument"
 
 	startIndex to: (startIndex + length - 1) do: [ :index |  aBlock value: (charBlock at: index) ]! !
@@ -2411,7 +2504,7 @@ depth
 do: aBlock
 	"aBlock takes each Unicode character in me as an argument"
 
-	self codePointDo: [ :codePoint |  aBlock value: (codePoint asUniChar) ]! !
+	self codePointsDo: [ :codePoint |  aBlock value: (codePoint asUniChar) ]! !
 
 !UniFlatSlice methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 20:06'!
 initialize
@@ -2691,12 +2784,12 @@ codePointAt: anIndex
 	ifFalse: [^rightRope codePointAt: (anIndex - leftLength)]! !
 
 !UniSplice methodsFor: 'enumerating' stamp: 'KenD 2/17/2013 21:40'!
-codePointDo: aBlock
+codePointsDo: aBlock
 	"aBlock takes each codePoint in me as an argument"
 
 	"recurse into the leaves, give them aBlock, and let them do the work"
-	self leftRope  codePointDo: aBlock.
-	self rightRope codePointDo: aBlock.! !
+	self leftRope  codePointsDo: aBlock.
+	self rightRope codePointsDo: aBlock.! !
 
 !UniSplice methodsFor: 'copying' stamp: 'KenD 2/17/2013 21:55'!
 copyFrom: start to: stop 
@@ -3070,6 +3163,52 @@ asUppercase
 
 	^ self collect: [ :uchar | uchar asUppercase ]! !
 
+!UniString methodsFor: 'converting' stamp: 'KenD 4/5/2013 16:29'!
+asUtf8
+	"Answer a byte array Utf8 encoding"
+	
+	^ ByteArray streamContents: [ :stream |
+		self codePointsDo: [ :code | code asUtf8toStream: stream ]
+	  ]! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 4/5/2013 18:22'!
+asUtf8: convertEmbeddedNCRs
+	"Convert the given string to UTF-8.  Answer a ByteArray.
+	
+	If convertEmbeddedNCRs, then convert embedded NCRs such as '&#956;' (decimal) or '&#x03BC;' (hex) to CodePoints.
+	See http://en.wikipedia.org/wiki/Numeric_character_reference"
+	
+	convertEmbeddedNCRs ifFalse: [ ^ self asUtf8 ].
+	
+	^ByteArray streamContents: [ :outStream |
+		 | inStream nextChar prevPos maybeUnicodeNCR ncrSize codePoint |
+		inStream _ self readStream.
+		[ inStream atEnd ] whileFalse: [
+			nextChar _ inStream next.
+			( nextChar = $& )
+			ifFalse: [ nextChar asUtf8toStream: outStream ]
+			ifTrue: [
+				prevPos _ inStream position.
+				maybeUnicodeNCR _ inStream next: 9.
+				(maybeUnicodeNCR first = $#)
+				ifTrue: [
+					ncrSize _ maybeUnicodeNCR indexOf: $;.
+					(ncrSize = 0)
+					ifTrue: [ "Not an NCR after all. Just add the $& and continue from there"
+						nextChar asUtf8toStream: outStream.
+						inStream position: prevPos.
+					]
+					ifFalse: [
+						(  (maybeUnicodeNCR second) = $x ) "Hex or Decimal?"
+						ifTrue: [ codePoint := ('16r', (maybeUnicodeNCR copyFrom: 3 to: ncrSize) asUppercase) asNumber ]
+						ifFalse: [ codePoint := (maybeUnicodeNCR copyFrom: 2 to: ncrSize) asNumber ].
+						codePoint asUtf8toStream: outStream.
+						inStream position: prevPos + ncrSize ]
+					]
+				]
+			]
+	 ] ! !
+
 !UniString methodsFor: 'accessing' stamp: 'KenD 3/19/2013 16:29'!
 at: anIndex
 
@@ -3079,6 +3218,13 @@ at: anIndex
 at: anIndex put: aValue
 
 	self subclassResponsibility ! !
+
+!UniString methodsFor: 'testing' stamp: 'KenD 4/4/2013 20:11'!
+beginsWith: prefix
+	"Answer whether the receiver begins with the given prefix string.
+	The comparison is case-sensitive."
+
+	^self is: prefix substringAt: 1! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:25'!
 capitalized
@@ -3102,7 +3248,7 @@ codePointAt: anIndex
 	self subclassResponsibility ! !
 
 !UniString methodsFor: 'enumerating' stamp: 'KenD 3/18/2013 15:56'!
-codePointDo: aBlock
+codePointsDo: aBlock
 	"aBlock takes each codePoint in me as an argument"
 	
 	self subclassResponsibility ! !
@@ -3323,6 +3469,12 @@ encodeDoublingQuoteOn: aStream
 		char == $' ifTrue: [aStream print: char]].
 	aStream print: $'! !
 
+!UniString methodsFor: 'converting' stamp: 'KenD 4/5/2013 15:54'!
+encodeWithConverter: encoder
+	^ ByteArray streamContents: [ :stream |
+		self do: [ :each |
+			encoder nextPut: each toStream: stream ] ]! !
+
 !UniString methodsFor: 'accessing' stamp: 'KenD 4/3/2013 16:00'!
 encompassLine: anInterval
 	"Return an interval that includes anInterval, and that comprises one or several whole paragraphs in the receiver.
@@ -3518,7 +3670,7 @@ hash
 	| hash |
 
 	hash _ self species hash.
-	self codePointDo: [ :codePoint | hash _ (hash + codePoint hash) hashMultiply].
+	self codePointsDo: [ :codePoint | hash _ (hash + codePoint hash) hashMultiply].
 	^hash! !
 
 !UniString methodsFor: 'searching' stamp: 'KenD 3/21/2013 18:55'!
@@ -3648,13 +3800,10 @@ isCRLFAt: index
 				or: [thisCh isLF and: [nextCh isCR]] 
 		]! !
 
-!UniString methodsFor: 'testing' stamp: 'KenD 3/18/2013 16:35'!
+!UniString methodsFor: 'testing' stamp: 'KenD 4/5/2013 14:24'!
 isString
-	"@@This is called in a lot of places!!!!@@@"
-	"See what is missing from UniString.."
-	Transcript log: 'isString called on a UniString'.
 
-	^ false "NB: strings return true"! !
+	^ false "@@@?@@@"! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 19:05'!
 keywords
@@ -3817,9 +3966,9 @@ meldWith: otherUniString
 	
 	| coll |
 	coll := OrderedCollection new.
-	"Use #codePointDo: as could be a UniFlatSlice or a UniFlat"
-	self codePointDo: [ :n | coll add: n].
-	otherUniString asUniString codePointDo: [ :n | coll add: n].
+	"Use #codePointsDo: as could be a UniFlatSlice or a UniFlat"
+	self codePointsDo: [ :n | coll add: n].
+	otherUniString asUniString codePointsDo: [ :n | coll add: n].
 
 	^ UniString fromCodePointCollection: coll asArray! !
 
@@ -3857,6 +4006,11 @@ numArgs
 	"Test case of binary selector, if self allSatisfy: #isSpecial (inlined for speed)"
 	1 to: self size do: [:i | ((self at: i) isSpecial) ifFalse: [^ -1]].
 	^1! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 4/4/2013 20:06'!
+onlyLetters
+	"answer the receiver with only letters"
+	^ self select:[:each | each isLetter]! !
 
 !UniString methodsFor: 'copying' stamp: 'KenD 3/20/2013 22:26'!
 padLeftTo: totalLength
@@ -4086,7 +4240,7 @@ stringRepresentation
 	"Do what Cuis does in String>>fromUtf8:hex:trimLastNull: "
 	
 	^String streamContents: [:strm | 
-		self codePointDo: [ :codePoint | 
+		self codePointsDo: [ :codePoint | 
 			(codePoint < 16rFF) "Single byte?"
 			ifTrue: [ strm nextPut: (codePoint asCharacter ) ]
 			ifFalse: [
@@ -4468,28 +4622,33 @@ fromString: aString
 	ifTrue: [	 ^ self fromCodePointCollection: (aString asArray collect: [ :c | c unicodeCodePoint]) ]
 ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:48'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 4/5/2013 14:48'!
 fromUtf8: aByteArray
 	"Convert the given bytes from UTF-8 to  the internal encoding: ISO Latin 9 (ISO 8859-15).
 	See #asUtf8 "
 	"For any unicode chars not in ISO Latin 9 (ISO 8859-15), embed an NCR.
 	See http://en.wikipedia.org/wiki/Numeric_character_reference"
 
-	^ (String fromUtf8: aByteArray hex: false trimLastNull: false) asUniString ! !
+	^ (UniString fromUtf8: aByteArray hex: false trimLastNull: false) asUniString ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:49'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 4/5/2013 15:01'!
 fromUtf8: aByteArray hex: useHexForNCRs trimLastNull: doTrimLastNullChar
-	"Convert the given string from UTF-8 to  the internal encoding: ISO Latin 9 (ISO 8859-15)"
-	"For unicode chars not in ISO Latin 9 (ISO 8859-15), embed Decimal NCRs or Hexadecimal NCRs according to useHex.
-	
+	"Answer the given string converted from UTF-8 to  a UniString"
+"		
 	See http://en.wikipedia.org/wiki/Numeric_character_reference
 	See http://rishida.net/tools/conversion/. Tests prepared there.
-	
-	Note: The conversion of NCRs is reversible. See #asUtf8:
-	This allows handling the full Unicode in Cuis tools, that can only display the Latin alphabet, by editing the NCRs.
-	The conversions can be done when reading / saving files, or when pasting from Clipboard and storing back on it."
+"
+	| result bytes codePoint |
+	result := UniStringWrapper new.
+	bytes := aByteArray readStream.
+	[ bytes atEnd ] whileFalse: [
+		codePoint _ (Character nextUnicodeCodePointFromUtf8: bytes).
+		codePoint ifNotNil: [ result nextPut: codePoint asUniChar asUniString ].
+	].
 
-	^ (String fromUtf8: aByteArray hex: useHexForNCRs trimLastNull: doTrimLastNullChar) asUniString ! !
+	(doTrimLastNullChar and: [ codePoint = 0 ]) 
+	ifFalse: [ ^ result asUniString ]
+	ifTrue: [ ^ result copyFrom:	1 to: (result size - 1)]! !
 
 !UniString class methodsFor: 'searching' stamp: 'KenD 3/18/2013 15:58'!
 indexOfCodePoint: anInteger inString: aString startingAt: start
@@ -4603,7 +4762,7 @@ stringHash: aString initialHash: speciesHash
 	
 	"@@FIXME: assumes ASCII"
 
-	aString asUniString codePointDo: [ :codePoint  |
+	aString asUniString codePointsDo: [ :codePoint  |
 		hash _ hash + codePoint.
 		"Begin hashMultiply"
 		low _ hash bitAnd: 16383.
