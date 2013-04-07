@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 5 April 2013 at 6:22:55 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 7 April 2013 at 9:22:12 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -42,7 +42,7 @@ UChar8 class
 	instanceVariableNames: ''!
 
 !classDefinition: #UniForms category: #UniCodes!
-Object subclass: #UniForms
+AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
 	classVariableNames: 'FormsArray'
 	poolDictionaries: ''
@@ -99,16 +99,6 @@ Object subclass: #UniStringWrapper
 	category: 'UniCodes'!
 !classDefinition: 'UniStringWrapper class' category: #UniCodes!
 UniStringWrapper class
-	instanceVariableNames: ''!
-
-!classDefinition: #UniTestFont category: #UniCodes!
-AbstractFont subclass: #UniTestFont
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'UniTestFont class' category: #UniCodes!
-UniTestFont class
 	instanceVariableNames: ''!
 
 
@@ -387,14 +377,14 @@ asCharacter
 	ifTrue: [ ^ codePoint asCharacter ]
 	ifFalse: [ DomainError signal: 'Unicode code point out of range for ISO 8859-15' ]! !
 
-!UniChar methodsFor: 'converting' stamp: 'KenD 3/13/2013 17:15'!
+!UniChar methodsFor: 'converting' stamp: 'KenD 4/6/2013 16:31'!
 asCursor
 
 	"Answer my 16 x 16 form as a Cursor"
 	
 "
-	16r2740 asUniChar asCursor beCursor.    " "Flower 'dingbat'.""
-	16r2764 asUniChar asCursor beCursor.    " "Heart 'dingbat'""
+	16r2740 asUniChar asCursor beCursor.       ""  Flower 'dingbat'.  ""
+	16r2764 asUniChar asCursor beCursor.       ""  Heart 'dingbat'  ""
 "
 	^ CursorWithMask derivedFrom: self form! !
 
@@ -2530,10 +2520,90 @@ string
 	"Answer my slice [a UniFlat]"
 	^ (charBlock from: startIndex to: (startIndex + length - 1)) as: UniString! !
 
-!UniForms class methodsFor: 'private' stamp: 'KenD 3/3/2013 22:36'!
+!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 16:57'!
+approxWidthOfText: aText
+"Return the width of aText -- quickly, and a little bit dirty. Used by lists morphs containing Text objects to get a quick, fairly accurate measure of the width of a list item."
+
+	"@@@Fixme: Scan for zero, half width codepoints @@@"
+    ^ 16 * (aText size)! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:14'!
+ascent
+
+	^16! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:14'!
+baseFont
+
+	^self! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:14'!
+descent
+
+	^ 0! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:15'!
+descentKern
+
+	^ 0! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:15'!
+emphasis
+
+	^ 0! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:15'!
+emphasized: code
+	"@@Fixme: BOGUS@@"
+	^ self! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 19:13'!
+familyName
+
+	^'UniFont'! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:11'!
+height
+
+	^16! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 16:47'!
+name
+
+	"Answer my font name"
+	^ 'GNU Unifont'! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:12'!
+pointSize
+
+	^16! !
+
+!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:16'!
+widthOf: aCharacter
+		"@@FIXME: Zero (combining marks, zero width space, ..), 8 (half width :Latin), 16 (full width)"
+	^ self class widthOf: aCharacter ! !
+
+!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:02'!
+widthOfString: aString
+
+
+	^ (1 to: aString size) inject: 0 into: [ :accum :char | accum + (self widthOf: char) ]! !
+
+!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:06'!
+widthOfString: aString from: startIndex to: stopIndex
+	"Measure the length of the given string between start and stop index"
+
+	^ (startIndex to: stopIndex) inject: 0 into: [ :accum :char | accum + (self widthOf: char) ]! !
+
+!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:09'!
+widthOfStringOrText: aStringOrText
+
+	^ self widthOfString: aStringOrText asUniString! !
+
+!UniForms class methodsFor: 'private' stamp: 'KenD 4/6/2013 20:36'!
 array16FromHexString: aString
 	"aString consists of 32 or 64 hex digits.
-	If 32, form into 16rXX where XX is each succeedingpair of hex digits.
+	If 32, form into 16rXX where XX is each succeeding pair of hex digits.
 	If 64, form into 16rXXXX where hex digits are taken in 4s
 	Shift left 16 and answer the resultant array, which must be size 16
 	"
@@ -2567,6 +2637,10 @@ array16FromHexString: aString
 	^ ( coll asArray collect: [ :bits | bits  bitShift: 16] )
 ! !
 
+!UniForms class methodsFor: 'font' stamp: 'KenD 4/6/2013 18:58'!
+default
+	^self new! !
+
 !UniForms class methodsFor: 'accessing' stamp: 'KenD 3/2/2013 20:13'!
 formForCodePoint: aCodePoint
 
@@ -2588,18 +2662,45 @@ formsArray
 	"Note: Unicode indexes from zero, so index is 1+codePoint."
 	^FormsArray 	! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 3/3/2013 20:21'!
+!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:02'!
+height
+
+	^ 16! !
+
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/6/2013 17:04'!
+heightOf: CharOrCodePoint
+	"Answer my display width"
+
+	| codePoint |
+	(CharOrCodePoint isInteger)
+	ifTrue: [ codePoint := CharOrCodePoint ]
+	ifFalse: [ codePoint := CharOrCodePoint unicodeCodePoint ].
+	^ (self formForCodePoint: codePoint) height
+		! !
+
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/6/2013 19:26'!
 initialize
 "
 	UniForms initialize.
 "
 
 	| slash |
-	slash :=FileDirectory slash.
+	slash := FileDirectory slash.
 	FormsArray := self readFormsArray: '..' , slash , 'Cuis-Unicode', slash, 'unifont-5.1.20080907.hex'.
 	"'unifontfull-5.1.20080820.hex'."
 	"unifont-5.1.20080907.hex"
+	self installMeAsFont. "Fake it"
 	! !
+
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/6/2013 19:26'!
+installMeAsFont
+"
+	UniForms installMeAsFont.
+"
+	| uniFontDict |
+	uniFontDict := Dictionary new.
+	uniFontDict at: 16 put: (self default).
+	AvailableFonts at: 'UniFont' put: uniFontDict.! !
 
 !UniForms class methodsFor: 'licence' stamp: 'KenD 3/4/2013 07:30'!
 licence
@@ -2745,6 +2846,26 @@ readFormsArray: fileName
 	
 	
 	! !
+
+!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:06'!
+widthOf: aCharacterOrCodePoint
+		"@@FIXME: Zero (combining marks, zero width space, ..), 8 (half width :Latin), 16 (full width)"
+	| codePoint |
+	(aCharacterOrCodePoint isInteger)
+	ifTrue: [codePoint := aCharacterOrCodePoint ]
+	ifFalse: [codePoint := aCharacterOrCodePoint unicodeCodePoint ].
+	
+	^ (self formForCodePoint: codePoint) width! !
+
+!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:01'!
+widthOfString: aString
+
+	^ (1 to: aString size) inject: 0 into: [ :accum :char | accum + (self widthOf: char) ]! !
+
+!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:01'!
+widthOfStringOrText: aStringOrText
+
+	^ self widthOfString: aStringOrText asUniString! !
 
 !UniSplice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 20:35'!
 at: anIndex
@@ -3353,30 +3474,40 @@ displayOn: aDisplayMedium
 
 	self displayOn: aDisplayMedium at: 0 @ 0! !
 
-!UniString methodsFor: 'displaying' stamp: 'KenD 3/2/2013 20:47'!
+!UniString methodsFor: 'displaying' stamp: 'KenD 4/7/2013 09:16'!
 displayOn: aDisplayMedium at: aPoint 
 	"Show a representation of the receiver as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
 
-	| aCanvas |
+	| aCanvas grafPort delta |
 	aCanvas := aDisplayMedium getCanvas.
+	grafPort := aCanvas grafPort.
+	delta := 0.
 	
 	1 to: self size do: [ :index |
-		"@@Fixme: assumes 16 bit wide character forms"
-		aCanvas image: ((self at: index) form) at: ((aPoint x + (16 * (index - 1))) @ (aPoint y)).
+		| uniChar |
+		uniChar := self at: index.
+		"aCanvas image: uniChar form at: ((aPoint x + delta) @ (aPoint y))."
+		grafPort copyForm: uniChar form to: ((aPoint x + delta) @ (aPoint y)) rule:  Form and.
+		delta := delta + (UniForms widthOf: uniChar)
 	]
 	
 	! !
 
-!UniString methodsFor: 'displaying' stamp: 'KenD 3/4/2013 21:00'!
+!UniString methodsFor: 'displaying' stamp: 'KenD 4/7/2013 09:17'!
 displayOn: aDisplayMedium from: start to: stop at: aPoint 
 	"Show a representation of the receiver as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
 
-	| aCanvas |
+	| aCanvas grafPort delta |
 	aCanvas := aDisplayMedium getCanvas.
+	grafPort := aCanvas grafPort.
+	delta := 0.
 	
 	start to: stop do: [ :index |
-		"@@Fixme: assumes 16 bit wide character forms"
-		aCanvas image: ((self at: index) form) at: ((aPoint x + (16 * (index - 1))) @ (aPoint y)).
+		| uniChar |
+		uniChar := self at: index.
+		"aCanvas image: uniChar form at: ((aPoint x + delta) @ (aPoint y))."
+		grafPort copyForm: uniChar form to: ((aPoint x + delta) @ (aPoint y)) rule:  Form and.
+		delta := delta + (UniForms widthOf: uniChar)
 	]
 	
 	! !
@@ -4557,9 +4688,9 @@ crlfString
 
 	^ ( String crlfString asUniString )! !
 
-!UniString class methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:50'!
+!UniString class methodsFor: 'as yet unclassified' stamp: 'KenD 4/6/2013 19:07'!
 defaultFontClass
-	^UniTestFont! !
+	^UniForms! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:23'!
 emptyString
@@ -4893,60 +5024,6 @@ new: aSize
 with: aString
 
 	^ self basicNew with: (aString asUniString)! !
-
-!UniTestFont methodsFor: 'as yet unclassified' stamp: 'KenD 3/31/2013 17:54'!
-ascent
-
-	^16! !
-
-!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:48'!
-baseFont
-	^self! !
-
-!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 15:33'!
-descent
-	^0! !
-
-!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 15:34'!
-descentKern
-	^0! !
-
-!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:53'!
-emphasis
-	^0! !
-
-!UniTestFont methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:48'!
-emphasized: code
-	^self! !
-
-!UniTestFont methodsFor: 'as yet unclassified' stamp: 'KenD 3/31/2013 17:53'!
-height
-
-	^16! !
-
-!UniTestFont methodsFor: 'as yet unclassified' stamp: 'KenD 3/31/2013 17:53'!
-widthOf: anUniChar
-	"@@FIXME: Zero (combining marks, zero width space, ..), 8 (half width :Latin), 16 (full width)"
-	
-	^16! !
-
-!UniTestFont class methodsFor: 'as yet unclassified' stamp: 'jmv 3/6/2013 16:51'!
-default
-	^self new! !
-
-!UniTestFont class methodsFor: 'as yet unclassified' stamp: 'KenD 3/18/2013 18:21'!
-height
-	^16! !
-
-!UniTestFont class methodsFor: 'as yet unclassified' stamp: 'KenD 3/18/2013 18:22'!
-widthOfString: aString
-	"Measure the length of the given string between start and stop index"
-	^ (16 * (aString length))! !
-
-!UniTestFont class methodsFor: 'as yet unclassified' stamp: 'KenD 3/18/2013 17:16'!
-widthOfString: aString from: firstIndex to: lastIndex
-	"Measure the length of the given string between start and stop index"
-	^ (16 * (lastIndex - firstIndex + 1))! !
 UniChar initialize!
 UniForms initialize!
 UniSplice initialize!
