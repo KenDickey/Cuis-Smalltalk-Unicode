@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 7 April 2013 at 9:22:12 am'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1661] on 7 April 2013 at 9:34:16 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -1519,9 +1519,9 @@ crCharacter
 
 	^ (13 asUniChar)! !
 
-!UniChar class methodsFor: 'as yet unclassified' stamp: 'KenD 3/18/2013 17:12'!
+!UniChar class methodsFor: 'as yet unclassified' stamp: 'KenD 4/7/2013 09:30'!
 defaultFontClass
-	^UniTestFont! !
+	^UniForms! !
 
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:38'!
 delete
@@ -5006,9 +5006,9 @@ with: aString
 
 	uniString := aString asUniString.! !
 
-!UniStringWrapper class methodsFor: 'instance creation' stamp: 'KenD 3/21/2013 21:58'!
+!UniStringWrapper class methodsFor: 'instance creation' stamp: 'KenD 4/7/2013 09:31'!
 defaultFontClass
-	^UniTestFont! !
+	^UniForms! !
 
 !UniStringWrapper class methodsFor: 'instance creation' stamp: 'KenD 3/20/2013 08:21'!
 fromString: aString
