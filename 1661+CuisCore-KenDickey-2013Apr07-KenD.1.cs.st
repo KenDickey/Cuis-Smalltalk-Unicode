@@ -182,3 +182,28 @@ selection
 			"Regular selection"
 			strm nextPutAll: ( t copyFrom: firstIndex to: lastIndex ) ]
 	]! !
+	
+
+!Clipboard methodsFor: 'accessing' stamp: 'KenD 4/7/2013 17:01'!
+retrieveStringOrText
+	"Answer a Text or a String. Appropriate for a Text Editor."
+	| answer |
+	
+	answer _ self retrieveObject.
+	
+	"If clipboard contents is already a Text or String, answer it."
+	(answer isString or: [ answer is: #Text ] or: [answer isKindOf: UniString]) ifTrue: [
+		^answer ].
+	
+	"If clipboard contains a Morph, answer a Text incuding its drawing..."
+	(answer is: #Morph) ifTrue: [
+		answer _ (answer imageForm:32) offset: 0@0 ].
+	
+	"If clipboard contains a Form, prepare a Text including it."
+	(answer is: #Form) ifTrue: [
+		^Text withForm: answer ].
+	
+	"Answer some string..."
+	^answer ifNil: [ '' ] ifNotNil: [ answer printString ]! !
+
+
