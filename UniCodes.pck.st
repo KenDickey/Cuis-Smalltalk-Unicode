@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1661] on 7 April 2013 at 9:34:16 am'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 7 April 2013 at 7:03:01 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -203,6 +203,26 @@ Use in place of WriteStream for #nextPut: and #nextPutAll.
  vs:
 	WriteStream on: 'abc',
 !
+
+!Array methodsFor: '*unicodes' stamp: 'KenD 4/7/2013 19:02'!
+asUniString
+	"Consider self a collection of Unicode codePoints.  Answer a UniString"
+	
+	"Note that subclasses may specialize. See ByteArray>>asUniString"
+
+	^ self uniStringFromCodePoints! !
+
+!Array methodsFor: '*unicodes' stamp: 'KenD 4/7/2013 19:00'!
+uniStringFromCodePoints
+	"Consider self a collection of Unicode codePoints.  Answer a UniString"
+
+	^ UniString fromCodePointCollection: self! !
+
+!ByteArray methodsFor: '*unicodes' stamp: 'KenD 4/7/2013 18:59'!
+asUniString
+	"Consider self as UTF-8.  Answer a UniString"
+
+	^ UniString fromUtf8: self! !
 
 !Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 14:08'!
 asUniChar
@@ -942,13 +962,10 @@ lineBreakTableAt: row at: col
 	
 	^ (LineBreakTable at: row) at: col! !
 
-!UniChar methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:32'!
+!UniChar methodsFor: 'printing' stamp: 'KenD 4/7/2013 09:56'!
 printOn: aStream
-
 	"Display for humans"
-	| codePoint |
-	codePoint := self codePoint.
-	
+
 	(codePoint < 16rFF) "Fits in a byte?"
 	ifTrue: [
 		aStream nextPut: $$.
@@ -2600,7 +2617,7 @@ widthOfStringOrText: aStringOrText
 
 	^ self widthOfString: aStringOrText asUniString! !
 
-!UniForms class methodsFor: 'private' stamp: 'KenD 4/6/2013 20:36'!
+!UniForms class methodsFor: 'private' stamp: 'KenD 4/7/2013 15:33'!
 array16FromHexString: aString
 	"aString consists of 32 or 64 hex digits.
 	If 32, form into 16rXX where XX is each succeeding pair of hex digits.
@@ -2613,7 +2630,7 @@ array16FromHexString: aString
 	"@@FIXME: Find a smart way to do this"
 	
 	(aString size = 32) ifTrue: [
-		hexStr := '16rXX0'. "Zero at end centers a half-width glyph"
+		hexStr := '16rXX00'. 
 		1 to: 32 by: 2 do: [ :index |
 			hexStr at: 4 put: (aString at: index).
 			hexStr at: 5 put: (aString at: index + 1).
@@ -2634,7 +2651,7 @@ array16FromHexString: aString
 		]
 	].
 	
-	^ ( coll asArray collect: [ :bits | bits  bitShift: 16] )
+	^ ( coll asArray collect: [ :bits | bits bitShift: 16] ) 
 ! !
 
 !UniForms class methodsFor: 'font' stamp: 'KenD 4/6/2013 18:58'!
@@ -2813,7 +2830,44 @@ License for blanks.hex
 '
 ! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/3/2013 20:08'!
+!UniForms class methodsFor: 'private' stamp: 'KenD 4/7/2013 13:16'!
+oldArray16FromHexString: aString
+	"aString consists of 32 or 64 hex digits.
+	If 32, form into 16rXX where XX is each succeeding pair of hex digits.
+	If 64, form into 16rXXXX where hex digits are taken in 4s
+	Shift left 16 and answer the resultant array, which must be size 16
+	"
+	| coll hexStr |
+	coll := OrderedCollection new: 16.
+	
+	"@@FIXME: Find a smart way to do this"
+	
+	(aString size = 32) ifTrue: [
+		hexStr := '16rXX0'. "Zero at end centers a half-width glyph"
+		1 to: 32 by: 2 do: [ :index |
+			hexStr at: 4 put: (aString at: index).
+			hexStr at: 5 put: (aString at: index + 1).
+			coll addLast: (hexStr asNumber)
+		]
+	]
+	ifFalse: [ 
+		(aString size = 64) 
+			ifFalse: [Error signal: 'Malformed hex pixel string ' , aString].
+		
+		hexStr := '16rXXXX'. "Full-width glyph"
+		1 to: 64 by: 4 do: [ :index |
+			 hexStr at: 4 put: (aString at: index).
+			 hexStr at: 5 put: (aString at: index + 1).
+			 hexStr at: 6 put: (aString at: index + 2).
+			 hexStr at: 7 put: (aString at: index + 3).
+			coll addLast: (hexStr asNumber)
+		]
+	].
+	
+	^ ( coll asArray collect: [ :bits | bits  bitShift: 16] )
+! !
+
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/7/2013 15:46'!
 readFormsArray: fileName
 
 	| formsArray fileStream aLine |
@@ -2828,18 +2882,26 @@ readFormsArray: fileName
 	"
 	[aLine isNil] whileFalse:[ |tokens codePoint pixelArray|
 		(aLine size > 0) ifFalse: [
-			 "??ERROR??"
-			self halt.
-			^formsArray].
+			self error: 'Bad file format ' , fileName.
+			^formsArray
+		].
 		tokens := aLine findTokens: ':' . "Split line at colon"
 		(tokens size = 2) ifFalse: [Error signal: 'Malformed UniForm line: ' , aLine].
 		codePoint := ( '16r', (tokens at: 1)) asNumber.
 		((codePoint > 16rFFFF) or: [codePoint < 0]) ifTrue: [Error signal: 'Bad codePoint ' , (tokens at: 1) ].
 		pixelArray := self array16FromHexString: (tokens at: 2).
+		
+		((tokens at: 2) size = 32)
+		ifTrue: [ "Half Width Character"
 		formsArray 
-			at: (1 + codePoint) "Note Bene: CodePoints start at zero"
-			put:  (Form extent: 16@16 fromArray: pixelArray offset: (0 @ 0)).
-			
+				at: (1 + codePoint)  "Note Bene: CodePoints start at zero"
+				put:  (Form extent: 8@16 fromArray: pixelArray offset: (0 @ 0))
+		]
+		ifFalse: [ "Full width character"
+			formsArray 
+				at: (1 + codePoint) "Note Bene: CodePoints start at zero"
+				put:  (Form extent: 16@16 fromArray: pixelArray offset: (0 @ 0)).
+		].
 		aLine := fileStream nextLine.
 	].
 	^formsArray
@@ -3474,40 +3536,42 @@ displayOn: aDisplayMedium
 
 	self displayOn: aDisplayMedium at: 0 @ 0! !
 
-!UniString methodsFor: 'displaying' stamp: 'KenD 4/7/2013 09:16'!
+!UniString methodsFor: 'displaying' stamp: 'KenD 4/7/2013 13:14'!
 displayOn: aDisplayMedium at: aPoint 
 	"Show a representation of the receiver as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
 
-	| aCanvas grafPort delta |
-	aCanvas := aDisplayMedium getCanvas.
-	grafPort := aCanvas grafPort.
+	| grafPort delta |
+	grafPort := aDisplayMedium getCanvas grafPort.
 	delta := 0.
 	
 	1 to: self size do: [ :index |
-		| uniChar |
+		| uniChar width |
 		uniChar := self at: index.
-		"aCanvas image: uniChar form at: ((aPoint x + delta) @ (aPoint y))."
-		grafPort copyForm: uniChar form to: ((aPoint x + delta) @ (aPoint y)) rule:  Form and.
-		delta := delta + (UniForms widthOf: uniChar)
+		 width := (UniForms widthOf: uniChar).
+		(width isZero) ifFalse: [
+			grafPort copyForm: uniChar form to: ((aPoint x + delta) @ (aPoint y)) rule:  Form and.
+			delta := delta + width
+		]
 	]
 	
 	! !
 
-!UniString methodsFor: 'displaying' stamp: 'KenD 4/7/2013 09:17'!
+!UniString methodsFor: 'displaying' stamp: 'KenD 4/7/2013 13:14'!
 displayOn: aDisplayMedium from: start to: stop at: aPoint 
 	"Show a representation of the receiver as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
 
-	| aCanvas grafPort delta |
-	aCanvas := aDisplayMedium getCanvas.
-	grafPort := aCanvas grafPort.
+	| grafPort delta |
+	grafPort := aDisplayMedium getCanvas grafPort.
 	delta := 0.
 	
 	start to: stop do: [ :index |
-		| uniChar |
+		| uniChar width |
 		uniChar := self at: index.
-		"aCanvas image: uniChar form at: ((aPoint x + delta) @ (aPoint y))."
-		grafPort copyForm: uniChar form to: ((aPoint x + delta) @ (aPoint y)) rule:  Form and.
-		delta := delta + (UniForms widthOf: uniChar)
+		 width := (UniForms widthOf: uniChar).
+		(width isZero) ifFalse: [
+			grafPort copyForm: uniChar form to: ((aPoint x + delta) @ (aPoint y)) rule:  Form and.
+			delta := delta + width
+		]
 	]
 	
 	! !
