@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 7 April 2013 at 7:03:01 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 8 April 2013 at 9:28:56 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -41,6 +41,16 @@ UniChar subclass: #UChar8
 UChar8 class
 	instanceVariableNames: ''!
 
+!classDefinition: #UniFileStream category: #UniCodes!
+StandardFileStream subclass: #UniFileStream
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniFileStream class' category: #UniCodes!
+UniFileStream class
+	instanceVariableNames: ''!
+
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
@@ -81,6 +91,16 @@ UniString subclass: #UniFlatSlice
 UniFlatSlice class
 	instanceVariableNames: ''!
 
+!classDefinition: #UniRepeatedCharString category: #UniCodes!
+UniString subclass: #UniRepeatedCharString
+	instanceVariableNames: 'char count'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniRepeatedCharString class' category: #UniCodes!
+UniRepeatedCharString class
+	instanceVariableNames: ''!
+
 !classDefinition: #UniSplice category: #UniCodes!
 UniString subclass: #UniSplice
 	instanceVariableNames: 'depth totalLength leftRope rightRope'
@@ -99,6 +119,16 @@ Object subclass: #UniStringWrapper
 	category: 'UniCodes'!
 !classDefinition: 'UniStringWrapper class' category: #UniCodes!
 UniStringWrapper class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniTextModel category: #UniCodes!
+TextModel subclass: #UniTextModel
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniTextModel class' category: #UniCodes!
+UniTextModel class
 	instanceVariableNames: ''!
 
 
@@ -121,6 +151,13 @@ UniChars are immutable.
 UniChars with the same codePoint are typically NOT unique.
 
 Note that many "tests" (e.g. #isLetter #isUppercase) are property tests and are in category #properies, NOT category #testing.!
+
+!UniFileStream commentStamp: '<historical>' prior: 0!
+I read and/or write UTF-8 Unicode files.
+
+Reading a UniFile results in UniChars or UniStrings.
+
+!
 
 !UniFlat commentStamp: '<historical>' prior: 0!
 A flat rope is basically a string.  My instances are "leaves" in a Rope "tree".
@@ -155,6 +192,9 @@ aMorph := ImageMorph new.
 aMorph image: ((UniForms formForCodePoint: 16r4E7E)  magnifyBy: 8).
 aMorph openInWorld .
 !
+
+!UniRepeatedCharString commentStamp: '<historical>' prior: 0!
+I am a UniString consisting of a single UniChar repeated count times.!
 
 !UniSplice commentStamp: '<historical>' prior: 0!
 I am the splice/concatenation of two other UniStrings.
@@ -203,6 +243,9 @@ Use in place of WriteStream for #nextPut: and #nextPutAll.
  vs:
 	WriteStream on: 'abc',
 !
+
+!UniTextModel commentStamp: '<historical>' prior: 0!
+I am a TextModel which handles Unicode using UniStrings.!
 
 !Array methodsFor: '*unicodes' stamp: 'KenD 4/7/2013 19:02'!
 asUniString
@@ -2398,12 +2441,12 @@ with: aCharBlock size: size
 
 	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
 
-!UniFlat class methodsFor: 'user interface' stamp: 'KenD 4/1/2013 20:04'!
+!UniFlat class methodsFor: 'user interface' stamp: 'KenD 4/8/2013 21:14'!
 fromString: aString
 	"Answer a new UniString.
 	As the string must be immutable, we will keep a copy."
 	
-	^ (self new initialize with: (aString asString copy) size: aString size; yourself)! !
+	^ (self basicNew initialize with: (aString asString copy) size: aString size; yourself)! !
 
 !UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 21:52'!
 at: anIndex
@@ -2531,7 +2574,7 @@ startIndex
 
 	^startIndex! !
 
-!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 3/18/2013 15:36'!
+!UniFlatSlice methodsFor: 'private' stamp: 'KenD 3/18/2013 15:36'!
 string
 
 	"Answer my slice [a UniFlat]"
@@ -2928,6 +2971,123 @@ widthOfString: aString
 widthOfStringOrText: aStringOrText
 
 	^ self widthOfString: aStringOrText asUniString! !
+
+!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:10'!
+at: anIndex
+
+	self checkIndex: anIndex.
+	
+	^char! !
+
+!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:14'!
+at: index put: aCharacter 
+	"Answer a new UniString"
+	
+	self checkIndex: index.
+	(self size = 1)
+	ifTrue: [ ^ aCharacter asUniString].
+	
+	(index = 1)
+	ifTrue: [ ^ (aCharacter asUniString , (self copyFrom: 2 to: self size))].
+	
+	(index = self size)
+	ifTrue: [ ^ (self copyFrom: 1 to: (self size - 1)) , aCharacter asUniString ].
+	
+	^ (self copyFrom: 1 to: (index - 1)) ,
+	   aCharacter asUniString ,
+	   (self copyFrom: (index + 1) to: (self size))! !
+
+!UniRepeatedCharString methodsFor: 'private' stamp: 'KenD 4/8/2013 20:09'!
+checkIndex: anIndex
+
+	(anIndex < 1 or: [anIndex > count])
+	ifTrue: [ self error: 'Index out of range ' , (anIndex asString)]! !
+
+!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:10'!
+codePointAt: anIndex
+
+	self checkIndex: anIndex.
+
+	^ (char codePoint)! !
+
+!UniRepeatedCharString methodsFor: 'enumerating' stamp: 'KenD 4/8/2013 20:20'!
+codePointsDo: aBlock
+	"aBlock takes each codePoint in me as an argument"
+
+	| code |
+	code := char codePoint.
+	(1 to: count) do: [ :ignore | aBlock value: code].! !
+
+!UniRepeatedCharString methodsFor: 'copying' stamp: 'KenD 4/8/2013 20:57'!
+copyFrom: start to: stop 
+	"Answer a UniString."
+
+	"Handle odd case the same way as OrderedCollection"
+	(stop < start) ifTrue: [^ UniString emptyString ].
+	
+	self checkIndex: start.
+	self checkIndex: stop.
+
+	^ UniRepeatedCharString withChar: char repeatCount: (stop - start + 1)! !
+
+!UniRepeatedCharString methodsFor: 'private' stamp: 'KenD 4/8/2013 20:22'!
+depth
+	"I am a leaf"
+	
+	^0! !
+
+!UniRepeatedCharString methodsFor: 'enumerating' stamp: 'KenD 4/8/2013 20:20'!
+do: aBlock
+	"aBlock takes each codePoint in me as an argument"
+
+	(1 to: count) do: [ :ignore | aBlock value: char].! !
+
+!UniRepeatedCharString methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 20:42'!
+initialize
+
+	super initialize.
+	char := UniChar space.
+	count := 0. "Empty"! !
+
+!UniRepeatedCharString methodsFor: 'testing' stamp: 'KenD 4/8/2013 19:59'!
+isEmpty
+
+	^ (count = 0)! !
+
+!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:07'!
+size
+	
+	^count! !
+
+!UniRepeatedCharString methodsFor: 'copying' stamp: 'KenD 4/8/2013 20:57'!
+substringFrom: startIndex length: numChars
+	"Answer a UniString."
+	
+	self checkIndex: startIndex.
+	self checkIndex: (startIndex + numChars - 1).
+
+	^ UniRepeatedCharString withChar: char repeatCount: numChars! !
+
+!UniRepeatedCharString methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 21:00'!
+withChar: aChar repeatCount: repeatCount
+
+	char := aChar asUniChar.
+	count := repeatCount.! !
+
+!UniRepeatedCharString class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 20:57'!
+new:  repeatCount
+
+	^ (self basicNew withChar: UniChar space repeatCount: repeatCount)! !
+
+!UniRepeatedCharString class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 20:57'!
+ofSize: repeatCount
+
+	^ (self withChar: UniChar space repeatCount: repeatCount)! !
+
+!UniRepeatedCharString class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 20:59'!
+withChar: aChar repeatCount: repeatCount
+
+	^ (self basicNew withChar: aChar repeatCount: repeatCount) ! !
 
 !UniSplice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 20:35'!
 at: anIndex
@@ -3522,6 +3682,13 @@ copyReplaceFrom: start to: stop with: aStringOrUniString
 
 	^((self copyFrom: 1 to: (start - 1)) , aStringOrUniString asUniString , (self copyFrom: (stop + 1) to: (self size))) ! !
 
+!UniString methodsFor: 'copying' stamp: 'KenD 4/8/2013 19:42'!
+copyReplaceTokens: oldSubstring with: newSubstring 
+	"Replace all occurrences of oldSubstring that are surrounded
+	by non-alphanumeric characters"
+	^ self copyReplaceAll: oldSubstring with: newSubstring asTokens: true
+	"'File asFile Files File''s File' copyReplaceTokens: 'File' with: 'Snick'"! !
+
 !UniString methodsFor: 'displaying' stamp: 'KenD 3/4/2013 20:29'!
 displayAt: aPoint 
 	"Display the receiver as a DisplayText at aPoint on the display screen."
@@ -3637,19 +3804,19 @@ doesNotUnderstand: aMessage
 	"Try to do what a String would do"
 	aMessage sendTo: (self asString)! !
 
-!UniString methodsFor: 'user interface' stamp: 'KenD 3/18/2013 22:07'!
+!UniString methodsFor: 'user interface' stamp: 'KenD 4/8/2013 19:27'!
 edit
 "
   (UniString fromCodePointCollection:  #( 16r4E7E 16r0020  16r5143 16r4EA8  16r5229 16r8C9E ) )  edit.
 "
 
-	self editLabel: 'Text Editor'! !
+	self editLabel: 'Unicode Text Editor'! !
 
-!UniString methodsFor: 'user interface' stamp: 'KenD 4/1/2013 16:54'!
+!UniString methodsFor: 'user interface' stamp: 'KenD 4/8/2013 19:16'!
 editLabel: labelString
 
 	SystemWindow 
-		editText: (TextModel withText: self)
+		editText: (UniTextModel withText: self)
 		label: labelString
 		wrap: true
 ! !
@@ -4336,6 +4503,22 @@ replaceFrom: start to: stop with: replacement startingAt: repStart
 'The String method with this name is destructive. The UniString version is not, Use UniStringWrapper'.
 "	
 		^ self copyReplaceFrom: start to: stop with: (repRope copyFrom: repStart to: (repRope size)).! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 4/8/2013 21:28'!
+reversed
+	"Answer a copy of the receiver with element order reversed."
+"
+	 'frog' asUniString reversed.
+	('able was I ere I saw elba' asUniString) reversed.
+		=>   'able was I ere I saw elba'
+"
+
+	| result |
+	result _ UniStringWrapper new.
+	self reverseDo: [ :uChar | result nextPut: uChar ].
+	
+	^ result asUniString
+! !
 
 !UniString methodsFor: 'enumerating' stamp: 'KenD 3/18/2013 21:53'!
 select: aBlock 
@@ -5088,6 +5271,36 @@ new: aSize
 with: aString
 
 	^ self basicNew with: (aString asUniString)! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/8/2013 19:14'!
+actualContents: aTextOrString
+	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
+	undoRedoCommands resetToStart.
+	self changed: #actualContents! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/8/2013 19:14'!
+basicActualContents: aTextOrString
+	"Do not throw events... Not nice... Use with care... Clean some day..."
+	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
+	undoRedoCommands resetToStart.! !
+
+!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 19:13'!
+initialize
+	"Initialize the state of the receiver with its default contents."
+
+	actualContents _ UniString emptyString asText.
+	self flushUndoRedoCommands! !
+
+!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 19:14'!
+openLabel: aString 
+	"Create a standard system view of the model, me, and open it."
+	
+	SystemWindow editText: self label: aString asUniString wrap: true! !
+
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 19:11'!
+openLabel: aString
+
+	self new openLabel: aString asUniString! !
 UniChar initialize!
 UniForms initialize!
 UniSplice initialize!

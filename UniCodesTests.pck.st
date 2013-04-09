@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 5 April 2013 at 4:01:04 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 8 April 2013 at 9:26:28 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -908,16 +908,17 @@ testUniStringConversions
 	self assert: (( '  89Ten ' asUniString  initialIntegerOrNil) =  nil ).
 	self assert: (( '78 92' asUniString  initialIntegerOrNil) =  78 ).! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 2/26/2013 15:43'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/8/2013 20:57'!
 testUniStringCreation
 	"Can we create instances of UniString?"
 
 	| testString |
 	testString :=  'A big little test'.
 	self assert: ((UniString fromString: testString) asString = testString).
-	self assert: ((({ 16r4E7E. 16r0020. 16r5143. 16r4EA8. 16r5229. 16r8C9E  } collect: [ :n | n asUniChar]) as: UniString) = YiJing).! !
+	self assert: ((({ 16r4E7E. 16r0020. 16r5143. 16r4EA8. 16r5229. 16r8C9E  } collect: [ :n | n asUniChar]) as: UniString) = YiJing).
+	self assert: (UniRepeatedCharString withChar: UniChar space repeatCount: 4) = '    '.! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/19/2013 16:13'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/8/2013 21:23'!
 testUniStringEnumeration	
 
 	| testStr |
@@ -925,9 +926,11 @@ testUniStringEnumeration
 	self assert: ((testStr select: [ :uc | uc isSpace not]) = 'abcXYZ').
 	self assert: ((testStr collect: [ :uchar | uchar asUppercase]) =  'A B C X Y Z').
 	self assert: ((testStr collect: [ :uchar | uchar asUppercase]) =  (testStr asUppercase)).
-	self assert: ((testStr collect: [ :uchar | uchar asLowercase]) =  (testStr asLowercase)).! !
+	self assert: ((testStr collect: [ :uchar | uchar asLowercase]) =  (testStr asLowercase)).
+	self assert: ('frog' asUniString reversed) = 'gorf'.
+	! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/1/2013 08:05'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/8/2013 21:26'!
 testUniStringMeld
 	"Do we meld short ropes?"
 
@@ -948,9 +951,11 @@ testUniStringMeld
 	self assert: ( (shortFlat , shortFlat , shortFlat) depth = 0 ).
 	self assert: (subRope meldWith: ('xxx' asUniString)) = 'abcd5678hijkxxx'.
 	self assert:  (('xxx' asUniString) meldWith: subRope) = 'xxxabcd5678hijk'.
+	self assert: ((UniRepeatedCharString ofSize: 4) meldWith: ('abc' asUniString))
+			= '    abc'.
 	! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:10'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/8/2013 19:44'!
 testUniStringMutation
 	"Can we make a change which makes a difference?"
 
@@ -987,6 +992,10 @@ testUniStringMutation
 	self assert: ( ('sym' asUniString asSymbol) = #sym).
 	
 	self assert: ( ('foo bar: a baz: 2' asUniString keywords) = ('foo bar: a baz: 2'  keywords) ).
+	
+	self assert: ('File asFile Files File''s File' asUniString copyReplaceTokens: 'File' with: 'Snick')
+		=  'Snick asFile Files Snick''s Snick' .
+
 	
 ! !
 
