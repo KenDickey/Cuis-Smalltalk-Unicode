@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 10 April 2013 at 8:17:06 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 10 April 2013 at 9:04:30 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance

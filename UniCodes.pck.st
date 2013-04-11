@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 10 April 2013 at 8:17:03 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 10 April 2013 at 9:04:27 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -2350,12 +2350,12 @@ contentsOfEntireFile
 	
 	^ self contents! !
 
-!UniFileStream methodsFor: 'initialize-release' stamp: 'KenD 4/10/2013 19:24'!
+!UniFileStream methodsFor: 'initialize-release' stamp: 'KenD 4/10/2013 20:21'!
 initialize
 
 	super initialize.
 	super binary.   "My buffer of bytes in UTF-8 encoding"
-	self disableReadBuffering. "@@@FIXME: TEST@@@"! !
+! !
 
 !UniFileStream methodsFor: 'testing' stamp: 'KenD 4/10/2013 15:43'!
 isAscii
