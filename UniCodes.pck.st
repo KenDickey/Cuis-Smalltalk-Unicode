@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 10 April 2013 at 9:04:27 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 10 April 2013 at 9:52:26 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -2350,11 +2350,11 @@ contentsOfEntireFile
 	
 	^ self contents! !
 
-!UniFileStream methodsFor: 'initialize-release' stamp: 'KenD 4/10/2013 20:21'!
+!UniFileStream methodsFor: 'initialize-release' stamp: 'KenD 4/10/2013 21:38'!
 initialize
 
 	super initialize.
-	super binary.   "My buffer of bytes in UTF-8 encoding"
+	self binary.   "My buffer of bytes in UTF-8 encoding"
 ! !
 
 !UniFileStream methodsFor: 'testing' stamp: 'KenD 4/10/2013 15:43'!
@@ -2474,11 +2474,11 @@ nextPutAll: aCollection
 	^ aCollection "what StandardFileStream returns"
 ! !
 
-!UniFileStream methodsFor: 'private' stamp: 'KenD 4/10/2013 15:23'!
+!UniFileStream methodsFor: 'private' stamp: 'KenD 4/10/2013 21:50'!
 nextPutByte: aByte
 	"Write the given byte to a file"
 
-	^ super nextPut: aByte
+	^ super nextPut: aByte asCharacter
 "	rwmode ifFalse: [^ self error: 'Cannot write a read-only file'].
 	collection ifNotNil: [ 
 		position < readLimit ifTrue: [ self flushReadBuffer ] ].
@@ -2563,11 +2563,10 @@ skip: anInteger
 	
 	^ self position: (self position + anInteger)! !
 
-!UniFileStream methodsFor: 'properties-setting' stamp: 'KenD 4/10/2013 09:47'!
+!UniFileStream methodsFor: 'properties-setting' stamp: 'KenD 4/10/2013 21:34'!
 unicode
-	"opposite of binary"
-	buffer1 := String new: 1.
-	collection ifNotNil: [ collection := collection asUniString ]! !
+	"the only thing we do"
+	self binary! !
 
 !UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:14'!
 upTo: delim 
