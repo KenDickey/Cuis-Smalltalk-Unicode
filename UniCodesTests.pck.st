@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 8 April 2013 at 9:26:28 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 10 April 2013 at 8:17:06 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -1023,7 +1023,7 @@ testUniStringPrint
 
 ! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 2/17/2013 21:58'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/10/2013 19:53'!
 testUniStringRebalance
 
 	| fr1 fr2 t1 t2 |
@@ -1034,8 +1034,10 @@ testUniStringRebalance
 
 	self assert: ( t1 depth = 7 ).
 	self assert: ( t1 rebalance depth = 3 ).
+	self assert: ( t1 rebalance = t1 ).
 	self assert: ( t2 depth = 11 ).
-	self assert: ( t2 rebalance depth = 4 ).! !
+	self assert: ( t2 rebalance depth = 4 ).
+	self assert: ( t2 rebalance = t2 ).! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/3/2013 16:26'!
 testUniStringWrapper
