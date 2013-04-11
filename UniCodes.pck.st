@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 8 April 2013 at 9:28:56 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 10 April 2013 at 8:17:03 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -153,9 +153,18 @@ UniChars with the same codePoint are typically NOT unique.
 Note that many "tests" (e.g. #isLetter #isUppercase) are property tests and are in category #properies, NOT category #testing.!
 
 !UniFileStream commentStamp: '<historical>' prior: 0!
-I read and/or write UTF-8 Unicode files.
+I read and/or write UniChars and UniStrings from/to UTF-8 Unicode files.
 
-Reading a UniFile results in UniChars or UniStrings.
+There are three levels of context:
+	Bytes are the disk storage level (file position, buffering)
+	UniChars [code points] are the units read/written (1 2 or 4 Utf8 bytes -> codePoint)
+	Graphemes are the "display characters" people think of (Composed codePoints)
+	
+NOTE: File position is in BYTES but UTF-8 codePoints may consist of 1, 2, or 4 bytes each !!!!
+	
+A UniFileStream deals with the first two only.  Subclass me for Graphemes.
+
+@@@FIXME:  Currently I assume well formed UTF-8.  I do not recover gracefully.
 
 !
 
@@ -279,6 +288,12 @@ asUniString
 
 	^UniString fromString: (self asString )! !
 
+!Integer methodsFor: '*unicodes' stamp: 'KenD 4/10/2013 15:40'!
+asUniChar
+	"Answer a UniChar."
+	
+	^ UniChar value: self! !
+
 !Integer methodsFor: '*unicodes' stamp: 'KenD 4/5/2013 16:27'!
 asUtf8toStream: aStream
 	"Add self to aStream as a Utf8 Unicode code point"
@@ -301,6 +316,12 @@ asUtf8toStream: aStream
 			nextPut: (2r10000000 + ((self bitShift: -6) bitAnd: 2r111111)); 
 			nextPut: (2r10000000 + (self bitAnd: 2r111111)) ].
 	self error: 'Unicode character code point outside range'! !
+
+!Integer methodsFor: '*unicodes' stamp: 'KenD 4/10/2013 15:40'!
+codePoint
+	"Assume I am used in place of a UniChar. Answer self."
+	
+	^self! !
 
 !Integer methodsFor: '*unicodes' stamp: 'KenD 2/24/2013 09:48'!
 uniDigit
@@ -2305,6 +2326,298 @@ zeroCodePoints
 	
 	^ZeroCodePoints! !
 
+!UniFileStream methodsFor: 'properties-setting' stamp: 'KenD 4/10/2013 09:49'!
+ascii
+	"We don't do ASCII"
+	
+	DomainError signal: 'Unicode does not fit into ASCII; ASCII is a subset of Unicode'! !
+
+!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 16:56'!
+contents
+	"Answer the file contrents as a UniString"
+	
+	"@@FIXME: answer a lazy file UniString @@"
+	| oldPos result |
+	oldPos := self position.
+	self resetToStart.
+	result := self upToEnd.
+	self position: oldPos.
+	^result! !
+
+!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 17:00'!
+contentsOfEntireFile
+	"Read all of the contents of the receiver."
+	
+	^ self contents! !
+
+!UniFileStream methodsFor: 'initialize-release' stamp: 'KenD 4/10/2013 19:24'!
+initialize
+
+	super initialize.
+	super binary.   "My buffer of bytes in UTF-8 encoding"
+	self disableReadBuffering. "@@@FIXME: TEST@@@"! !
+
+!UniFileStream methodsFor: 'testing' stamp: 'KenD 4/10/2013 15:43'!
+isAscii
+	^false! !
+
+!UniFileStream methodsFor: 'testing' stamp: 'KenD 4/10/2013 15:43'!
+isBinary
+	^false! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 10:06'!
+next
+	"Answer the next UniChar"
+
+	^ self nextCodePoint asUniChar! !
+
+!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 16:58'!
+next: anInteger 
+	"Answer the next anInteger elements of my collection."
+	
+	^ self nextUpTo: anInteger ! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:43'!
+next: count into: aUniString startingAt: startIndex
+	"Answer a UniString altered by reading count Unicode characters spliced in at startIndex .
+	Return a UniString or a partial copy if less than count elements have been read."
+	
+	| splice uString |
+	splice := self nextUpTo: count.
+	uString := aUniString asUniString.
+	
+	^ (uString copyFrom: 1 to: (startIndex - 1)) , 
+	  splice , 
+	  (uString copyFrom: startIndex to: uString size)
+! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:04'!
+next: anInteger putAll: aCollection startingAt: startIndex
+	"Store the next anInteger elements from the given collection."
+	
+	^ self nextPutAll: ((aCollection asUniString) copyFrom: startIndex to: (aCollection size)).
+! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 15:38'!
+nextCodePoint
+	"Answer the next Unicode codePoint"
+	
+	"@@FIXME: Error recovery rather than signalling an error?"
+
+	| byte1 byte2 byte3 byte4 codePoint |
+	byte1 _ super next asInteger.
+	byte1 < 128 ifTrue: [ ^ byte1 ].	"single byte"
+		
+	
+	"At least 2 bytes"
+	byte2 _ super next asInteger.
+	(byte2 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
+	(byte1 bitAnd: 16rE0) = 192 ifTrue: [ "two bytes"
+		codePoint := ((byte1 bitAnd: 31) bitShift: 6) 
+		 				+ (byte2 bitAnd: 63).
+		^ codePoint
+	].
+	
+	"At least 3 bytes"
+	byte3 := super next asInteger.
+	(byte3 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
+	(byte1 bitAnd: 16rF0) = 224 ifTrue: [ "three bytes"
+		codePoint :=  ((byte1 bitAnd: 15) bitShift: 12) 
+						+ ((byte2 bitAnd: 63) bitShift: 6) 
+						+ (byte3 bitAnd: 63).
+		^codePoint.
+	].
+
+	"4 bytes"
+	byte4 := super next asInteger.
+	(byte4 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
+	(byte1 bitAnd: 16rF8) = 240 ifTrue: [  "four bytes"
+		codePoint := ((byte1 bitAnd: 16r7) bitShift: 18) 
+						+ ((byte2 bitAnd: 63) bitShift: 12) 
+						+ ((byte3 bitAnd: 63) bitShift: 6) 
+						+ (byte4 bitAnd: 63).
+		^ codePoint
+	].
+! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 10:15'!
+nextPut: uniChar
+	"Write the UniChar codePoint to this file encoded as UTF-8."
+
+	| codePoint |
+	codePoint := uniChar codePoint.
+	codePoint < 128 ifTrue: [ 
+		^ self nextPutByte: codePoint ].
+	codePoint < 2048 ifTrue: [ 
+		^ self 
+			nextPutByte: (2r11000000 + (codePoint bitShift: -6)); 
+			nextPutByte: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	codePoint < 65535 ifTrue: [ 
+		^ self 
+			nextPutByte: (2r11100000 + (codePoint bitShift: -12));
+			nextPutByte: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
+			nextPutByte: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	codePoint <= 16r10FFFF  ifTrue: [  "maximumUTF8Code"
+		^ self 
+			nextPutByte: (2r11110000 + (codePoint bitShift: -18));
+			nextPutByte: (2r10000000 + (codePoint bitShift: -12));
+			nextPutByte: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
+			nextPutByte: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	self error: 'Unicode character code point outside range'
+! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:06'!
+nextPutAll: aCollection
+	"Write all the Unicode characters of the given colection to this file."
+	
+	(aCollection asUniString) codePointsDo: [ :codePoint | self nextPut: codePoint ].
+	^ aCollection "what StandardFileStream returns"
+! !
+
+!UniFileStream methodsFor: 'private' stamp: 'KenD 4/10/2013 15:23'!
+nextPutByte: aByte
+	"Write the given byte to a file"
+
+	^ super nextPut: aByte
+"	rwmode ifFalse: [^ self error: 'Cannot write a read-only file'].
+	collection ifNotNil: [ 
+		position < readLimit ifTrue: [ self flushReadBuffer ] ].
+	buffer1 at: 1 put: aByte.
+	self primWrite: fileID from: buffer1 startingAt: 1 count: 1.
+	^ aByte
+"! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:42'!
+nextUpTo: count
+	"Answer a subcollection from the current access position through count or EOF."
+		
+	| result numRead |
+	result := UniStringWrapper new.
+	numRead := 0.
+	
+	[(self atEnd) or: (numRead = count)] whileFalse: [ 
+		result nextPut: self next.
+		numRead := numRead + 1.
+	].
+
+	^ result asUniString! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 15:48'!
+padToEndWith: aChar
+	"On the Mac, files do not truncate.  One can delete the old file and write a new one, but sometime deletion fails (file still open? file stale?).  This is a sad compromise.  Just let the file be the same length but pad it with a harmless character."
+
+	| pad |
+	pad := aChar asUniChar.
+	[self atEnd] whileFalse:  [ self nextPut: pad ].! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 15:50'!
+peek
+	"Answer what would be returned if the message next were sent to the receiver. If the receiver is at the end, answer nil.  "
+	| next oldPos |
+	self atEnd ifTrue: [ ^ nil ].
+	oldPos := self position.
+	next _ self next.
+	self position: oldPos.
+	^ next! !
+
+!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 16:51'!
+peekFor: item 
+	"Answer false and do not advance if the next element is not equal to item, or if this stream is at the end.  If the next element is equal to item, then advance over it and return true"
+	| next oldPos |
+	oldPos := self position.
+	
+	(next _ self next) ifNil: [ ^ false ].
+
+	(item = next) ifTrue: [ ^ true ].
+
+	self position: oldPos.
+	^ false! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:11'!
+readInto: byteArray startingAt: startIndex count: count
+	"Read into the given array as specified, and return the count
+	actually transferred.  index and count are in units of bytes or
+	longs depending on whether the array is Bitmap, String or ByteArray"
+	
+	"This is a DANGEROUS way to get binary data dirtectly without opening a binary fileStream.
+	 There is NO synchronization between bytes and UTF-8 encoded codePoints.
+	NOTE: This will NOT work with a UniString in place of a byteArray!!"
+	Transcript log: 'WARNING: UniFileStream>>readInto:startingAt:count: invoked on ',
+						(self printString).
+
+	^super readInto: byteArray startingAt: startIndex count: count! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:06'!
+skip: anInteger
+	"Set the byte position to anInteger bytes from the current position.
+	Error if not enough bytes left in the file. "
+
+	| newPos |
+	newPos := self position + anInteger.
+	
+	(newPos < 0) 
+	ifTrue: [ self error: 'Can''t set file position to before beginning of file' ].
+	
+	(newPos > readLimit) 
+	ifTrue: [ self error: 'Can''t set file position past end of file' ].
+	
+	^ self position: (self position + anInteger)! !
+
+!UniFileStream methodsFor: 'properties-setting' stamp: 'KenD 4/10/2013 09:47'!
+unicode
+	"opposite of binary"
+	buffer1 := String new: 1.
+	collection ifNotNil: [ collection := collection asUniString ]! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:14'!
+upTo: delim 
+	"Answer a UniString of UniChars up to the delimiter or EOF."
+	"Read but do NOT return the delimiter"
+	
+	| result delimiter |
+	delimiter := delim asUniChar.
+	result := UniStringWrapper new.
+	[self atEnd] whileFalse: [ | nextUniChar |
+		nextUniChar := self next.
+		
+		(nextUniChar = delimiter) 
+		ifTrue: [ ^ result asUniString ]
+		ifFalse: [ result nextPut: nextUniChar ].
+	].
+	"Reached EOF = End Of File"
+	^ result asUniString! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:18'!
+upToAny: aCollection 
+	"Similar to upTo:, but find any of the objects in aCollection"
+	
+	| result delimiters |
+	(aCollection isKindOf: UniString)
+	ifTrue: [ delimiters := aCollection ] 
+	ifFalse: [ delimiters := (aCollection collect: [ :elt | elt asUniChar ]) asUniString ].
+	
+	result := UniStringWrapper new.
+	[self atEnd] whileFalse: [ | nextUniChar |
+		nextUniChar := self next.
+		
+		(delimiters includes: nextUniChar) 
+		ifTrue: [ ^ result asUniString ]
+		ifFalse: [ result nextPut: nextUniChar ].
+	].
+	"Reached EOF = End Of File"
+	^ result asUniString! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:15'!
+upToEnd
+	"Answer a subcollection from the current access position through the last element of the receiver."
+		
+	| result |
+	result := UniStringWrapper new.
+	
+	[self atEnd] whileFalse: [ result nextPut: self next ].
+
+	^ result asUniString! !
+
 !UniFlat methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:11'!
 at: anIndex
 	
@@ -3223,7 +3536,7 @@ withLeft: aRope andRight: anotherRope
 	depth := 1 + (leftRope depth max: (rightRope depth)).
 	^(self balanceAsRequired)! !
 
-!UniSplice class methodsFor: 'class initialization' stamp: 'KenD 2/17/2013 16:42'!
+!UniSplice class methodsFor: 'class initialization' stamp: 'KenD 4/10/2013 20:16'!
 initialize
 	"UniSplice class initialization"
 "
@@ -3490,11 +3803,11 @@ asSymbol
 
 	^Symbol intern: self asString! !
 
-!UniString methodsFor: 'converting' stamp: 'KenD 3/30/2013 20:40'!
+!UniString methodsFor: 'converting' stamp: 'KenD 4/9/2013 19:35'!
 asText
 	"Answer a Text whose ''string'' is the receiver."
 
-	^Text fromString: (UniString with: self)! !
+	^Text initialFont: UniForms default stringOrText: self! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 2/17/2013 15:54'!
 asUniString
@@ -4471,7 +4784,7 @@ printString
 
 	^String streamContents: [:s | self storeOn: s]! !
 
-!UniString methodsFor: 'private' stamp: 'KenD 2/17/2013 21:57'!
+!UniString methodsFor: 'private' stamp: 'KenD 4/10/2013 20:07'!
 rebalance
 	"Answer a new balanced rope with my data"
 
@@ -4485,8 +4798,8 @@ rebalance
 		node := toExamine removeFirst.
 		(node class == UniSplice)
 		ifTrue: [
-			toExamine addLast: node rightRope.
-			toExamine addLast: node leftRope
+			toExamine addFirst: node rightRope.
+			toExamine addFirst: node leftRope.
 		]
 		ifFalse: [leafNodes addLast: node]
 	].
@@ -5067,23 +5380,23 @@ maxRopeDepth
 "
 	^MaxRopeDepth ! !
 
-!UniString class methodsFor: 'private' stamp: 'KenD 2/17/2013 15:51'!
+!UniString class methodsFor: 'private' stamp: 'KenD 4/10/2013 20:15'!
 merge: leafNodes start: start end: end
 	"Answer a balanced rope based on data from Rope\>>rebalance"
 
 	| range middle |
 	range := end - start.
-	
-	(range = 1)
+
+	(range = 0)
 	ifTrue: [^ leafNodes at: start].
 	
-	(range = 2)
+	(range = 1)
 	ifTrue: [^ (leafNodes at: start) , (leafNodes at: (start + 1)) ].
 	
-	middle := start + (range // 2).
+	middle := start + (range quo: 2).
 	
 	^ (self merge: leafNodes start: start end: middle ) ,
-	   (self merge: leafNodes start: middle end: end)
+	   (self merge: leafNodes start: middle + 1 end: end)
 ! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 4/1/2013 20:31'!
