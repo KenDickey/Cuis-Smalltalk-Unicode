@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 10 April 2013 at 9:52:26 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 12 April 2013 at 7:57:24 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -39,6 +39,16 @@ UniChar subclass: #UChar8
 	category: 'UniCodes'!
 !classDefinition: 'UChar8 class' category: #UniCodes!
 UChar8 class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniFileList category: #UniCodes!
+FileList subclass: #UniFileList
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniFileList class' category: #UniCodes!
+UniFileList class
 	instanceVariableNames: ''!
 
 !classDefinition: #UniFileStream category: #UniCodes!
@@ -151,6 +161,10 @@ UniChars are immutable.
 UniChars with the same codePoint are typically NOT unique.
 
 Note that many "tests" (e.g. #isLetter #isUppercase) are property tests and are in category #properies, NOT category #testing.!
+
+!UniFileList commentStamp: '<historical>' prior: 0!
+I am a FileList which can display Unicode.
+!
 
 !UniFileStream commentStamp: '<historical>' prior: 0!
 I read and/or write UniChars and UniStrings from/to UTF-8 Unicode files.
@@ -287,6 +301,14 @@ asUniString
 	"Answer a Unicode string based on my value interpreted as a code point."
 
 	^UniString fromString: (self asString )! !
+
+!FileListWindow class methodsFor: '*unicodes' stamp: 'KenD 4/12/2013 15:13'!
+openUniFileList
+	"Answer a FileList which can view Unicode"
+	"
+	FileListWindow openUniFileList
+	"
+	FileListWindow open: (UniFileList new directory: FileDirectory default) label: nil! !
 
 !Integer methodsFor: '*unicodes' stamp: 'KenD 4/10/2013 15:40'!
 asUniChar
@@ -2326,6 +2348,142 @@ zeroCodePoints
 	
 	^ZeroCodePoints! !
 
+!UniFileList methodsFor: 'contents' stamp: 'KenD 4/12/2013 17:08'!
+acceptedContents
+	^ Text
+		initialFont: UniForms default
+		stringOrText: self acceptedStringOrText asUniString! !
+
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 15:59'!
+acceptedStringOrText
+	"Answer the contents of the file, reading it first if needed."
+	"Possible brevityState values:
+		FileList,
+		fullFile, briefFile, needToGetFull, needToGetBrief,
+		fullHex, briefHex, needToGetFullHex, needToGetBriefHex"
+
+	(listIndex = 0) | (brevityState == #FileList) ifTrue: [ ^ self defaultContents ].  "no file selected"
+	
+	({ #fullFile. #fullHex. #fullUnicode. #briefFile. #briefHex. #briefUnicode. }
+		includes: 	brevityState) 
+	ifTrue: [ ^ acceptedContentsCache ].
+
+	brevityState == #needToGetUnicode ifTrue: [^ self readContentsUnicode: false ].
+"	brevityState == #needToGetFullUnicode ifTrue: [^ self readContentsUnicode: false ].
+	brevityState == #needToGetBriefUnicode ifTrue: [^ self readContentsUnicode: true ].
+"
+	brevityState == #needToGetFullHex ifTrue: [^ self readContentsHex: false ].
+	brevityState == #needToGetBriefHex ifTrue: [^ self readContentsHex: true ].
+
+	brevityState == #needToGetFull ifTrue:  [^ self readContentsBrief: false ].
+	brevityState == #needToGetBrief ifTrue: [ ^ self readContentsBrief: true ].  "default"
+
+	self halt: 'unknown state ' , brevityState printString! !
+
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 18:20'!
+defaultContents
+	acceptedContentsCache _ (list
+		ifNil: [UniString emptyString ]
+		ifNotNil: [(String streamContents:
+					[:s | s nextPutAll: 'NO FILE SELECTED'; newLine.
+					 s nextPutAll: '  -- Folder Summary --'; newLine.
+					 list do: [:item | s nextPutAll: item; newLine]] ) asUniString]
+		).
+	brevityState _ #FileList.
+	^ acceptedContentsCache! !
+
+!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/12/2013 19:40'!
+editorClass
+	^TextEditor! !
+
+!UniFileList methodsFor: 'file menu action' stamp: 'KenD 4/12/2013 15:56'!
+getUnicode
+	"Get contents of file again, and display in Unicode. Do this by making the cancel string be the contents, and doing a cancel."
+
+	Cursor read showWhile: [
+		brevityState := #needToGetUnicode.  
+		"See method: acceptedStringOrText"
+		self acceptedContentsChanged ]! !
+
+!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/12/2013 15:47'!
+itemsForAnyFile2
+	"Answer a list of universal services that could apply to any file"
+	
+	| services |
+	services := super itemsForAnyFile2.
+	services addFirst: self serviceGetUnicode.
+	^services
+
+! !
+
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 14:50'!
+put: aText
+	"Private - put the supplied text onto the file"
+
+	| ff type |
+	brevityState == #fullFile ifTrue:
+		[ff _ directory newFileNamed: self fullName.
+		Cursor write showWhile: [ff nextPutAll: aText asString; close].
+		fileName = ff localName 
+			ifTrue: [ acceptedContentsCache _ aText asUniString]
+			ifFalse: [self updateFileList].		"user renamed the file"
+		^ true  "accepted"].
+
+	listIndex = 0 ifTrue:
+		[self inform: 'No fileName is selected'.
+		^ false  "failed"].
+	type _ 'These'.
+	brevityState = #briefFile ifTrue: [type _ 'Abbreviated'].
+	brevityState = #briefHex ifTrue: [type _ 'Abbreviated'].
+	brevityState = #fullHex ifTrue: [type _ 'Hexadecimal'].
+	brevityState = #briefUnicode ifTrue: [type _ 'Unicode'].
+	brevityState = #fullUnicode ifTrue: [type _ 'Unicode'].
+	brevityState = #FileList ifTrue: [type _ 'Directory'].
+	self inform: ('{1} contents cannot
+meaningfully be saved at present.' format:{type}).
+	^ false  "failed"
+! !
+
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 17:09'!
+readContentsUnicode: brevity
+	"retrieve the contents from the external file unless it is too long.
+	  Don't create a file here.  Check if exists."
+	| uniFileStream "size" uniString |
+
+	uniFileStream := UniFileStream oldFileOrNoneNamed: self fullName. 
+	uniFileStream ifNil: [^ 'For some reason, this file cannot be read'].
+	"size := uniFileStream size."
+	"@@FIXME: lazy file UniString"
+	uniString := uniFileStream contentsOfEntireFile.
+	brevityState := #fullUnicode.
+	uniFileStream close. 
+	"uniString edit."
+	
+	acceptedContentsCache := uniString.
+	
+	^ acceptedContentsCache
+"	 (brevityState = #briefUnicode)
+		ifFalse: [uniString]
+		ifTrue: [('File ''{1}'' is {2} bytes long.
+You may use the ''get'' command to read the entire file.
+
+Here are the first 5000 characters...
+------------------------------------------
+{3}
+------------------------------------------
+... end of the first 5000 characters.' asUniString) format: {fileName. size. uniString}]
+"! !
+
+!UniFileList methodsFor: 'own services' stamp: 'KenD 4/12/2013 14:42'!
+serviceGetUnicode
+
+	^  (SimpleServiceEntry 
+			provider: self 
+			label: 'view as Unicode' 
+			selector: #getUnicode
+			description: 'view as Unicode')
+			! !
+
 !UniFileStream methodsFor: 'properties-setting' stamp: 'KenD 4/10/2013 09:49'!
 ascii
 	"We don't do ASCII"
@@ -2616,6 +2774,11 @@ upToEnd
 	[self atEnd] whileFalse: [ result nextPut: self next ].
 
 	^ result asUniString! !
+
+!UniFileStream class methodsFor: 'concrete classes' stamp: 'KenD 4/12/2013 15:32'!
+concreteStream
+	"Who should we really direct class queries to? "
+	^ UniFileStream! !
 
 !UniFlat methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:11'!
 at: anIndex
@@ -5414,20 +5577,20 @@ newLineString
 
 	^ (Character newLineCharacter asUniString)! !
 
-!UniString class methodsFor: 'user interface' stamp: 'KenD 4/3/2013 16:28'!
+!UniString class methodsFor: 'user interface' stamp: 'KenD 4/12/2013 16:37'!
 openTextEditor
 
 "
 	UniString openTextEditor.
 "
 	SystemWindow 
-		editText: (TextModel 
+		editText: (UniTextModel 
 			withText: (
-			 	('Given enough rope' asUniString) , 
+			 	('Given enough rope ' asUniString) , 
 				(UniString  newLineString) ,
 				('you can write a text editor!!' asUniString)
 				)) 
-		label: 'Text Editor' 
+		label: 'Unicode Text Editor' 
 		wrap: true! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:49'!
