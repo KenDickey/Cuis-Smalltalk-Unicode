@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 12 April 2013 at 7:57:24 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 13 April 2013 at 4:35:38 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -302,11 +302,11 @@ asUniString
 
 	^UniString fromString: (self asString )! !
 
-!FileListWindow class methodsFor: '*unicodes' stamp: 'KenD 4/12/2013 15:13'!
+!FileListWindow class methodsFor: '*unicodes' stamp: 'KenD 4/13/2013 16:32'!
 openUniFileList
 	"Answer a FileList which can view Unicode"
 	"
-	FileListWindow openUniFileList
+	FileListWindow openUniFileList.
 	"
 	FileListWindow open: (UniFileList new directory: FileDirectory default) label: nil! !
 
@@ -2348,11 +2348,11 @@ zeroCodePoints
 	
 	^ZeroCodePoints! !
 
-!UniFileList methodsFor: 'contents' stamp: 'KenD 4/12/2013 17:08'!
+!UniFileList methodsFor: 'contents' stamp: 'KenD 4/13/2013 07:53'!
 acceptedContents
 	^ Text
 		initialFont: UniForms default
-		stringOrText: self acceptedStringOrText asUniString! !
+		stringOrText: self acceptedStringOrText "asUniString"! !
 
 !UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 15:59'!
 acceptedStringOrText
@@ -2380,15 +2380,18 @@ acceptedStringOrText
 
 	self halt: 'unknown state ' , brevityState printString! !
 
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 18:20'!
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/13/2013 15:49'!
 defaultContents
-	acceptedContentsCache _ (list
-		ifNil: [UniString emptyString ]
-		ifNotNil: [(String streamContents:
-					[:s | s nextPutAll: 'NO FILE SELECTED'; newLine.
-					 s nextPutAll: '  -- Folder Summary --'; newLine.
-					 list do: [:item | s nextPutAll: item; newLine]] ) asUniString]
-		).
+	acceptedContentsCache := (list
+		ifNil: [ String emptyString ]
+		ifNotNil: [
+			(String streamContents:
+				[:s | s nextPutAll: 'NO FILE SELECTED'; newLine.
+				 s nextPutAll: '  -- Folder Summary --'; newLine.
+				 list do: [:item | s nextPutAll: item; newLine]] 
+			) 
+		]
+	).
 	brevityState _ #FileList.
 	^ acceptedContentsCache! !
 
@@ -3176,20 +3179,21 @@ array16FromHexString: aString
 default
 	^self new! !
 
-!UniForms class methodsFor: 'accessing' stamp: 'KenD 3/2/2013 20:13'!
+!UniForms class methodsFor: 'accessing' stamp: 'KenD 4/13/2013 16:35'!
 formForCodePoint: aCodePoint
 
 	"Answer a form for glyph/character at codePoint or nil"
 
-	| index |
+	| index form |
 	index := aCodePoint + 1. "Conver to zero based index"
 	
 	(index < 1)
 	ifTrue: [DomainError signal: 'Unicode code point out of range ' , aCodePoint printString ].
 	
-	(index > 16rFFFF) ifTrue: [ ^nil ]. "Past end of table -- we only do plane 0"
-	
-	^ FormsArray at: index! !
+	(index > 16rFFFF or: [(form := FormsArray at: index) isNil])
+	"Substitute DIAGONAL CROSS for missing forms"
+	ifTrue: [ ^ FormsArray at: 16r2573 ] 
+	ifFalse: [ ^ form ]! !
 
 !UniForms class methodsFor: 'private' stamp: 'KenD 3/2/2013 20:04'!
 formsArray
