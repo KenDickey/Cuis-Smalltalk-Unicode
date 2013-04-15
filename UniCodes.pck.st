@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 13 April 2013 at 4:35:38 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 14 April 2013 at 8:36:23 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -131,9 +131,19 @@ Object subclass: #UniStringWrapper
 UniStringWrapper class
 	instanceVariableNames: ''!
 
+!classDefinition: #UniTextEditor category: #UniCodes!
+TextEditor subclass: #UniTextEditor
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniTextEditor class' category: #UniCodes!
+UniTextEditor class
+	instanceVariableNames: ''!
+
 !classDefinition: #UniTextModel category: #UniCodes!
 TextModel subclass: #UniTextModel
-	instanceVariableNames: ''
+	instanceVariableNames: 'fileName timeStamp'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'UniCodes'!
@@ -267,8 +277,17 @@ Use in place of WriteStream for #nextPut: and #nextPutAll.
 	WriteStream on: 'abc',
 !
 
+!UniTextEditor commentStamp: '<historical>' prior: 0!
+I am an editor for Unicode text.
+!
+
 !UniTextModel commentStamp: '<historical>' prior: 0!
-I am a TextModel which handles Unicode using UniStrings.!
+I am a TextModel which handles Unicode using UniStrings.
+
+fileName is the fullName of a file or nil.
+timeStamp is zero or the time the file was read to create a view.
+
+If a user goes to save a file, the timeStamp should not have changed.!
 
 !Array methodsFor: '*unicodes' stamp: 'KenD 4/7/2013 19:02'!
 asUniString
@@ -2395,9 +2414,10 @@ defaultContents
 	brevityState _ #FileList.
 	^ acceptedContentsCache! !
 
-!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/12/2013 19:40'!
+!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/14/2013 19:22'!
 editorClass
-	^TextEditor! !
+
+	^UniTextEditor! !
 
 !UniFileList methodsFor: 'file menu action' stamp: 'KenD 4/12/2013 15:56'!
 getUnicode
@@ -2419,13 +2439,13 @@ itemsForAnyFile2
 
 ! !
 
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 14:50'!
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/14/2013 18:12'!
 put: aText
 	"Private - put the supplied text onto the file"
 
 	| ff type |
-	brevityState == #fullFile ifTrue:
-		[ff _ directory newFileNamed: self fullName.
+	(brevityState == #fullUnicode)
+	ifTrue: [ff _ UniFileStream newFileNamed: self fullName.
 		Cursor write showWhile: [ff nextPutAll: aText asString; close].
 		fileName = ff localName 
 			ifTrue: [ acceptedContentsCache _ aText asUniString]
@@ -2436,11 +2456,12 @@ put: aText
 		[self inform: 'No fileName is selected'.
 		^ false  "failed"].
 	type _ 'These'.
+	brevityState = #fullFile ifTrue: [type _ 'Ascii'].
 	brevityState = #briefFile ifTrue: [type _ 'Abbreviated'].
 	brevityState = #briefHex ifTrue: [type _ 'Abbreviated'].
 	brevityState = #fullHex ifTrue: [type _ 'Hexadecimal'].
 	brevityState = #briefUnicode ifTrue: [type _ 'Unicode'].
-	brevityState = #fullUnicode ifTrue: [type _ 'Unicode'].
+"	brevityState = #fullUnicode ifTrue: [type _ 'Unicode']."
 	brevityState = #FileList ifTrue: [type _ 'Directory'].
 	self inform: ('{1} contents cannot
 meaningfully be saved at present.' format:{type}).
@@ -2559,7 +2580,7 @@ next: anInteger putAll: aCollection startingAt: startIndex
 	^ self nextPutAll: ((aCollection asUniString) copyFrom: startIndex to: (aCollection size)).
 ! !
 
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 15:38'!
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/14/2013 16:22'!
 nextCodePoint
 	"Answer the next Unicode codePoint"
 	
@@ -5751,6 +5772,54 @@ with: aString
 
 	^ self basicNew with: (aString asUniString)! !
 
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 4/13/2013 19:09'!
+save: aKeyboardEvent
+	"Submit the current text.  Equivalent to 'accept' "
+
+	self acceptContents.
+	^ true! !
+
+!UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 4/13/2013 19:08'!
+cmdShortcutsSpec
+	"
+	Editor initialize
+	"
+	"arranged in QWERTY keyboard order"
+	^#(
+		#(		$0 	changeEmphasis:			'Normal')
+		#(		$1 	changeEmphasis:			'Bold')
+		#(		$2 	changeEmphasis:			'Italic')
+		#(		$3 	changeEmphasis:			'Underline')
+		#(		$4 	changeEmphasis:			'Strikeout')
+		#(		$5 	changeEmphasis:			'Negative kern (letters 1 pixel closer)')
+		#(		$6 	changeEmphasis:			'Positive kern (letters 1 pixel larger spread)')
+		#(		$8	#offerColorMenu:			'Change color')
+
+		#(		$k	#offerFontMenu:			'Set font')
+		
+		#(		$s	#save:							'Save (i.e. accept)')
+
+		#(		$u	#align:						'Toggle alignment')
+	)! !
+
+!UniTextEditor class methodsFor: 'class initialization' stamp: 'KenD 4/14/2013 18:05'!
+initialize
+
+"
+	UniTextEditor initialize.
+"
+	super initialize! !
+
+!UniTextModel methodsFor: 'commands' stamp: 'KenD 4/14/2013 19:59'!
+acceptContentsFrom: aTextModelMorph
+	"The user has typed Cmd+s -> Accept.
+	Update backing file (query if needed).
+	Answer true if OK, else false."
+	
+	(fileName isNil)
+	ifTrue: [ ^(self saveToNewFileNotifying: aTextModelMorph) isNil not ]
+	ifFalse: [ ^(self saveToOldFileNotifying: aTextModelMorph) isNil not ]! !
+
 !UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/8/2013 19:14'!
 actualContents: aTextOrString
 	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
@@ -5763,11 +5832,44 @@ basicActualContents: aTextOrString
 	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
 	undoRedoCommands resetToStart.! !
 
-!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 19:13'!
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 19:17'!
+editorClass
+
+	^UniTextEditor! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:57'!
+fileName
+
+	^ fileName! !
+
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 16:13'!
+fromFile: aFileName
+	"Open the file aFileName if possible and read the file into actualContents.
+	Answer self if successful else nil."
+	
+	| aFile |
+	(aFileName isEmpty) ifFalse: [
+		aFile := UniFileStream readOnlyFileNamed: aFileName.
+		((aFile isNil) or: [ aFile isDirectory ]) ifFalse: [
+			"Found a non-directory file; assume reable UTF-8"
+			fileName := aFileName.
+			timeStamp := aFile directoryEntry modificationDateAndTime.
+			actualContents := aFile contentsOfEntireFile. "@@FIXME make lazy"
+			aFile close.
+			^self
+		]
+	].
+	"Not a readable file"
+	^nil
+
+			! !
+
+!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/14/2013 14:55'!
 initialize
 	"Initialize the state of the receiver with its default contents."
 
 	actualContents _ UniString emptyString asText.
+	timeStamp := 0.
 	self flushUndoRedoCommands! !
 
 !UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 19:14'!
@@ -5775,6 +5877,76 @@ openLabel: aString
 	"Create a standard system view of the model, me, and open it."
 	
 	SystemWindow editText: self label: aString asUniString wrap: true! !
+
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 20:35'!
+saveToNewFileNotifying: aTextModelMorph
+	"Answer true if OK, else nil"
+
+	| dialogResult |	
+	dialogResult := (StandardFileMenu new) 
+   					newFileFrom: (FileDirectory default)
+					withPattern: '*' ; 
+					startUpWithCaption: 'Type new file name for save'.
+	
+	(dialogResult isNil)
+	ifTrue: [ ^nil ]
+	ifFalse: [ | uniFileStream  |
+		fileName := (dialogResult directory) fullPathFor: (dialogResult name).
+		uniFileStream := UniFileStream newFileNamed: fileName.
+		uniFileStream nextPutAll: self actualContents asUniString; close.
+		timeStamp := (FileDirectory on: fileName) directoryEntry modificationDateAndTime.
+		"@@@FIXME Notify aTextModelMorph"
+		^true
+	]! !
+
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 20:35'!
+saveToOldFileNotifying: aTextModelMorph
+	"Answer true if OK, else nil"
+
+	| dirEntry uniFileStream  |	
+	dirEntry :=  (FileDirectory on: fileName) directoryEntry.
+	(timeStamp = dirEntry  modificationDateAndTime) 
+	ifFalse: [
+		(self confirm: 
+'Caution!! Contents were saved
+elsewhere since you started
+editing them here.  Accept anyway?' ) 
+		ifFalse: [ aTextModelMorph flash. ^nil ]
+	].
+					
+	uniFileStream := UniFileStream newFileNamed: fileName.
+	uniFileStream nextPutAll: self actualContents asUniString; close.
+	timeStamp := (FileDirectory on: fileName) directoryEntry modificationDateAndTime.
+	"@@@FIXME Notify aTextModelMorph"
+	^true
+! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:56'!
+timeStamp
+
+	^ timeStamp! !
+
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/14/2013 15:38'!
+fromFile: aFileName
+	"Answer an instance of me if aFileName denotes a readable text file, else nil"
+
+	^self new initialize fromFile: aFileName! !
+
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/14/2013 16:22'!
+fromUser
+	"Put up a StandardFileMenu and let the user choose a file to read into me."
+	"Answer an instance of me or nil"
+	
+	| dialogResult slash |
+	dialogResult := (StandardFileMenu new)
+						oldFileFrom: (FileDirectory default) ;
+	 					startUpWithCaption: 'Select a UTF-8 Unicode text file'.
+	
+	((dialogResult isNil) or: [dialogResult isDirectory]) ifTrue: [ ^nil ].
+
+	slash := FileDirectory slash.
+
+	^self new initialize fromFile: ( (dialogResult directory fullName) , slash , (dialogResult name) )! !
 
 !UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 19:11'!
 openLabel: aString
@@ -5784,3 +5956,4 @@ UniChar initialize!
 UniForms initialize!
 UniSplice initialize!
 UniString initialize!
+UniTextEditor initialize!
