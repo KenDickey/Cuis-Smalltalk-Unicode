@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 14 April 2013 at 8:36:23 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 14 April 2013 at 9:03:35 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -328,6 +328,11 @@ openUniFileList
 	FileListWindow openUniFileList.
 	"
 	FileListWindow open: (UniFileList new directory: FileDirectory default) label: nil! !
+
+!FormCanvas methodsFor: '*unicodes' stamp: 'KenD 4/14/2013 21:03'!
+grafPort
+
+	^port! !
 
 !Integer methodsFor: '*unicodes' stamp: 'KenD 4/10/2013 15:40'!
 asUniChar
