@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 14 April 2013 at 9:03:35 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 15 April 2013 at 9:17:39 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -9,36 +9,6 @@ Object subclass: #UniChar
 	category: 'UniCodes'!
 !classDefinition: 'UniChar class' category: #UniCodes!
 UniChar class
-	instanceVariableNames: ''!
-
-!classDefinition: #UChar16 category: #UniCodes!
-UniChar subclass: #UChar16
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'UChar16 class' category: #UniCodes!
-UChar16 class
-	instanceVariableNames: ''!
-
-!classDefinition: #UChar32 category: #UniCodes!
-UniChar subclass: #UChar32
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'UChar32 class' category: #UniCodes!
-UChar32 class
-	instanceVariableNames: ''!
-
-!classDefinition: #UChar8 category: #UniCodes!
-UniChar subclass: #UChar8
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'UChar8 class' category: #UniCodes!
-UChar8 class
 	instanceVariableNames: ''!
 
 !classDefinition: #UniFileList category: #UniCodes!
@@ -151,16 +121,6 @@ TextModel subclass: #UniTextModel
 UniTextModel class
 	instanceVariableNames: ''!
 
-
-!UChar16 commentStamp: '<historical>' prior: 0!
-I am a Unicode character which is represented in 16 bits.
-!
-
-!UChar32 commentStamp: '<historical>' prior: 0!
-I am a Unicode character which is represented in 32 bits.!
-
-!UChar8 commentStamp: '<historical>' prior: 0!
-I am a Unicode character which is represented in 8 bits.!
 
 !UniChar commentStamp: '<historical>' prior: 0!
 This is the abstract parent class of Unicode Characters with various representation sizes.
@@ -422,35 +382,17 @@ nextUnicodeCodePointFromUtf8: anUtf8Stream
 
 	^nil! !
 
-!Number methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 09:02'!
+!Number methodsFor: '*unicodes' stamp: 'KenD 4/15/2013 21:06'!
 asUniChar
 	"Answer a Unicode character [UniChar] with me as a code point"
 
-	^UniChar fromCodePoint: self! !
+	^UniChar fromCodePoint: self asInteger! !
 
 !Number methodsFor: '*unicodes' stamp: 'KenD 3/21/2013 16:17'!
 asUniString
 	"Answer a UniString representing me"
 
 	^ UniString fromString: (self asString).! !
-
-!Number methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 08:49'!
-classForCodePoint
-	"Answer a class which will hold this 8, 16, or 32 bit code point or signal a domain error"
-
-	(self < 0)
-	ifTrue: [ DomainError signal: 'Unicode code points must be non-negative' ].
-	
-	(self <= 16rFF)
-	ifTrue: [ ^UChar8 ].
-	
-	(self <= 16rFFFF)
-	ifTrue: [ ^UChar16 ].
-	
-	(self <= 16rFFFFFFFF)
-	ifTrue: [ ^UChar32 ].
-	
-	DomainError signal: 'Unicode code points must fit within a 32 bit range'! !
 
 !String methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 20:45'!
 asUniString
@@ -461,26 +403,6 @@ asUniString
 asUniString
 
 	^UniString fromString: self asString! !
-
-!UChar16 methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:11'!
-icon
-
-	^self form! !
-
-!UChar32 methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:11'!
-icon
-
-	^self form! !
-
-!UChar8 methodsFor: 'accessing' stamp: 'KenD 3/21/2013 21:59'!
-asciiValue
-
-	^codePoint! !
-
-!UChar8 methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:12'!
-icon
-
-	^self form! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
 < aCharacter 
@@ -628,15 +550,15 @@ digitValue
 	ifTrue: [ ^ self asCharacter digitValue ]
 	ifFalse: [ ^ self codePoint uniDigit ]! !
 
-!UniChar methodsFor: 'accessing' stamp: 'KenD 3/2/2013 20:49'!
+!UniChar methodsFor: 'accessing' stamp: 'KenD 4/15/2013 21:01'!
 form
 
 	"Answer a form if I am in plane zero, else the form for a space"
 	| aForm |
-	aForm := UniForms formForCodePoint: self codePoint.
+	aForm := UniForms formForCodePoint: codePoint.
 	
-	(aForm isNil)
-	ifTrue: [ ^UniForms formForCodePoint: (Character space asUniChar codePoint) ] 
+	(aForm isNil)  "Use SPACE if no predefined form exists"
+	ifTrue: [ ^UniForms formForCodePoint: (UniChar space codePoint) ] 
 	ifFalse: [ ^aForm ]! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:52'!
@@ -1042,10 +964,10 @@ isVowel
 
 	^Character vowels asUniString includes: self! !
 
-!UniChar methodsFor: 'accessing' stamp: 'jmv 3/6/2013 15:26'!
+!UniChar methodsFor: 'accessing' stamp: 'KenD 4/15/2013 20:59'!
 iso8859s15Code
 "Not really..."
-	^codePoint < 256 ifTrue: [ codePoint ]! !
+	^codePoint < 256 ifTrue: [ codePoint ] ifFalse: [ nil ]! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:52'!
 lineBreakCategory
@@ -1300,6 +1222,24 @@ F0000..FFFFF; Supplementary Private Use Area-A
   => Special
 
 "! !
+
+!UniChar methodsFor: 'accessing' stamp: 'KenD 4/15/2013 21:05'!
+storageSizeInBytes
+	"Answer a class which will hold this 8, 16, or 32 bit code point or signal a domain error"
+
+	(codePoint < 0)
+	ifTrue: [ DomainError signal: 'Unicode code points must be non-negative' ].
+	
+	(codePoint <= 16rFF)
+	ifTrue: [ ^ 1 ].
+	
+	(codePoint <= 16rFFFF)
+	ifTrue: [ ^ 2 ].
+	
+	(codePoint <= 16rFFFFFFFF)
+	ifTrue: [ ^4 ].
+	
+	DomainError signal: 'Unicode code points must fit within a 32 bit range'! !
 
 !UniChar methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:33'!
 storeOn: aStream
@@ -1680,18 +1620,12 @@ euro
 
 	^ (16r20AC asUniChar)! !
 
-!UniChar class methodsFor: 'instance creation' stamp: 'KenD 2/17/2013 09:22'!
+!UniChar class methodsFor: 'instance creation' stamp: 'KenD 4/15/2013 20:55'!
 fromCodePoint: aCodePoint
 	"Answer a new Unicode character to represent aCodePoint"
-"
-	self assert: (16r34 asUniChar  class == UChar8).
-	self assert: (16r1234 asUniChar class == UChar16).
-	self assert: (16r1234567 asUniChar class == UChar32).
-"	
-	| newUChar |
-	newUChar := aCodePoint classForCodePoint new initialize.
-	newUChar privateSetCodePoint: aCodePoint.
-	^newUChar! !
+	
+	^ (self new initialize; privateSetCodePoint: aCodePoint; yourself)
+! !
 
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:39'!
 home
@@ -2928,7 +2862,7 @@ with: aCharBlock
 
 	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
 
-!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 19:20'!
+!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/15/2013 21:14'!
 with: aCharBlock size: size
 
 	| blockClass |
@@ -2941,7 +2875,7 @@ with: aCharBlock size: size
 	].
 	
 	((blockClass == ByteArray) or: [(blockClass == ShortWordArray) or: [ blockClass == WordArray]])
-	ifTrue: [	 charBlock := aCharBlock. ^self]  "Nota Bene: assumed immutable"
+	ifTrue: [ charBlock := aCharBlock. ^self]  "Nota Bene: assumed immutable"
 
 	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
 

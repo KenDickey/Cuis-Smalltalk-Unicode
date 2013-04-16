@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1663] on 10 April 2013 at 9:04:30 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 15 April 2013 at 9:07:42 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -795,7 +795,7 @@ testUniCharCaseMapping
 	
 	! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 2/17/2013 17:19'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/15/2013 20:57'!
 testUniCharCreation
 	"Can we create instances of UniChar?"
 
@@ -803,15 +803,20 @@ testUniCharCreation
 	uc8 := 16r34 asUniChar.
 	uc16 := 16r1234 asUniChar.
 	uc32 := 16r1234567 asUniChar.
-	
+"	
 	self assert: (uc8  class == UChar8).
 	self assert: (uc16 class == UChar16).
 	self assert: (uc32 class == UChar32).
+"
+	self assert: (uc8  class == UniChar).
+	self assert: (uc16 class == UniChar).
+	self assert: (uc32 class == UniChar).
 	self assert: (uc8 codePoint = 16r34).
 	self assert: (uc16 codePoint = 16r1234).
 	self assert: (uc32 codePoint = 16r1234567).
 	uc8 := $a asUniChar.
-	self assert: (uc8 class == UChar8).
+"	self assert: (uc8 class == UChar8)."
+	self assert: (uc8 class == UniChar).
 	self assert: (uc8 codePoint = 97).
 	self assert: (($A asUniChar codePoint) = ($A asciiValue)).  "Generally true for ASCII; mostly true for so8859s15".
 	
