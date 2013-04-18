@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 17 April 2013 at 7:51:06 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 18 April 2013 at 9:14:29 am'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -1044,7 +1044,7 @@ testUniStringRebalance
 	self assert: ( t2 rebalance depth = 4 ).
 	self assert: ( t2 rebalance = t2 ).! !
 
-!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/17/2013 19:50'!
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/18/2013 09:14'!
 testUniStringWords
 
 	| str1 str2 |
@@ -1055,6 +1055,11 @@ testUniStringWords
 	self assert: ((str1 wordsBetween: 1 and: str1 size) 
 			= #( 'The' 'quick' 'brown' 'fox' 'can''t' 'jump' '32.3' 'feet' 'right') ).
 
+	self assert: ((str1 wordsBetween: 1 and: str1 size) 
+			= ((str1 wordPointsBetween: 1 and: str1 size)
+				 collect: [ :pt | str1 copyFrom: (pt x) to: (pt y)] )).
+
+	"CJK Ideograms are their own words"
 	self assert: ((str2 wordsBetween: 1 and: str2 size)
 			= ( #( 16r4E7E  "space elided" 16r5143 16r4EA8  16r5229 16r8C9E ) 
 						collect: [ :codePt | codePt asUniChar asUniString ] ) ).

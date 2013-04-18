@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 17 April 2013 at 8:05:08 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 18 April 2013 at 9:10:28 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -3192,7 +3192,7 @@ heightOf: CharOrCodePoint
 	^ (self formForCodePoint: codePoint) height
 		! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/17/2013 14:27'!
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/17/2013 20:23'!
 initialize
 "
 	UniForms initialize.
@@ -4067,6 +4067,12 @@ caseFold
 
 	^ self collect: [ :uchar | uchar caseFold ]! !
 
+!UniString methodsFor: 'private' stamp: 'KenD 4/18/2013 09:02'!
+checkIndex: anIndex
+
+	((anIndex > 0) and: [anIndex <= self size])
+		ifFalse: [self errorSubscriptBounds: anIndex]! !
+
 !UniString methodsFor: 'accessing' stamp: 'KenD 3/19/2013 16:29'!
 codePointAt: anIndex
 
@@ -4890,47 +4896,6 @@ padded: leftOrRight to: length with: char
 	leftOrRight = #right ifTrue:
 		[^ (self ,  padRope) ].! !
 
-!UniString methodsFor: 'unicode' stamp: 'KenD 4/17/2013 16:02'!
-possibleCharacterBreaksBetween: start and: stop
-	"Scan self between start and stop.
-	Answer an array of #(breakIndex).  Breaks should occure just before these indices"
-		
-	"Note Unicode Annex #14: Unicode Line Breaking Algorithm"
-	"Distinguish LINE from WORD breaks [Unicode Annex #29: Unicode Text Segmentation]"
-	
-	| curPos endPos leftChar rightChar result |
-	
-	endPos := stop min: self size.
-	
-	(endPos < start) ifTrue: [ ^ #( 1 ) ].  "Break after BOText or before EOText"
-	
-	leftChar := self at: start.
-	
-	(endPos = start) ifTrue: [ "One character. No two characters to compare"
-		(leftChar isLineSeparator) 
-		ifTrue: [ ^ #( 1, 2 ) ]
-		ifFalse: [ ^ #( 2 ) ]
-	].
-	
-	result := OrderedCollection new.
-	
-	"(endPos > start) means at least two codePoints"
-	curPos := start + 1.
-	[curPos <= endPos] whileTrue: [ 
-		rightChar := self at: curPos.
-		
-		(UniChar isCharBreakBetween: leftChar and: rightChar)
-			ifTrue: [result add: curPos].
-
-		leftChar := rightChar.
-		curPos := curPos + 1.
-	].
-	"Note that End Of Text is considered to have a line break."
-	(result includes: (self size)) ifFalse: [result add: self size + 1].
-	
-	^ result asArray
-! !
-
 !UniString methodsFor: 'unicode' stamp: 'KenD 4/17/2013 15:59'!
 possibleLineBreaksBetween: start and: stop
 	"Scan self between start and stop.
@@ -4972,47 +4937,6 @@ possibleLineBreaksBetween: start and: stop
 	
 	^ result asArray
 	! !
-
-!UniString methodsFor: 'unicode' stamp: 'KenD 4/17/2013 16:01'!
-possibleWordBreaksBetween: start and: stop
-	"Scan self between start and stop.
-	Answer an array of #(breakIndex).  Breaks should occure just before these indices"
-		
-	"Note Unicode Annex #14: Unicode Line Breaking Algorithm"
-	"Distinguish from WORD breaks [Unicode Annex #29: Unicode Text Segmentation]"
-	
-	| curPos endPos leftChar rightChar result |
-	
-	endPos := stop min: self size.
-	
-	(endPos < start) ifTrue: [ ^ #( 1 ) ].  "Break after BOText or before EOText"
-	
-	leftChar := self at: start.
-	
-	(endPos = start) ifTrue: [ "One character. No two characters to compare"
-		(leftChar isLineSeparator) 
-		ifTrue: [ ^ #( 1, 2 ) ]
-		ifFalse: [ ^ #( 2 ) ]
-	].
-	
-	result := OrderedCollection new.
-	
-	"(endPos > start) means at least two codePoints"
-	curPos := start + 1.
-	[curPos <= endPos] whileTrue: [ 
-		rightChar := self at: curPos.
-		
-		(UniChar isWordBreakBetween: leftChar and: rightChar)
-			ifTrue: [result add: curPos].
-
-		leftChar := rightChar.
-		curPos := curPos + 1.
-	].
-	"Note that End Of Text is considered to have a line break."
-	(result includes: (self size)) ifFalse: [result add: self size + 1].
-	
-	^ result asArray
-! !
 
 !UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 16:47'!
 print
@@ -5444,6 +5368,50 @@ withoutTrailingDigits
 'and with several words 9876' asRope withoutTrailingDigits
 ' 123another one123 ' asRope withoutTrailingDigits
 "
+! !
+
+!UniString methodsFor: 'unicode' stamp: 'KenD 4/18/2013 09:10'!
+wordPointsBetween: start and: stop
+	"Scan self between start and stop.
+	Answer an array of points: (startIndex @ stopIndex)."
+		
+	"Note Unicode Annex #29: Unicode Text Segmentation"
+	
+	| curPos endPos result |
+	self checkIndex: start.
+	self checkIndex: stop.
+	
+	curPos := start.
+	endPos := stop min: self size.
+	(endPos < curPos) ifTrue: [ ^ #() ]. 
+	
+	result := OrderedCollection new.
+
+	[curPos <= endPos] whileTrue: [ | curChar inWord |
+		curChar := self at: curPos.
+		inWord := curChar charCouldStartWord.
+
+		inWord 	"Note: Ideographs are their own words" "@@@???Symbols???@@@"
+		ifFalse: [ (curChar isCJKIdeograph) ifTrue: [result addLast: (curPos @ curPos)]] 
+		ifTrue: [ | startPos |
+			startPos := curPos.
+			[inWord and: [curPos < endPos]] whileTrue: [ "Find the end of a 'word'"
+				curPos := curPos + 1.
+				curChar := self at: curPos.
+				inWord := curChar charCouldBeInsideWord.
+				inWord 
+					ifFalse: [ | prevChar |
+						prevChar := self at: (curPos - 1).
+						(prevChar charCouldEndWord)
+						ifTrue: [result addLast: (startPos @ (curPos - 1)) ]
+						ifFalse: [result addLast: (startPos @ (curPos - 2)) ]
+					]
+			]
+		].
+		curPos := curPos + 1.
+	].
+	
+	^ result asArray
 ! !
 
 !UniString methodsFor: 'unicode' stamp: 'KenD 4/17/2013 19:48'!
