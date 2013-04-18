@@ -1,10 +1,10 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 15 April 2013 at 9:17:39 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 17 April 2013 at 8:05:08 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
 Object subclass: #UniChar
 	instanceVariableNames: 'codePoint'
-	classVariableNames: 'AI AL B2 BA BB BK CB CJ CL CM CP CR CasedLetterBit Cc Cf Cn Co Compositions ControlBit Cs DecimalProperty Decompositions EX GL GeneralCategory GeneralPropMask H2 H3 HL HY ID IN IS JL JT JV LF LetterBit LineBreakNames LineBreakProperties LineBreakTable LineBreakTypeNames Ll Lm Lo Lt Lu MarkBit Mc Me Mn NL NS NU Nd Nl No NumberBit OP PO PR Pc Pd Pe Pf Pi Po PropertyNames Ps PunctuationBit QU RI SA SG SP SY Sc SeparatorBit Sk Sm SmalltalkSpecialChars So SymbolBit ToCasefold ToLower ToUpper WJ XX ZW ZeroCodePoints Zl Zp Zs'
+	classVariableNames: 'AI AL B2 BA BB BK CB CJ CL CM CP CR CasedLetterBit Cc Cf Cn Co Compositions ControlBit Cs DecimalProperty Decompositions DefaultBreakChar EX GL GeneralCategory GeneralPropMask H2 H3 HL HY ID IN IS JL JT JV LF LetterBit LineBreakNames LineBreakProperties LineBreakTable LineBreakTypeNames Ll Lm Lo Lt Lu MarkBit Mc Me Mn NL NS NU Nd Nl No NumberBit OP PO PR Pc Pd Pe Pf Pi Po PropertyNames Ps PunctuationBit QU RI SA SG SP SY Sc SeparatorBit Sk Sm SmalltalkSpecialChars So SymbolBit ToCasefold ToLower ToUpper WJ XX ZW ZeroCodePoints Zl Zp Zs'
 	poolDictionaries: ''
 	category: 'UniCodes'!
 !classDefinition: 'UniChar class' category: #UniCodes!
@@ -34,7 +34,7 @@ UniFileStream class
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
-	classVariableNames: 'FormsArray'
+	classVariableNames: 'FormForMissingChar FormsArray'
 	poolDictionaries: ''
 	category: 'UniCodes'!
 !classDefinition: 'UniForms class' category: #UniCodes!
@@ -62,8 +62,8 @@ UniFlat class
 	instanceVariableNames: ''!
 
 !classDefinition: #UniFlatSlice category: #UniCodes!
-UniString subclass: #UniFlatSlice
-	instanceVariableNames: 'charBlock startIndex length'
+UniFlat subclass: #UniFlatSlice
+	instanceVariableNames: 'startIndex'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'UniCodes'!
@@ -532,10 +532,56 @@ caseInsensitiveLessOrEqual: aCharacter
 
 	^ (self caseFold codePoint ) <= (aCharacter asUniChar caseFold codePoint)! !
 
+!UniChar methodsFor: 'private' stamp: 'KenD 4/17/2013 19:08'!
+charCouldBeInsideWord
+	"Answer true if this character's codePoint could be inside 'word'."
+	
+	^ ( ((self generalCategoryCode) anyMask: (LetterBit + NumberBit ))
+		"See UniChar class>>initializeGeneralPropertyEnums "
+			or: [ ({  CM. GL. IN. IS.  H2. H3. HL. HY. JL. JT. JV. PO. PR. NS. WJ. SG. }
+					includes: (self lineBreakCategoryCode))
+					or: [self hasTagWordMinNumLet] ] )
+		 "See UniChar class>>initializeLineBreakProperties "
+	! !
+
+!UniChar methodsFor: 'private' stamp: 'KenD 4/17/2013 19:37'!
+charCouldEndWord
+	"Answer true if this character could start a 'word'."
+	
+	^ ( ((self generalCategoryCode) anyMask: (LetterBit + NumberBit ))
+		"See UniChar class>>initializeGeneralPropertyEnums "
+			or: [ {  CM. GL. IN. H2. H3. HL. JL. JT. JV. PO. PR. NS. WJ. SG. }
+					includes: (self lineBreakCategoryCode) ]	)! !
+
+!UniChar methodsFor: 'private' stamp: 'KenD 4/17/2013 19:19'!
+charCouldStartWord
+	"Answer true if this character could start a 'word'."
+	
+	^ ((self generalCategoryCode) anyMask: (LetterBit + NumberBit))
+	! !
+
 !UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 08:58'!
 codePoint
 
 	^codePoint! !
+
+!UniChar methodsFor: 'accessing' stamp: 'KenD 4/16/2013 09:38'!
+codePointStorageSizeInBytes
+	"Answer a class which will hold this 8, 16, or 32 bit code point or signal a domain error"
+
+	(codePoint < 0)
+	ifTrue: [ DomainError signal: 'Unicode code points must be non-negative' ].
+	
+	(codePoint <= 16rFF)
+	ifTrue: [ ^ 1 ].
+	
+	(codePoint <= 16rFFFF)
+	ifTrue: [ ^ 2 ].
+	
+	(codePoint <= 16rFFFFFFFF)
+	ifTrue: [ ^4 ].
+	
+	DomainError signal: 'Unicode code points must fit within a 32 bit range'! !
 
 !UniChar methodsFor: 'converting' stamp: 'KenD 3/21/2013 19:20'!
 digitValue
@@ -550,15 +596,15 @@ digitValue
 	ifTrue: [ ^ self asCharacter digitValue ]
 	ifFalse: [ ^ self codePoint uniDigit ]! !
 
-!UniChar methodsFor: 'accessing' stamp: 'KenD 4/15/2013 21:01'!
+!UniChar methodsFor: 'accessing' stamp: 'KenD 4/17/2013 14:31'!
 form
-
-	"Answer a form if I am in plane zero, else the form for a space"
+	"Answer a form if I am in plane zero, else the missing character form from UniForms"
+	
 	| aForm |
 	aForm := UniForms formForCodePoint: codePoint.
 	
-	(aForm isNil)  "Use SPACE if no predefined form exists"
-	ifTrue: [ ^UniForms formForCodePoint: (UniChar space codePoint) ] 
+	(aForm isNil)
+	ifTrue: [ ^UniForms formForCodePoint: (UniForms formForMissingChar) ] 
 	ifFalse: [ ^aForm ]! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:52'!
@@ -574,75 +620,90 @@ generalCategoryCode
 	ifTrue: [ ^ Lo bitAnd: (ID bitShift: 16) ]
 	ifFalse: [ ^(GeneralCategory at: codePoint ifAbsent: [ Cn ]) bitAnd: 16r00FFFF]! !
 
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:59'!
+hasTagCombiningMark
+
+	^ (self lineBreakCategoryCode = CM)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:59'!
+hasTagConnectorPunctuation
+
+	^ (self generalCategoryCode = CP)! !
+
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:43'!
 hasTagControl
 
 	^ (self generalCategoryCode = Cc)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:43'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:00'!
 hasTagDecimalNumber
 
-	^ ((self generalCategoryCode) = Nd)! !
+	^ (self generalCategoryCode = Nd)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:43'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:00'!
 hasTagEnclosingMark
 
-	^ ((self generalCategoryCode) = Me)! !
+	^ (self generalCategoryCode = Me)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:44'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:00'!
 hasTagFormat
 
-	^ ((self generalCategoryCode) = Cf)! !
+	^ (self generalCategoryCode = Cf)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:45'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
+hasTagGlue
+
+	^ (self lineBreakCategoryCode = GL)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
 hasTagLineSeparator
 
-	^ ((self generalCategoryCode) = Zl)! !
+	^ (self generalCategoryCode = Zl)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:45'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:57'!
 hasTagLowercase
 
-	^ ((self generalCategoryCode) = Ll)! !
+	^ (self generalCategoryCode = Ll)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:46'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
 hasTagNonspacingMark
 
-	^ ((self generalCategoryCode) = Mn)! !
+	^ (self generalCategoryCode = Mn)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:46'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
 hasTagOtherNumber
 
-	^ ((self generalCategoryCode) = No)! !
+	^ (self generalCategoryCode = No)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:47'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
 hasTagParagraphSeparator
 
-	^ ((self generalCategoryCode) = Zp)! !
+	^ (self generalCategoryCode = Zp)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:47'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:02'!
 hasTagSpaceSeparator
 
-	^ ((self generalCategoryCode) = Zs)! !
+	^ (self generalCategoryCode = Zs)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:47'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
 hasTagSpacingMark
 
-	^ ((self generalCategoryCode) = Mc)! !
+	^ (self generalCategoryCode = Mc)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:47'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
 hasTagSurrogate
 
-	^ ((self generalCategoryCode) = Cs)! !
+	^ (self generalCategoryCode = Cs)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:48'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
 hasTagTitlecase
 
-	^ ((self generalCategoryCode) = Lt)! !
+	^ (self generalCategoryCode = Lt)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:48'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
 hasTagUppercase
 
-	^ ((self generalCategoryCode) = Lu)! !
+	^ (self generalCategoryCode = Lu)! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:10'!
 hasTagWordALetter
@@ -673,7 +734,7 @@ hasTagWordExtendedNumLet
 	) includes: codePoint
 ! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:49'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
 hasTagWordFormat
 	"Word Property"
 
@@ -764,16 +825,16 @@ hasTagWordNewline
 	) includes: codePoint
 ! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:38'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 17:40'!
 hasTagWordNumeric
 	"Word Property"
 
 	 (16r066B = codePoint) ifTrue: [ ^true ].  "ARABIC DECIMAL SEPARATOR"
-	^ (self generalCategoryCode = Nd) 
+	^ ((self generalCategoryCode bitAnd: NumberBit) = NumberBit) 
 ! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:36'!
-hasTagWordRegionlIndocator
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 17:10'!
+hasTagWordRegionlIndicator
 	"Word Property"
 
 	^ (16r1F1E6 <= codePoint) and: [codePoint <= 16r1F1FF]
@@ -790,18 +851,19 @@ icon
 
 	^self form! !
 
-!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:49'!
+!UniChar methodsFor: 'testing' stamp: 'KenD 4/17/2013 17:34'!
 isAlphaNumeric
 	"Answer whether the receiver is a letter or a digit."
 
-	^self isLetter or: [self isDigit]! !
+	^self isLetter or: [self isNumberChar]! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/13/2013 13:26'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 18:58'!
 isCJKIdeograph
 
 	(codePoint between: 16r2E80 and: 16r303F) ifTrue: [ ^true ]. "CJK Ideographic"
-	(codePoint between:16r3300 and: 16r4DBF) ifTrue: [ ^true ]. "CJK Compatibility + Unified Ideographs Extension A"
-	(codePoint between:16r4E00 and: 16r9FFF) ifTrue: [ ^true ].  "CJK Unified Ideographs"
+	(codePoint between:16r3300 and: 16rA4CF) ifTrue: [ ^true ]. "CJK Compatibility + Extensions A+"
+	(codePoint between: 16rF900 and: 16rFAFF) ifTrue: [ ^true ].
+	(codePoint between: 16rFE30 and: 16rFE4F) ifTrue: [ ^ true ].  "CJK Compatibility Forms"
 	(codePoint between:16r20000 and: 16r2A6DF) ifTrue: [ ^true ].  "CJK Unified Ideographs Extension B"
 	(codePoint between:16r2A700 and: 16r2B81F) ifTrue: [ ^true ]. "CJK Unified Ideographs Extension C +  D"
 	(codePoint between:16r2F800 and: 16r2FA1F) ifTrue: [ ^true ]. "CJK Compatibility Ideographs Supplement"
@@ -844,10 +906,10 @@ isLF
 
 	^ codePoint = 16r000A! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:33'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
 isLetter
 
-	^ ((self generalCategoryCode) bitAnd: LetterBit) = LetterBit! !
+	^ (((self generalCategoryCode) bitAnd: LetterBit) = LetterBit)! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/28/2013 16:45'!
 isLineSeparator
@@ -864,25 +926,25 @@ isLowercase
 
 	^ self hasTagLowercase! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:33'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
 isMark
 
-	^ ((self generalCategoryCode) bitAnd: MarkBit) = MarkBit ! !
+	^ (((self generalCategoryCode) bitAnd: MarkBit) = MarkBit)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:34'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
 isNumberChar
 
-	^ ((self generalCategoryCode) bitAnd: NumberBit) = NumberBit ! !
+	^ (((self generalCategoryCode) bitAnd: NumberBit) = NumberBit)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:34'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
 isOtherControl
 
-	^ ((self generalCategoryCode) bitAnd: ControlBit) = ControlBit! !
+	^ (((self generalCategoryCode) bitAnd: ControlBit) = ControlBit)! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:34'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
 isPunctuation
 
-	^ ((self generalCategoryCode) bitAnd: PunctuationBit) = PunctuationBit! !
+	^ (((self generalCategoryCode) bitAnd: PunctuationBit) = PunctuationBit)! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/28/2013 13:43'!
 isSeparator
@@ -946,11 +1008,11 @@ isSpecial
 
 	^ SmalltalkSpecialChars includes: self! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:35'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:10'!
 isSymbolGyph
 
 	"We can't use #isSymbol without confusion with Smalltalk Symbols"
-	^ ((self generalCategoryCode) bitAnd: SymbolBit) = SymbolBit! !
+	^ (((self generalCategoryCode) bitAnd: SymbolBit) = SymbolBit)! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:48'!
 isUppercase
@@ -964,10 +1026,10 @@ isVowel
 
 	^Character vowels asUniString includes: self! !
 
-!UniChar methodsFor: 'accessing' stamp: 'KenD 4/15/2013 20:59'!
+!UniChar methodsFor: 'accessing' stamp: 'KenD 4/17/2013 16:27'!
 iso8859s15Code
 "Not really..."
-	^codePoint < 256 ifTrue: [ codePoint ] ifFalse: [ nil ]! !
+	^codePoint < 256 ifTrue: [ codePoint ] ifFalse: [ nil ] "@@FIXME: Bogus!!!!@@"! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:52'!
 lineBreakCategory
@@ -1014,232 +1076,166 @@ privateSetCodePoint: aCodePoint
 
 	codePoint := aCodePoint ! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/18/2013 09:09'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 09:40'!
 rangeInfo
+	"Answer something about me: #( Category BlockName )"
+
+(codePoint  between: 16r0000 and: 16r007F) ifTrue: [ ^ #( 'Latin 1' 'Basic Latin' )].
+(codePoint  between: 16r0080 and: 16r00FF) ifTrue: [ ^ #( 'Latin 1' 'Latin-1 Supplement' )].
+
+(codePoint between: 16r0100 and: 16r017F) ifTrue: [ ^ #( 'Latin Extended 1' 'Latin Extended-A' )].
+(codePoint between: 16r0180 and: 16r024F) ifTrue: [ ^ #( 'Latin Extended 1' 'Latin Extended-B' )].
+(codePoint between: 16r0250 and: 16r02AF) ifTrue: [ ^ #( 'Latin Extended 1' 'IPA Extensions' )].
+
+(codePoint between: 16r02B0 and: 16r02FF) ifTrue: [ ^ #( 'Modifiers' 'Spacing Modifier Letters' )].
+(codePoint between: 16r0300 and: 16r036F) ifTrue: [ ^ #( 'Modifiers' 'Combining Diacritical Marks' )].
+
+(codePoint between: 16r0370 and: 16r03FF) ifTrue: [ ^ #( 'European Alphabetic 1' 'Greek and Coptic' )].
+(codePoint between: 16r0400 and: 16r04FF) ifTrue: [ ^ #( 'European Alphabetic 1' 'Cyrillic' )].
+(codePoint between: 16r0500 and: 16r052F) ifTrue: [ ^ #( 'European Alphabetic 1' 'Cyrillic Supplementary' )].
+(codePoint between: 16r0530 and: 16r058F) ifTrue: [ ^ #( 'European Alphabetic 1' 'Armenian' )].
+
+ ^ self rangeInfo2 "too many literals for 1 method"! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 09:41'!
+rangeInfo2
 	"Answer something about me"
 
-"# Start Code..End Code; Block Name"
-	(codePoint  between: 16r0000 and: 16r007F) ifTrue: [ '0000..007F; Basic Latin'].
-	(codePoint  between: 16r0080 and: 16r00FF) ifTrue: [  '0080..00FF; Latin-1 Supplement'].
-	
-" @@FIXME@@@
- => Latin 1
+(codePoint between: 16r0590 and: 16r05FF) ifTrue: [ ^ #( 'Middle Eastern' 'Hebrew' )].
+(codePoint between: 16r0600 and: 16r06FF) ifTrue: [ ^ #( 'Middle Eastern' 'Arabic' )].
+(codePoint between: 16r0700 and: 16r074F) ifTrue: [ ^ #( 'Middle Eastern' 'Syriac' )].
+(codePoint between: 16r0780 and: 16r07BF) ifTrue: [ ^ #( 'Middle Eastern' 'Thaana' )].
 
-0100..017F; Latin Extended-A
-0180..024F; Latin Extended-B
-0250..02AF; IPA Extensions
+(codePoint between: 16r0900 and: 16r097F) ifTrue: [ ^ #( 'South Asian 1' 'Devanagari' )].
+(codePoint between: 16r0980 and: 16r09FF) ifTrue: [ ^ #( 'South Asian 1' 'Bengali' )].
+(codePoint between: 16r0A00 and: 16r0A7F) ifTrue: [ ^ #( 'South Asian 1' 'Gurmukhi' )].
+(codePoint between: 16r0A80 and: 16r0AFF) ifTrue: [ ^ #( 'South Asian 1' 'Gujarati' )].
+(codePoint between: 16r0B00 and: 16r0B7F) ifTrue: [ ^ #( 'South Asian 1' 'Oriya' )].
+(codePoint between: 16r0B80 and: 16r0BFF) ifTrue: [ ^ #( 'South Asian 1' 'Tamil' )].
+(codePoint between: 16r0C00 and: 16r0C7F) ifTrue: [ ^ #( 'South Asian 1' 'Telugu' )].
+(codePoint between: 16r0C80 and: 16r0CFF) ifTrue: [ ^ #( 'South Asian 1' 'Kannada' )].
+(codePoint between: 16r0D00 and: 16r0D7F) ifTrue: [ ^ #( 'South Asian 1' 'Malayalam' )].
+(codePoint between: 16r0D80 and: 16r0DFF) ifTrue: [ ^ #( 'South Asian 1' 'Sinhala' )].
 
-  => LatinExtended1
+(codePoint between: 16r0E00 and: 16r0E7F) ifTrue: [ ^ #( 'Southeastern 1' 'Thai' )].
+(codePoint between: 16r0E80 and: 16r0EFF) ifTrue: [ ^ #( 'Southeastern 1' 'Lao' )].
 
-02B0..02FF; Spacing Modifier Letters
-0300..036F; Combining Diacritical Marks
+(codePoint between: 16r0F00 and: 16r0FFF) ifTrue: [ ^ #( 'South Asian 1' 'Tibetan' )].
 
-  => Modifiers
+(codePoint between: 16r1000 and: 16r109F) ifTrue: [ ^ #( 'Southeastern 1' 'Myanmar' )].
 
-0370..03FF; Greek and Coptic
-0400..04FF; Cyrillic
-0500..052F; Cyrillic Supplementary
-0530..058F; Armenian
+(codePoint between: 16r10A0 and: 16r10FF) ifTrue: [ ^ #( 'European Alphabetic 2' 'Georgian' )].
 
-   => EuropeanAlphabetic1
+(codePoint between: 16r1100 and: 16r11FF) ifTrue: [ ^ #( 'Korean' 'Hangul Jamo' )].
 
-0590..05FF; Hebrew
-0600..06FF; Arabic
-0700..074F; Syriac
-0780..07BF; Thaana
+(codePoint between: 16r1200 and: 16r137F) ifTrue: [ ^ #( 'Additional 1' 'Ethiopic' )].
+(codePoint between: 16r13A0 and: 16r13FF) ifTrue: [ ^ #( 'Additional 1' 'Cherokee' )].
+(codePoint between: 16r1400 and: 16r167F) ifTrue: [ ^ #( 'Additional 1' 'Unified Canadian Aboriginal Syllabics' )].
 
-   => MiddleEastern
+(codePoint between: 16r1680 and: 16r169F) ifTrue: [ ^ #( 'European Alphabetic 3' 'Ogham' )].
+(codePoint between: 16r16A0 and: 16r16FF) ifTrue: [ ^ #( 'European Alphabetic 3' 'Runic' )].
 
-0900..097F; Devanagari
-0980..09FF; Bengali
-0A00..0A7F; Gurmukhi
-0A80..0AFF; Gujarati
-0B00..0B7F; Oriya
-0B80..0BFF; Tamil
-0C00..0C7F; Telugu
-0C80..0CFF; Kannada
-0D00..0D7F; Malayalam
-0D80..0DFF; Sinhala
+(codePoint between: 16r1700 and: 16r171F) ifTrue: [ ^ #( 'Southeastern 2' 'Tagalog' )].
+(codePoint between: 16r1720 and: 16r173F) ifTrue: [ ^ #( 'Southeastern 2' 'Hanunoo' )].
+(codePoint between: 16r1740 and: 16r175F) ifTrue: [ ^ #( 'Southeastern 2' 'Buhid' )].
+(codePoint between: 16r1760 and: 16r177F) ifTrue: [ ^ #( 'Southeastern 2' 'Tagbanwa' )].
+(codePoint between: 16r1780 and: 16r17FF) ifTrue: [ ^ #( 'Southeastern 2' 'Khmer' )].
 
-  => South Asian1
+(codePoint between: 16r1800 and: 16r18AF) ifTrue: [ ^ #( 'Additional 2' 'Mongolian' )].
 
+(codePoint between: 16r1E00 and: 16r1EFF) ifTrue: [ ^ #( 'European Alphabetic 4' 'Latin Extended Additional' )].
+(codePoint between: 16r1F00 and: 16r1FFF) ifTrue: [ ^ #( 'European Alphabetic 4' 'Greek Extended' )].
 
-0E00..0E7F; Thai
-0E80..0EFF; Lao
+(codePoint between: 16r2000 and: 16r206F) ifTrue: [ ^ #( 'Symbols 2' 'General Punctuation' )].
+(codePoint between: 16r2070 and: 16r209F) ifTrue: [ ^ #( 'Symbols 2' 'Superscripts and Subscripts' )].
+(codePoint between: 16r20A0 and: 16r20CF) ifTrue: [ ^ #( 'Symbols 2' 'Currency Symbols' )].
+(codePoint between: 16r20D0 and: 16r20FF) ifTrue: [ ^ #( 'Symbols 2' 'Combining Diacritical Marks for Symbols' )].
+(codePoint between: 16r2100 and: 16r214F) ifTrue: [ ^ #( 'Symbols 2' 'Letterlike Symbols' )].
+(codePoint between: 16r2150 and: 16r218F) ifTrue: [ ^ #( 'Symbols 2' 'Number Forms' )].
+(codePoint between: 16r2190 and: 16r21FF) ifTrue: [ ^ #( 'Symbols 2' 'Arrows' )].
+(codePoint between: 16r2200 and: 16r22FF) ifTrue: [ ^ #( 'Symbols 2' 'Mathematical Operators' )].
+(codePoint between: 16r2300 and: 16r23FF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Technical' )].
+(codePoint between: 16r2400 and: 16r243F) ifTrue: [ ^ #( 'Symbols 2' 'Control Pictures' )].
+(codePoint between: 16r2440 and: 16r245F) ifTrue: [ ^ #( 'Symbols 2' 'Optical Character Recognition' )].
+(codePoint between: 16r2460 and: 16r24FF) ifTrue: [ ^ #( 'Symbols 2' 'Enclosed Alphanumerics' )].
+(codePoint between: 16r2500 and: 16r257F) ifTrue: [ ^ #( 'Symbols 2' 'Box Drawing' )].
+(codePoint between: 16r2580 and: 16r259F) ifTrue: [ ^ #( 'Symbols 2' 'Block Elements' )].
+(codePoint between: 16r25A0 and: 16r25FF) ifTrue: [ ^ #( 'Symbols 2' 'Geometric Shapes' )].
+(codePoint between: 16r2600 and: 16r26FF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Symbols' )].
+(codePoint between: 16r2700 and: 16r27BF) ifTrue: [ ^ #( 'Symbols 2' 'Dingbats' )].
+(codePoint between: 16r27C0 and: 16r27EF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Mathematical Symbols-A' )].
+(codePoint between: 16r27F0 and: 16r27FF) ifTrue: [ ^ #( 'Symbols 2' 'Supplemental Arrows-A' )].
+(codePoint between: 16r2800 and: 16r28FF) ifTrue: [ ^ #( 'Symbols 2' 'Braille Patterns' )].
+(codePoint between: 16r2900 and: 16r297F) ifTrue: [ ^ #( 'Symbols 2' 'Supplemental Arrows-B' )].
+(codePoint between: 16r2980 and: 16r29FF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Mathematical Symbols-B' )].
+(codePoint between: 16r2A00 and: 16r2AFF) ifTrue: [ ^ #( 'Symbols 2' 'Supplemental Mathematical Operators' )].
 
- => Southeastern 1
+(codePoint between: 16r2E80 and: 16r2EFF) ifTrue: [ ^ #( 'CJK' 'CJK Radicals Supplement' )].
+(codePoint between: 16r2F00 and: 16r2FDF) ifTrue: [ ^ #( 'CJK' 'Kangxi Radicals' )].
+(codePoint between: 16r2FF0 and: 16r2FFF) ifTrue: [ ^ #( 'CJK' 'Ideographic Description Characters' )].
+(codePoint between: 16r3000 and: 16r303F) ifTrue: [ ^ #( 'CJK' 'CJK Symbols and Punctuation' )].
+(codePoint between: 16r3040 and: 16r309F) ifTrue: [ ^ #( 'CJK' 'Hiragana' )].
+(codePoint between: 16r30A0 and: 16r30FF) ifTrue: [ ^ #( 'CJK' 'Katakana' )].
+(codePoint between: 16r3100 and: 16r312F) ifTrue: [ ^ #( 'CJK' 'Bopomofo' )].
+(codePoint between: 16r3130 and: 16r318F) ifTrue: [ ^ #( 'CJK' 'Hangul Compatibility Jamo' )].
+(codePoint between: 16r3190 and: 16r319F) ifTrue: [ ^ #( 'CJK' 'Kanbun' )].
+(codePoint between: 16r31A0 and: 16r31BF) ifTrue: [ ^ #( 'CJK' 'Bopomofo Extended' )].
+(codePoint between: 16r31F0 and: 16r31FF) ifTrue: [ ^ #( 'CJK' 'Katakana Phonetic Extensions' )].
+(codePoint between: 16r3200 and: 16r32FF) ifTrue: [ ^ #( 'CJK' 'Enclosed CJK Letters and Months' )].
+(codePoint between: 16r3300 and: 16r33FF) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility' )].
+(codePoint between: 16r3400 and: 16r4DBF) ifTrue: [ ^ #( 'CJK' 'CJK Unified Ideographs Extension A' )].
+(codePoint between: 16r4E00 and: 16r9FFF) ifTrue: [ ^ #( 'CJK' 'CJK Unified Ideographs' )].
+(codePoint between: 16rA000 and: 16rA48F) ifTrue: [ ^ #( 'CJK' 'Yi Syllables' )].
+(codePoint between: 16rA490 and: 16rA4CF) ifTrue: [ ^ #( 'CJK' 'Yi Radicals' )].
 
-0F00..0FFF; Tibetan
+^self rangeInfo3 "too many literals for 1 method"! !
 
-  => South Asian1
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 09:41'!
+rangeInfo3
+	"Answer something about me"
 
-1000..109F; Myanmar
+(codePoint between: 16rAC00 and: 16rD7AF) ifTrue: [ ^ #( 'Korean' 'Hangul Syllables' )].
 
- => Southeastern 1
+(codePoint between: 16rD800 and: 16rDB7F) ifTrue: [ ^ #( 'Special' 'High Surrogates' )].
+(codePoint between: 16rDB80 and: 16rDBFF) ifTrue: [ ^ #( 'Special' 'High Private Use Surrogates' )].
+(codePoint between: 16rDC00 and: 16rDFFF) ifTrue: [ ^ #( 'Special' 'Low Surrogates' )].
+(codePoint between: 16rE000 and: 16rF8FF) ifTrue: [ ^ #( 'Special' 'Private Use Area' )].
 
+(codePoint between: 16rF900 and: 16rFAFF) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility Ideographs' )].
 
-10A0..10FF; Georgian
+(codePoint between: 16rFB00 and: 16rFB4F) ifTrue: [ ^ #( 'Middle Eastern 2' 'Alphabetic Presentation Forms' )].
+(codePoint between: 16rFB50 and: 16rFDFF) ifTrue: [ ^ #( 'Middle Eastern 2' 'Arabic Presentation Forms-A' )].
 
-   => European Alphabetic 2
+(codePoint between: 16rFE00 and: 16rFE0F) ifTrue: [ ^ #( 'Special' 'Variation Selectors' )].
+(codePoint between: 16rFE20 and: 16rFE2F) ifTrue: [ ^ #( 'Special' 'Combining Half Marks' )].
 
-1100..11FF; Hangul Jamo
+(codePoint between: 16rFE30 and: 16rFE4F) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility Forms' )].
 
-   => Korean
+(codePoint between: 16rFE50 and: 16rFE6F) ifTrue: [ ^ #( 'Symbol 3' 'Small Form Variants' )].
 
-1200..137F; Ethiopic
-13A0..13FF; Cherokee
-1400..167F; Unified Canadian Aboriginal Syllabics
+(codePoint between: 16rFE70 and: 16rFEFF) ifTrue: [ ^ #( 'Middle Eastern 3' 'Arabic Presentation Forms-B' )].
 
-  => Additional1
+(codePoint between: 16rFF00 and: 16rFFEF) ifTrue: [ ^ #( 'Specials' 'Halfwidth and Fullwidth Forms' )].
+(codePoint between: 16rFFF0 and: 16rFFFF) ifTrue: [ ^ #( 'Specials' 'Specials' )].
 
-1680..169F; Ogham
-16A0..16FF; Runic
+(codePoint between: 16r10300 and: 16r1032F) ifTrue: [ ^ #( 'European' 'Old Italic' )].
+(codePoint between: 16r10330 and: 16r1034F) ifTrue: [ ^ #( 'European' 'Gothic' )].
+(codePoint between: 16r10400 and: 16r1044F) ifTrue: [ ^ #( 'European' 'Deseret' )].
 
-  => European Alphabetic 3
+(codePoint between: 16r1D000 and: 16r1D0FF) ifTrue: [ ^ #( 'Symbols' 'Byzantine Musical Symbols' )].
+(codePoint between: 16r1D100 and: 16r1D1FF) ifTrue: [ ^ #( 'Symbols' 'Musical Symbols' )].
+(codePoint between: 16r1D400 and: 16r1D7FF) ifTrue: [ ^ #( 'Symbols' 'Mathematical Alphanumeric Symbols' )].
 
-1700..171F; Tagalog
-1720..173F; Hanunoo
-1740..175F; Buhid
-1760..177F; Tagbanwa
-1780..17FF; Khmer
+(codePoint between: 16r20000 and: 16r2A6DF) ifTrue: [ ^ #( 'CJK' 'CJK Unified Ideographs Extension B' )].
+(codePoint between: 16r2F800 and: 16r2FA1F) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility Ideographs Supplement' )].
 
-  => Southeastern2
+(codePoint between: 16rE0000 and: 16rE007F) ifTrue: [ ^ #( 'Special' 'Tags' )].
+(codePoint between: 16rF0000 and: 16rFFFFF) ifTrue: [ ^ #( 'Special' 'Supplementary Private Use Area-A' )].
+(codePoint between: 16r100000 and: 16r10FFFF) ifTrue: [ ^ #( 'Special' 'Supplementary Private Use Area-B' )].
 
-1800..18AF; Mongolian
-
-  => Additional2
-
-1E00..1EFF; Latin Extended Additional
-1F00..1FFF; Greek Extended
-
-  => EuropeanAlphabetic4
-
-2000..206F; General Punctuation
-2070..209F; Superscripts and Subscripts
-20A0..20CF; Currency Symbols
-20D0..20FF; Combining Diacritical Marks for Symbols
-2100..214F; Letterlike Symbols
-2150..218F; Number Forms
-2190..21FF; Arrows
-2200..22FF; Mathematical Operators
-2300..23FF; Miscellaneous Technical
-2400..243F; Control Pictures
-2440..245F; Optical Character Recognition
-2460..24FF; Enclosed Alphanumerics
-2500..257F; Box Drawing
-2580..259F; Block Elements
-25A0..25FF; Geometric Shapes
-2600..26FF; Miscellaneous Symbols
-2700..27BF; Dingbats
-27C0..27EF; Miscellaneous Mathematical Symbols-A
-27F0..27FF; Supplemental Arrows-A
-2800..28FF; Braille Patterns
-2900..297F; Supplemental Arrows-B
-2980..29FF; Miscellaneous Mathematical Symbols-B
-2A00..2AFF; Supplemental Mathematical Operators
-
-  => Symbols2
-
-2E80..2EFF; CJK Radicals Supplement
-2F00..2FDF; Kangxi Radicals
-2FF0..2FFF; Ideographic Description Characters
-3000..303F; CJK Symbols and Punctuation
-3040..309F; Hiragana
-30A0..30FF; Katakana
-3100..312F; Bopomofo
-3130..318F; Hangul Compatibility Jamo
-3190..319F; Kanbun
-31A0..31BF; Bopomofo Extended
-31F0..31FF; Katakana Phonetic Extensions
-3200..32FF; Enclosed CJK Letters and Months
-3300..33FF; CJK Compatibility
-3400..4DBF; CJK Unified Ideographs Extension A
-4E00..9FFF; CJK Unified Ideographs
-A000..A48F; Yi Syllables
-A490..A4CF; Yi Radicals
-
-  => CJK
-
-AC00..D7AF; Hangul Syllables
-
-  => Korean
-
-D800..DB7F; High Surrogates
-DB80..DBFF; High Private Use Surrogates
-DC00..DFFF; Low Surrogates
-E000..F8FF; Private Use Area
-
-F900..FAFF; CJK Compatibility Ideographs
-
-  => CJK
-
-FB00..FB4F; Alphabetic Presentation Forms
-FB50..FDFF; Arabic Presentation Forms-A
-
-  => Middle Eastern 2
-
-FE00..FE0F; Variation Selectors
-FE20..FE2F; Combining Half Marks
-
-FE30..FE4F; CJK Compatibility Forms
-
-  => CJK
-
-FE50..FE6F; Small Form Variants
-
- => Symbol3
-
-FE70..FEFF; Arabic Presentation Forms-B
-
-  => Middle Eastern 3
-
-FF00..FFEF; Halfwidth and Fullwidth Forms
-FFF0..FFFF; Specials
-
-  => Specials
-
-10300..1032F; Old Italic
-10330..1034F; Gothic
-10400..1044F; Deseret
-
-   => European
-
-1D000..1D0FF; Byzantine Musical Symbols
-1D100..1D1FF; Musical Symbols
-1D400..1D7FF; Mathematical Alphanumeric Symbols
-
-  => Symbols
-
-20000..2A6DF; CJK Unified Ideographs Extension B
-2F800..2FA1F; CJK Compatibility Ideographs Supplement
-
-  => CJK
-
-E0000..E007F; Tags
-F0000..FFFFF; Supplementary Private Use Area-A
-100000..10FFFF; Supplementary Private Use Area-B
-
-  => Special
-
-"! !
-
-!UniChar methodsFor: 'accessing' stamp: 'KenD 4/15/2013 21:05'!
-storageSizeInBytes
-	"Answer a class which will hold this 8, 16, or 32 bit code point or signal a domain error"
-
-	(codePoint < 0)
-	ifTrue: [ DomainError signal: 'Unicode code points must be non-negative' ].
-	
-	(codePoint <= 16rFF)
-	ifTrue: [ ^ 1 ].
-	
-	(codePoint <= 16rFFFF)
-	ifTrue: [ ^ 2 ].
-	
-	(codePoint <= 16rFFFFFFFF)
-	ifTrue: [ ^4 ].
-	
-	DomainError signal: 'Unicode code points must fit within a 32 bit range'! !
+"Default: who knows, who cares"
+^ #( 'Unassigned' 'Unknown' )
+! !
 
 !UniChar methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:33'!
 storeOn: aStream
@@ -1586,6 +1582,11 @@ crCharacter
 
 	^ (13 asUniChar)! !
 
+!UniChar class methodsFor: 'private' stamp: 'KenD 4/17/2013 15:27'!
+defaultBreakDisplayChar
+	"Answer a character used to display (char|word|line) breaks in test code"
+	^DefaultBreakChar ! !
+
 !UniChar class methodsFor: 'as yet unclassified' stamp: 'KenD 4/7/2013 09:30'!
 defaultFontClass
 	^UniForms! !
@@ -1682,12 +1683,13 @@ initZeroCodePoints
   ).
 ! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/19/2013 18:55'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/17/2013 15:28'!
 initialize
 "
 	UniChar initialize.
 "
 	SmalltalkSpecialChars := '+-/\*~<>=@,%|&?!!' asUniString.
+	DefaultBreakChar := 16r23CF asUniChar. "Use EJECT char to show (char|word|line) break"
 	self initZeroCodePoints.
 	self initializeGeneralPropertyEnums.
 	self initializeGeneralCharacterProperties.
@@ -1737,7 +1739,7 @@ initializeGeneralCharacterProperties
 		
 	"@@FIXME: Download from  http://unicode.org/Public/UNIDATA/UnicodeData.txt "! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/9/2013 09:39'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/16/2013 19:01'!
 initializeGeneralPropertyEnums
 
 	"16 Bits for general properties.  Upper 8 is Category"
@@ -1746,9 +1748,9 @@ initializeGeneralPropertyEnums
 	MarkBit 			:= 1<<13.
 	NumberBit 		:= 1<<12.
 	PunctuationBit 	:= 1<<11.
-	SymbolBit 		:= 1<<10 .
-	SeparatorBit 	:= 1<<9.
-	ControlBit 		:= 1<<8.
+	SymbolBit 			:= 1<<10 .
+	SeparatorBit 		:= 1<<09.
+	ControlBit 			:= 1<<08.
 	
 	"Lower 8 bits have value"
 
@@ -1766,29 +1768,29 @@ initializeGeneralPropertyEnums
  	Cf 	:= ControlBit + 2.
  	Co 	:= ControlBit + 3.
  	Cs 	:= ControlBit + 4.
- 	Ll 	:= CasedLetterBit + LetterBit + 1.
- 	Lm := LetterBit + 2.
+ 	Ll 		:= CasedLetterBit + LetterBit + 1.
+ 	Lm 	:= LetterBit + 2.
  	Lo 	:= LetterBit + 3.
- 	Lt 	:= CasedLetterBit + LetterBit + 4.
+ 	Lt 		:= CasedLetterBit + LetterBit + 4.
  	Lu 	:= CasedLetterBit + LetterBit + 5.
- 	Mc := MarkBit + 1.
- 	Me := MarkBit + 2.
- 	Mn := MarkBit + 3.
+ 	Mc 	:= MarkBit + 1.
+ 	Me 	:= MarkBit + 2.
+ 	Mn 	:= MarkBit + 3.
  	Nd 	:= NumberBit + 1.
- 	Nl 	:= NumberBit + 2.
- 	No := NumberBit + 3.
- 	Pc := PunctuationBit + 1.
- 	Pd := PunctuationBit + 2.
- 	Pe := PunctuationBit + 3.
- 	Pf 	:= PunctuationBit + 4.
- 	Pi 	:= PunctuationBit + 5.
+ 	Nl 		:= NumberBit + 2.
+ 	No 	:= NumberBit + 3.
+ 	Pc 	:= PunctuationBit + 1.
+ 	Pd 	:= PunctuationBit + 2.
+ 	Pe 	:= PunctuationBit + 3.
+ 	Pf 		:= PunctuationBit + 4.
+ 	Pi 		:= PunctuationBit + 5.
  	Po 	:= PunctuationBit + 6.
  	Ps 	:= PunctuationBit + 7.
  	Sc 	:= SymbolBit + 1.
  	Sk 	:= SymbolBit + 2.
- 	Sm := SymbolBit + 3.
+ 	Sm 	:= SymbolBit + 3.
  	So 	:= SymbolBit + 4.
- 	Zl 	:= SeparatorBit + 1.
+ 	Zl 		:= SeparatorBit + 1.
  	Zp 	:= SeparatorBit + 2.
  	Zs 	:= SeparatorBit + 3.
 
@@ -1826,7 +1828,7 @@ initializeGeneralPropertyEnums
  	PropertyNames at: Zs 	put: #SpaceSeparator.
 	! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/30/2013 16:58'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/17/2013 15:21'!
 initializeLineBreakProperties
 "
 	UniChar initializeLineBreakProperties.
@@ -1908,7 +1910,7 @@ initializeLineBreakProperties
 	RI := 35.
 	LineBreakProperties at: RI put: #RegionalIndicator . "BreakBefore | DontbreakForPair | BreakAfter"
 	AI := 36.
-	LineBreakProperties at: AI put: #AlphaOrIdeograph . "Ambiguous"
+	LineBreakProperties at: AI put: #AlphaOrIdeograph . "Ambiguous; treated the same"
 	XX := 37.
 	LineBreakProperties at: XX put: #Unassigned . "Who knows? Who cares?"
 	SA := 38.
@@ -1923,36 +1925,6 @@ initializeLineBreakProperties
 	
 	self parseLineBreakPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
 		'..', slash, 'Cuis-Unicode', slash, 'LineBreak.txt')..
-
-	"Add break properties to CJK"
-"	setPropToID := [ :codePoint | | otherProps |
-		otherProps := GeneralCategory at: codePoint ifAbsent: [ Cn ].
-		GeneralCategory at: codePoint put: (otherProps + (ID  bitShift: 16)).
-	].
-
-""    CJK Unified Ideographs Extension A:       U+3400..U+4DBF"
-"	(16r3400 to: 16r4DBF) do: setPropToID.
-""     CJK Unified Ideographs:                   U+4E00..U+9FFF"
-"	(16r4E00 to: 16r9FFF) do: setPropToID.
-""     CJK Compatibility Ideographs:             U+F900..U+FAFF"
-"	(16rF900 to: 16rFAFF) do: setPropToID.
-""     CJK Unified Ideographs Extension B:      U+20000..U+2A6DF "
-"	(16r20000 to: 16r2A6DF) do: setPropToID.
-""     CJK Unified Ideographs Extension C:      U+2A700..U+2B73F"
-"	(16r2A700 to: 16r2B73F) do: setPropToID.
-""     CJK Unified Ideographs Extension D:      U+2B740..U+2B81F"
-"	(16r2B740 to: 16r2B81F) do: setPropToID.
-""     CJK Compatibility Ideographs Supplement: U+2F800..U+2FA1F"
-"	(16r2F800 to: 16r2FA1F) do: setPropToID.
-""     and any other reserved code points on"
-"         Planes 2 and 3:                      U+20000..U+2FFFD"
-"                                              U+30000..U+3FFFD"
-
-"	(16r20000 to: 16r2FFFD) do: setPropToID.
-	(16r30000 to: 16r3FFFD) do: setPropToID.
-"	
-
-
 ! !
 
 !UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/29/2013 16:56'!
@@ -2011,13 +1983,38 @@ insert
 
 	^ (5 asUniChar)! !
 
-!UniChar class methodsFor: 'accessing' stamp: 'KenD 3/29/2013 16:56'!
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 4/17/2013 15:17'!
+isCharBreakBetween: leftChar and:  rightChar
+	"Answer true if a Character break is allowed between the two characters.
+	
+	This is required because Combining Marks and other codePoints 
+	must be combined into a single display character."
+
+	^ ((LineBreakTable at: (leftChar lineBreakCategoryCode)) "@@FIXME: Bogus!!!!@@"
+						   at: (rightChar lineBreakCategoryCode)) = $0! !
+
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 4/17/2013 15:12'!
 isLineBreakBetween: leftChar and:  rightChar
-	"Answer the character specified"
+	"Answer true if a line break is allowed between the two characters."
 
 	"See comments in UniChar class>>initializeLineBreakTable"
 	^ ((LineBreakTable at: (leftChar lineBreakCategoryCode))
 						   at: (rightChar lineBreakCategoryCode)) = $0! !
+
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 4/17/2013 16:10'!
+isWordBreakBetween: leftChar and:  rightChar
+	"Answer true if a Word break is allowed between the two characters."
+
+	"See Unicode Anned 29: Unicode Text Segmenation"
+
+	"@@FIXME: brute force@@"
+	| leftGenProp rightGenProp leftLineProp rightLineProp |
+	leftGenProp := leftChar generalCategoryCode.
+	rightGenProp := rightChar generalCategoryCode.
+	leftLineProp := leftChar lineBreakCategory.
+	rightLineProp := rightChar lineBreakCategory.
+	
+	! !
 
 !UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
 lfCharacter
@@ -2519,11 +2516,11 @@ next: anInteger putAll: aCollection startingAt: startIndex
 	^ self nextPutAll: ((aCollection asUniString) copyFrom: startIndex to: (aCollection size)).
 ! !
 
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/14/2013 16:22'!
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/17/2013 08:16'!
 nextCodePoint
 	"Answer the next Unicode codePoint"
 	
-	"@@FIXME: Error recovery rather than signalling an error?"
+	"@@FIXME: Error recovery (perhaps ^nil) rather than signalling an error?"
 
 	| byte1 byte2 byte3 byte4 codePoint |
 	byte1 _ super next asInteger.
@@ -2668,9 +2665,10 @@ readInto: byteArray startingAt: startIndex count: count
 
 	^super readInto: byteArray startingAt: startIndex count: count! !
 
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:06'!
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/17/2013 08:13'!
 skip: anInteger
 	"Set the byte position to anInteger bytes from the current position.
+	anInteger can be positive o negative.
 	Error if not enough bytes left in the file. "
 
 	| newPos |
@@ -3139,7 +3137,13 @@ array16FromHexString: aString
 default
 	^self new! !
 
-!UniForms class methodsFor: 'accessing' stamp: 'KenD 4/13/2013 16:35'!
+!UniForms class methodsFor: 'private' stamp: 'KenD 4/17/2013 14:26'!
+defaultFormForMissingChar
+
+	"Answer a DIAGONAL CROSS for missing forms"
+	^ (FormsArray at: 16r2573)! !
+
+!UniForms class methodsFor: 'accessing' stamp: 'KenD 4/17/2013 14:28'!
 formForCodePoint: aCodePoint
 
 	"Answer a form for glyph/character at codePoint or nil"
@@ -3152,8 +3156,19 @@ formForCodePoint: aCodePoint
 	
 	(index > 16rFFFF or: [(form := FormsArray at: index) isNil])
 	"Substitute DIAGONAL CROSS for missing forms"
-	ifTrue: [ ^ FormsArray at: 16r2573 ] 
+	ifTrue: [ ^ self formForMissingChar ] 
 	ifFalse: [ ^ form ]! !
+
+!UniForms class methodsFor: 'private' stamp: 'KenD 4/17/2013 14:24'!
+formForMissingChar
+
+	^FormForMissingChar! !
+
+!UniForms class methodsFor: 'private' stamp: 'KenD 4/17/2013 14:25'!
+formForMissingChar: aForm
+
+	(aForm isKindOf: Form) ifFalse: [DomainError signal: 'formForMissingChar: requires a Form'].
+	FormForMissingChar := aForm! !
 
 !UniForms class methodsFor: 'private' stamp: 'KenD 3/2/2013 20:04'!
 formsArray
@@ -3177,7 +3192,7 @@ heightOf: CharOrCodePoint
 	^ (self formForCodePoint: codePoint) height
 		! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/6/2013 19:26'!
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/17/2013 14:27'!
 initialize
 "
 	UniForms initialize.
@@ -3185,6 +3200,7 @@ initialize
 
 	| slash |
 	slash := FileDirectory slash.
+	self formForMissingChar: (self defaultFormForMissingChar).
 	FormsArray := self readFormsArray: '..' , slash , 'Cuis-Unicode', slash, 'unifont-5.1.20080907.hex'.
 	"'unifontfull-5.1.20080820.hex'."
 	"unifont-5.1.20080907.hex"
@@ -3573,13 +3589,13 @@ codePointsDo: aBlock
 	self leftRope  codePointsDo: aBlock.
 	self rightRope codePointsDo: aBlock.! !
 
-!UniSplice methodsFor: 'copying' stamp: 'KenD 2/17/2013 21:55'!
+!UniSplice methodsFor: 'copying' stamp: 'KenD 4/17/2013 08:37'!
 copyFrom: start to: stop 
 	"Answer a UniString."
 	
 	| leftMaxIndex left right |
 	"Handle odd case the same way as OrderedCollection"
-	(stop < start) ifTrue: [^ UniFlat fromString: ''].
+	(stop < start) ifTrue: [^ UniString emptyString ].
 
 	((1 <= start) and: [stop <= self size])
 	ifFalse: [
@@ -3676,11 +3692,13 @@ meldThreshold
 
 	^MeldThreshold ! !
 
-!UniSplice class methodsFor: 'private' stamp: 'KenD 2/17/2013 16:46'!
-shouldMeld: aCharBlock with: anotherCharBlock
+!UniSplice class methodsFor: 'private' stamp: 'KenD 4/17/2013 08:29'!
+shouldMeld: leftRope with: rightRope
 
-	^((aCharBlock size + anotherCharBlock size) < self meldThreshold) 
-		and: [ (aCharBlock bytesPerElement) = (anotherCharBlock bytesPerElement) ]! !
+	^( (leftRope isKindOf: UniFlat) 
+	     and: [rightRope isKindOf: UniFlat]
+	       and: [(leftRope size + rightRope size) < self meldThreshold]
+	         and: [ (leftRope bytesPerElement) = (rightRope bytesPerElement) ] )! !
 
 !UniSplice class methodsFor: 'instance creation' stamp: 'KenD 2/17/2013 20:29'!
 splice: aUniString with: anotherUniString
@@ -4007,6 +4025,31 @@ beginsWith: prefix
 	The comparison is case-sensitive."
 
 	^self is: prefix substringAt: 1! !
+
+!UniString methodsFor: 'private' stamp: 'KenD 4/17/2013 14:59'!
+breakDisplayUniString: indexArray
+
+	"Answer self with line break characters inserted at indices.
+	IndexArray is an array of integers which are valid indices into me."
+"
+	| testStr breakArray |
+	testStr := ( '123a b567c 
+d90!! foo, Yes bar. then x.
+' asUniString).
+	breakArray := testStr possibleLineBreaksBetween: 1 and: testStr size.
+	(testStr breakDisplayUniString: breakArray) edit.
+"	
+	| result |
+	result := UniStringWrapper new.
+	(1 to: self size) do: [ :index |
+		(indexArray includes: index) "Display break BEFORE char at index"
+			ifTrue: [result nextPut: UniChar defaultBreakDisplayChar ].
+		result nextPut: (self at: index)
+	].
+	(indexArray includes: self size + 1) "Break at end of text"
+		ifTrue: [result nextPut: UniChar defaultBreakDisplayChar ].
+	
+	^ result asUniString! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:25'!
 capitalized
@@ -4847,11 +4890,53 @@ padded: leftOrRight to: length with: char
 	leftOrRight = #right ifTrue:
 		[^ (self ,  padRope) ].! !
 
-!UniString methodsFor: 'unicode' stamp: 'KenD 3/30/2013 14:50'!
-possibleLineBreaksBetween: start and: stop
+!UniString methodsFor: 'unicode' stamp: 'KenD 4/17/2013 16:02'!
+possibleCharacterBreaksBetween: start and: stop
 	"Scan self between start and stop.
 	Answer an array of #(breakIndex).  Breaks should occure just before these indices"
 		
+	"Note Unicode Annex #14: Unicode Line Breaking Algorithm"
+	"Distinguish LINE from WORD breaks [Unicode Annex #29: Unicode Text Segmentation]"
+	
+	| curPos endPos leftChar rightChar result |
+	
+	endPos := stop min: self size.
+	
+	(endPos < start) ifTrue: [ ^ #( 1 ) ].  "Break after BOText or before EOText"
+	
+	leftChar := self at: start.
+	
+	(endPos = start) ifTrue: [ "One character. No two characters to compare"
+		(leftChar isLineSeparator) 
+		ifTrue: [ ^ #( 1, 2 ) ]
+		ifFalse: [ ^ #( 2 ) ]
+	].
+	
+	result := OrderedCollection new.
+	
+	"(endPos > start) means at least two codePoints"
+	curPos := start + 1.
+	[curPos <= endPos] whileTrue: [ 
+		rightChar := self at: curPos.
+		
+		(UniChar isCharBreakBetween: leftChar and: rightChar)
+			ifTrue: [result add: curPos].
+
+		leftChar := rightChar.
+		curPos := curPos + 1.
+	].
+	"Note that End Of Text is considered to have a line break."
+	(result includes: (self size)) ifFalse: [result add: self size + 1].
+	
+	^ result asArray
+! !
+
+!UniString methodsFor: 'unicode' stamp: 'KenD 4/17/2013 15:59'!
+possibleLineBreaksBetween: start and: stop
+	"Scan self between start and stop.
+	Answer an array of #(breakIndex).  Breaks should occur just before these indices.
+	Add break after end."
+
 	"Note Unicode Annex #14: Unicode Line Breaking Algorithm"
 	"Distinguish from WORD breaks [Unicode Annex #29: Unicode Text Segmentation]"
 	
@@ -4859,20 +4944,19 @@ possibleLineBreaksBetween: start and: stop
 	
 	endPos := stop min: self size.
 	
-	(endPos < start) ifTrue: [ ^ #() ].  "Nothing to check"
+	(endPos < start) ifTrue: [ ^ #( 1 ) ].  "Break after BOText or before EOText"
 	
 	leftChar := self at: start.
 	
 	(endPos = start) ifTrue: [ "One character. No two characters to compare"
 		(leftChar isLineSeparator) 
-		ifTrue: [ ^ { 1 } ]
-		ifFalse: [ ^ #() ]
+		ifTrue: [ ^ #( 1, 2 ) ]
+		ifFalse: [ ^ #( 2 ) ]
 	].
 	
 	result := OrderedCollection new.
 	
 	"(endPos > start) means at least two codePoints"
-	
 	curPos := start + 1.
 	[curPos <= endPos] whileTrue: [ 
 		rightChar := self at: curPos.
@@ -4888,6 +4972,47 @@ possibleLineBreaksBetween: start and: stop
 	
 	^ result asArray
 	! !
+
+!UniString methodsFor: 'unicode' stamp: 'KenD 4/17/2013 16:01'!
+possibleWordBreaksBetween: start and: stop
+	"Scan self between start and stop.
+	Answer an array of #(breakIndex).  Breaks should occure just before these indices"
+		
+	"Note Unicode Annex #14: Unicode Line Breaking Algorithm"
+	"Distinguish from WORD breaks [Unicode Annex #29: Unicode Text Segmentation]"
+	
+	| curPos endPos leftChar rightChar result |
+	
+	endPos := stop min: self size.
+	
+	(endPos < start) ifTrue: [ ^ #( 1 ) ].  "Break after BOText or before EOText"
+	
+	leftChar := self at: start.
+	
+	(endPos = start) ifTrue: [ "One character. No two characters to compare"
+		(leftChar isLineSeparator) 
+		ifTrue: [ ^ #( 1, 2 ) ]
+		ifFalse: [ ^ #( 2 ) ]
+	].
+	
+	result := OrderedCollection new.
+	
+	"(endPos > start) means at least two codePoints"
+	curPos := start + 1.
+	[curPos <= endPos] whileTrue: [ 
+		rightChar := self at: curPos.
+		
+		(UniChar isWordBreakBetween: leftChar and: rightChar)
+			ifTrue: [result add: curPos].
+
+		leftChar := rightChar.
+		curPos := curPos + 1.
+	].
+	"Note that End Of Text is considered to have a line break."
+	(result includes: (self size)) ifFalse: [result add: self size + 1].
+	
+	^ result asArray
+! !
 
 !UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 16:47'!
 print
@@ -5319,6 +5444,52 @@ withoutTrailingDigits
 'and with several words 9876' asRope withoutTrailingDigits
 ' 123another one123 ' asRope withoutTrailingDigits
 "
+! !
+
+!UniString methodsFor: 'unicode' stamp: 'KenD 4/17/2013 19:48'!
+wordsBetween: start and: stop
+	"Scan self between start and stop.
+	Answer an array of UniStrings."
+		
+	"Note Unicode Annex #29: Unicode Text Segmentation"
+	
+	| curPos endPos result |
+	
+	curPos := start.
+	endPos := stop min: self size.
+	(endPos < curPos) ifTrue: [ ^ #() ]. 
+	
+	result := OrderedCollection new.
+
+	[curPos <= endPos] whileTrue: [ | curChar inWord |
+		curChar := self at: curPos.
+		inWord := curChar charCouldStartWord.
+
+		inWord 	"Note: Ideographs are their own words" "@@@???Symbols???@@@"
+		ifFalse: [ (curChar isCJKIdeograph) ifTrue: [result addLast: curChar asUniString]] 
+		ifTrue: [ | protoWord |
+			protoWord := UniStringWrapper new.
+			protoWord nextPut: curChar.
+			[inWord and: [curPos < endPos]] whileTrue: [ "Gather characters for a 'word'"
+				curPos := curPos + 1.
+				curChar := self at: curPos.
+				inWord := curChar charCouldBeInsideWord.
+				inWord 
+					ifTrue: [protoWord nextPut: curChar]
+					ifFalse: [ | protoUStr |
+						protoUStr := protoWord asUniString.
+						(protoUStr last charCouldEndWord)
+						ifTrue: [result addLast: protoUStr ]
+						ifFalse: [result addLast: 
+							(protoUStr copyFrom: 1 to: (protoWord size - 1) ) 
+						]
+					]
+			]
+		].
+		curPos := curPos + 1.
+	].
+	
+	^ result asArray
 ! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 3/30/2013 16:22'!

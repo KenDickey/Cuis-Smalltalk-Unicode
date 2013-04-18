@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 15 April 2013 at 9:07:42 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 17 April 2013 at 7:51:06 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -1043,6 +1043,22 @@ testUniStringRebalance
 	self assert: ( t2 depth = 11 ).
 	self assert: ( t2 rebalance depth = 4 ).
 	self assert: ( t2 rebalance = t2 ).! !
+
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/17/2013 19:50'!
+testUniStringWords
+
+	| str1 str2 |
+	str1 := 'The quick ("brown") fox can''t jump 32.3 feet, right?' asUniString.
+	str2 :=  UniString fromCodePointCollection: 
+				 #( 16r4E7E 16r0020  16r5143 16r4EA8  16r5229 16r8C9E ) .
+	
+	self assert: ((str1 wordsBetween: 1 and: str1 size) 
+			= #( 'The' 'quick' 'brown' 'fox' 'can''t' 'jump' '32.3' 'feet' 'right') ).
+
+	self assert: ((str2 wordsBetween: 1 and: str2 size)
+			= ( #( 16r4E7E  "space elided" 16r5143 16r4EA8  16r5229 16r8C9E ) 
+						collect: [ :codePt | codePt asUniChar asUniString ] ) ).
+	! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/3/2013 16:26'!
 testUniStringWrapper
