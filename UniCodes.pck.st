@@ -3200,10 +3200,10 @@ initialize
 
 	| slash |
 	slash := FileDirectory slash.
-	self formForMissingChar: (self defaultFormForMissingChar).
 	FormsArray := self readFormsArray: '..' , slash , 'Cuis-Unicode', slash, 'unifont-5.1.20080907.hex'.
 	"'unifontfull-5.1.20080820.hex'."
 	"unifont-5.1.20080907.hex"
+	self formForMissingChar: (self defaultFormForMissingChar).
 	self installMeAsFont. "Fake it"
 	! !
 
