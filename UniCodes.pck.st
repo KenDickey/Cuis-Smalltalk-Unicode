@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1686] on 19 April 2013 at 9:16:49.653362 am'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1686] on 19 April 2013 at 4:06:54.971374 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -214,7 +214,18 @@ I am typically created as a side effect of operaions on UniStrings.
 !
 
 !UniString commentStamp: '<historical>' prior: 0!
-I am the abstract class of immutable strings known as Ropes.
+I am the abstract class of immutable strings known as Ropes.  My instances hold Unicode 'strings' (really ropes).
+
+	FileListWindow openUniFileList.
+	"Will open a fileListWindow.  The user can right-click on a file name and
+	select 'view as Unicode' to view & edit the file."
+	
+	 (UniString fromCodePointCollection: 
+		 #( 16r4E7E 16r0020  16r5143 16r4EA8  16r5229 16r8C9E ) )  edit.
+
+	UniString editFileFromUser. 
+	"Will open a file dialog the user can select to edit a UTF-8 Unicode text file"
+	
 
 Functional string operations return new Ropes. See #at:put: in subclasses.
 
@@ -576,6 +587,19 @@ charCouldStartWord
 	"Answer true if this character could start a 'word'."
 	
 	^ ((self generalCategoryCode) anyMask: (LetterBit + NumberBit))
+	! !
+
+!UniChar methodsFor: 'private' stamp: 'KenD 4/19/2013 15:20'!
+charIsGraphemePart
+	"Answer true if this character's codePoint is a grapheme cluster component."
+	
+	^ ( ( { Mc. Mn. Lm  } includes: (self generalCategoryCode) ) "?? Me ??"
+		"See UniChar class>>initializeGeneralPropertyEnums "
+		or: [ { CM. GL. H2. H3. JL. JT. JV. RI. WJ. }
+				includes: (self lineBreakCategoryCode)] 
+		 "See UniChar class>>initializeLineBreakProperties "
+	   )
+		
 	! !
 
 !UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 08:58'!
@@ -4329,6 +4353,49 @@ collect: aBlock
 		[ :uchar | result nextPut: (aBlock value: uchar) ].
 	^ result asUniString ! !
 
+!UniString methodsFor: 'unicode' stamp: 'KenD 4/19/2013 15:47'!
+combinedGraphemePointsBetween: start and: stop
+	"Answer an array of points (startIndex@endIndex) indicating multiple
+	codePoints making up a grapheme cluster (composite character)"
+
+	"Note Unicode Annex #29: Unicode Text Segmentation"
+	
+	"@@@FIXME: Add  Hangul Jamo LVT( @@@"
+	
+	| curPos endPos result |
+	self checkIndex: start.
+	self checkIndex: stop.
+	
+	curPos := start.
+	endPos := stop min: self size.
+	(endPos < curPos) ifTrue: [ ^ #() ]. 
+	
+	result := OrderedCollection new.
+
+	"A 'user perceiived character' is a base character followed by various combining marks"
+	[curPos <= endPos] whileTrue: [ | curChar inComposition |
+		curChar := self at: curPos.
+		inComposition := curChar charIsGraphemePart.
+
+		inComposition ifTrue: [ | startPos |
+			startPos := curPos - 1. "Note Bene: could be zero!!"
+			[inComposition and: [curPos < endPos]] whileTrue: [ "Find the end of a 'word'"
+				curPos := curPos + 1.
+				curChar := self at: curPos.
+				inComposition := curChar charIsGraphemePart.
+				inComposition
+					ifFalse: [ result addLast: (startPos @ (curPos - 1)) ]
+			].
+			"Check for special case: end is still in composition"
+			((curPos = endPos) and: [inComposition])
+				ifTrue: [ result addLast: (startPos @ curPos) ].
+		].
+		curPos := curPos + 1.
+	].
+	
+	^ result asArray
+! !
+
 !UniString methodsFor: 'comparing' stamp: 'KenD 3/19/2013 12:24'!
 compare:  otherString
 	"Return 1, 2 or 3, if self is <, =, or > otherString based on simple codePoints"
@@ -6228,30 +6295,25 @@ openLabel: aString
 	
 	SystemWindow editText: self label: aString asUniString wrap: true! !
 
-!UniTextModel methodsFor: 'misc' stamp: 'KenD 4/19/2013 08:54'!
+!UniTextModel methodsFor: 'misc' stamp: 'KenD 4/19/2013 16:05'!
 refetch
 	"Answer true if actualContents was actually fetched."
 	
-	| dirEntry  |	
-	(actualContents class = UniLazyString)
-		ifTrue: [ actualContents fileCleanup ]. "Remove old tmp file"
-	"Re-read contents"
-	actualContents := (UniLazyString onFileNamed: fileName) asText.
-	"Reset timeStamp"
-	dirEntry :=  (FileDirectory on: fileName) directoryEntry.
-	timeStamp := dirEntry modificationDateAndTime.
+	(actualContents class = UniLazyString) ifTrue: [
+		 "Remove old tmp file"
+		actualContents fileCleanup. 
+	].
+	(self fileName) ifNotNil: [ | dirEntry  |	
+		"(Re)read contents"
+		actualContents := (UniLazyString onFileNamed: fileName) asText.
+		"Reset timeStamp"
+		dirEntry :=  (FileDirectory on: fileName) directoryEntry.
+		timeStamp := dirEntry modificationDateAndTime.
+	].
 
 	self changed: #refetched.
 		
 	^true! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/19/2013 09:16'!
-releaseCachedState
-	"View is closing; clean up"
-
-	(actualContents class = UniLazyString)
-		ifTrue: [ actualContents fileCleanup ]. "Remove old tmp file"
-! !
 
 !UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 20:35'!
 saveToNewFileNotifying: aTextModelMorph
