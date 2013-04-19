@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 18 April 2013 at 9:10:28 am'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1686] on 19 April 2013 at 9:16:49.653362 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -69,6 +69,16 @@ UniFlat subclass: #UniFlatSlice
 	category: 'UniCodes'!
 !classDefinition: 'UniFlatSlice class' category: #UniCodes!
 UniFlatSlice class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniLazyString category: #UniCodes!
+UniString subclass: #UniLazyString
+	instanceVariableNames: 'soFar uniFileStream fileName totalCount'
+	classVariableNames: 'ChunkSize'
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniLazyString class' category: #UniCodes!
+UniLazyString class
 	instanceVariableNames: ''!
 
 !classDefinition: #UniRepeatedCharString category: #UniCodes!
@@ -184,6 +194,14 @@ See the class method:
 aMorph := ImageMorph new.
 aMorph image: ((UniForms formForCodePoint: 16r4E7E)  magnifyBy: 8).
 aMorph openInWorld .
+!
+
+!UniLazyString commentStamp: '<historical>' prior: 0!
+I am a UniString which reads from a file as required to satisfy requests.
+
+soFar is a UniString read so far.  The rest comes from uniFileStream.
+
+I try to read ChunkSize codePoints when possible to satisfy a request.
 !
 
 !UniRepeatedCharString commentStamp: '<historical>' prior: 0!
@@ -2303,11 +2321,11 @@ zeroCodePoints
 	
 	^ZeroCodePoints! !
 
-!UniFileList methodsFor: 'contents' stamp: 'KenD 4/13/2013 07:53'!
+!UniFileList methodsFor: 'contents' stamp: 'KenD 4/19/2013 08:19'!
 acceptedContents
 	^ Text
 		initialFont: UniForms default
-		stringOrText: self acceptedStringOrText "asUniString"! !
+		stringOrText: self acceptedStringOrText! !
 
 !UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 15:59'!
 acceptedStringOrText
@@ -2375,7 +2393,7 @@ itemsForAnyFile2
 
 ! !
 
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/14/2013 18:12'!
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/19/2013 08:35'!
 put: aText
 	"Private - put the supplied text onto the file"
 
@@ -2384,7 +2402,7 @@ put: aText
 	ifTrue: [ff _ UniFileStream newFileNamed: self fullName.
 		Cursor write showWhile: [ff nextPutAll: aText asString; close].
 		fileName = ff localName 
-			ifTrue: [ acceptedContentsCache _ aText asUniString]
+			ifTrue: [ acceptedContentsCache _ aText asUniString asText]  "@@@UniLazyString@@@"
 			ifFalse: [self updateFileList].		"user renamed the file"
 		^ true  "accepted"].
 
@@ -2404,35 +2422,27 @@ meaningfully be saved at present.' format:{type}).
 	^ false  "failed"
 ! !
 
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 17:09'!
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/19/2013 08:35'!
 readContentsUnicode: brevity
 	"retrieve the contents from the external file unless it is too long.
 	  Don't create a file here.  Check if exists."
-	| uniFileStream "size" uniString |
+	| uniFileStream"  uniString" |
 
 	uniFileStream := UniFileStream oldFileOrNoneNamed: self fullName. 
-	uniFileStream ifNil: [^ 'For some reason, this file cannot be read'].
-	"size := uniFileStream size."
-	"@@FIXME: lazy file UniString"
-	uniString := uniFileStream contentsOfEntireFile.
+	uniFileStream ifNil: [^ 'For some reason, this file cannot be read']
+		ifNotNil: [uniFileStream close].
+"	uniString := uniFileStream contentsOfEntireFile.
 	brevityState := #fullUnicode.
 	uniFileStream close. 
-	"uniString edit."
-	
 	acceptedContentsCache := uniString.
+"	
+	brevityState := #fullUnicode.
 	
-	^ acceptedContentsCache
-"	 (brevityState = #briefUnicode)
-		ifFalse: [uniString]
-		ifTrue: [('File ''{1}'' is {2} bytes long.
-You may use the ''get'' command to read the entire file.
-
-Here are the first 5000 characters...
-------------------------------------------
-{3}
-------------------------------------------
-... end of the first 5000 characters.' asUniString) format: {fileName. size. uniString}]
-"! !
+	(acceptedContentsCache class = UniLazyString)
+		ifTrue: [ acceptedContentsCache fileCleanup ]. "Remove old tmp file"
+		
+	^ acceptedContentsCache := (UniLazyString onFileNamed: self fullName) asText
+! !
 
 !UniFileList methodsFor: 'own services' stamp: 'KenD 4/12/2013 14:42'!
 serviceGetUnicode
@@ -2605,7 +2615,7 @@ nextPutByte: aByte
 	^ aByte
 "! !
 
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:42'!
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/18/2013 20:15'!
 nextUpTo: count
 	"Answer a subcollection from the current access position through count or EOF."
 		
@@ -2613,7 +2623,7 @@ nextUpTo: count
 	result := UniStringWrapper new.
 	numRead := 0.
 	
-	[(self atEnd) or: (numRead = count)] whileFalse: [ 
+	[(self atEnd) or: [numRead >= count]] whileFalse: [ 
 		result nextPut: self next.
 		numRead := numRead + 1.
 	].
@@ -3426,6 +3436,229 @@ widthOfString: aString
 widthOfStringOrText: aStringOrText
 
 	^ self widthOfString: aStringOrText asUniString! !
+
+!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:20'!
+at: anIndex
+	"Read as much as is required to satisfy the request.  Answer a UniChar"
+	
+	self extendForIndex: anIndex.
+	^ (soFar codePointAt: anIndex) asUniChar! !
+
+!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:20'!
+at: anIndex put: aUniChar
+	"Read as much as is required to satisfy the request.  Answer a UniString"
+	
+	self extendForIndex: anIndex.
+	^ (soFar at: anIndex put: aUniChar asUniChar)! !
+
+!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:20'!
+codePointAt: anIndex
+
+	self extendForIndex: anIndex.
+	^ (soFar codePointAt: anIndex)! !
+
+!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:51'!
+codePointsDo: aBlock
+	"aBlock takes each codePoint in me as an argument"
+
+	self readEntireContents.
+	^ soFar codePointsDo: aBlock! !
+
+!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:50'!
+collect: aBlock
+	"Evaluate aBlock with each of the receiver's elements as the argument. 
+	Collect the resulting values into a collection like the receiver. Answer 
+	the new collection."
+
+	self readEntireContents.
+	^ soFar collect: aBlock! !
+
+!UniLazyString methodsFor: 'copying' stamp: 'KenD 4/18/2013 21:53'!
+copyFrom: start to: stop 
+	"Answer a UniString."
+	
+	"Handle odd case the same way as OrderedCollection"
+	(stop < start) ifTrue: [^ UniString emptyString ].
+
+	self extendForIndex: stop.
+	
+	^ soFar copyFrom: start to: stop! !
+
+!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 17:16'!
+depth
+	"I cannot be rebalanced"
+	^ 0! !
+
+!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:50'!
+do: aBlock
+	"aBlock takes each UniChar in me as an argument"
+
+	self readEntireContents.
+	^ soFar do: aBlock! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:33'!
+extendForIndex: anIndex
+	"If (anIndex > soFar size),  Extend soFar to include anIndex"
+"
+Transcript log: 'UniLazyString>>extendForIndex: ',
+				(anIndex  asString), '  ', (soFar size) asString ,
+  				String newLineString.
+"			
+	(anIndex > (soFar size)) ifTrue: [ | delta |
+		delta := anIndex - (soFar size).
+		(delta < ChunkSize)
+			ifTrue: [ soFar := soFar , (uniFileStream nextUpTo: ChunkSize) ]
+			ifFalse: [ soFar := soFar , (uniFileStream nextUpTo: (delta + 100)) ].
+		self fileCheck.
+	]! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:33'!
+fileCheck
+	"Close and remove tempFile if all characters consumed"
+"
+Transcript log: 'UniLazyString>>fileCheck  closed? >> ',
+				(uniFileStream closed asString),
+  				String newLineString.
+"			
+	((uniFileStream closed not) and: [uniFileStream atEnd])
+		 ifTrue: [ self fileCleanup ]! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 17:30'!
+fileCleanup
+	"Close and remove tempFile"
+
+	 | fileName |
+	fileName := uniFileStream name.
+	uniFileStream close.
+	FileDirectory deleteFilePath: fileName.! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 18:03'!
+finalize
+
+	super finalize.
+	self fileCleanup.
+	! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 18:26'!
+genTempFileName
+	"Answer the name of a file which is different than one that exists"
+	
+	"@@FIXME: Use /tmp on Unix, ??? on Windows"
+	
+	| dir looking rand fileName |
+	
+	looking := true.
+	dir := FileDirectory default.
+	[looking] whileTrue: [
+		 rand := 777 atRandom: (Random new initialize).
+ 		 fileName := 'tmp' , rand asString.
+ 		 looking := dir fileExists: fileName.
+	].
+	^ fileName
+! !
+
+!UniLazyString methodsFor: 'initialize-release' stamp: 'KenD 4/18/2013 21:31'!
+initializeFromFile: aName
+	
+	| tmpFileName |
+	super initialize.
+	"As UniStrings are immutable, copy the file"
+	tmpFileName := self genTempFileName.
+	FileDirectory default copyFileNamed: aName toFileNamed: tmpFileName.
+	
+	"Open a UniFileStream on the copy"
+	fileName := aName.
+	totalCount := nil.
+	uniFileStream := UniFileStream readOnlyFileNamed: tmpFileName.
+	soFar := uniFileStream nextUpTo: ChunkSize.
+	
+	^self
+	! !
+
+!UniLazyString methodsFor: 'printing' stamp: 'KenD 4/18/2013 21:35'!
+printOn: aStream 
+	"Look good in the inspector"
+"
+	'little string thing' asUniString inspect.
+"
+	aStream nextPutAll: 'UniLazyString(''' , fileName , ''')'
+	! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:33'!
+readEntireContents
+	"Enumerators process the entire range of characters"
+"
+Transcript log: 'UniLazyString>>readEntireContents closed? >> ',
+				(uniFileStream closed asString),
+  				String newLineString.
+"
+	(uniFileStream closed) ifFalse: [ 
+		soFar := soFar , (uniFileStream upToEnd).
+		self fileCleanup.
+	].
+	(totalCount isNil) ifFalse: [ totalCount := soFar size ]! !
+
+!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:50'!
+select: aBlock
+	"Refer to the comment in Collection>>select:."
+
+	self readEntireContents.
+	^ soFar select: aBlock! !
+
+!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:21'!
+size
+	"Answer the niumber of codePoints in me"
+
+	| oldPos count |
+	(totalCount isNil) ifFalse: [ ^totalCount ].
+	(uniFileStream closed) ifTrue: [ ^totalCount := soFar size ].
+	
+	oldPos := uniFileStream position.
+	count := 0.
+	[uniFileStream atEnd] whileFalse: [
+		"Read the count of codePoints (NOT Bytes!!)"
+		uniFileStream nextCodePoint. "But don't save"
+		count := count + 1.
+	].
+	uniFileStream position: oldPos.
+	totalCount := (soFar size) + count.
+	
+	^ totalCount
+! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:34'!
+soFar
+	"Debug only"
+	^soFar! !
+
+!UniLazyString class methodsFor: 'class initialization' stamp: 'KenD 4/18/2013 19:10'!
+initialize
+"
+	UniLazyString initialize.
+"
+	ChunkSize := 1024.
+	! !
+
+!UniLazyString class methodsFor: 'instance creation' stamp: 'KenD 4/18/2013 20:54'!
+onFileNamed: aName
+	"Answer a new instance of me"
+"
+ls := (UniLazyString onFileNamed: 'Pasted.utf8').
+ls := (UniLazyString onFileNamed: 'test-utf8.txt').
+"
+	 | dirEntry |
+	(FileDirectory default fileExists: aName)
+		ifFalse: [ ^ self error: 'Failed to find file ' , aName ].
+
+	dirEntry := FileDirectory directoryEntryFor: aName.
+	(dirEntry isDirectory) 
+		ifTrue: [ ^self error: 'Not a text file: ' , aName ].
+		
+	((dirEntry fileSize) < ChunkSize)
+	ifTrue: [ ^ UniString fromFile: aName ] "Too small to bother with"
+	ifFalse: [ ^ self new initializeFromFile: aName ]
+
+	! !
 
 !UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:10'!
 at: anIndex
@@ -4472,6 +4705,12 @@ findTokens: delimiters keep: keepers
 			ifTrue: [tokens add: (self copyFrom: keyStart to: (keyStop - 1))]].
 	^tokens! !
 
+!UniString methodsFor: 'accessing' stamp: 'KenD 4/19/2013 08:30'!
+fontAt: characterIndex
+	"Answer the font for characters in the run beginning at characterIndex."
+	
+	^ UniForms default! !
+
 !UniString methodsFor: 'formatting' stamp: 'KenD 3/21/2013 19:25'!
 format: aCollection 
 	"format the receiver with aCollection  
@@ -4515,12 +4754,13 @@ getEnclosedExpressionFrom: aStream
 
 	^ result asUniString withBlanksTrimmed! !
 
-!UniString methodsFor: 'accessing' stamp: 'KenD 2/17/2013 21:25'!
+!UniString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 21:30'!
 hash
-	| hash |
+	| hash numChars |
 
 	hash _ self species hash.
-	self codePointsDo: [ :codePoint | hash _ (hash + codePoint hash) hashMultiply].
+	numChars := self size min: 20.
+	(1 to: numChars) do: [ :codePoint | hash _ (hash + codePoint hash) hashMultiply].
 	^hash! !
 
 !UniString methodsFor: 'searching' stamp: 'KenD 3/21/2013 18:55'!
@@ -5008,9 +5248,9 @@ reversed
 	^ result asUniString
 ! !
 
-!UniString methodsFor: 'enumerating' stamp: 'KenD 3/18/2013 21:53'!
+!UniString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 17:50'!
 select: aBlock 
-	"Refer to the comment in Collection|select:."
+	"Refer to the comment in Collection>>select:."
 	| result |
 	result := UniStringWrapper new.
 	self do: [ :uchar | 
@@ -5517,6 +5757,20 @@ crlfString
 defaultFontClass
 	^UniForms! !
 
+!UniString class methodsFor: 'user interface' stamp: 'KenD 4/19/2013 08:41'!
+editFileFromUser
+"
+	UniString editFileFromUser.
+"
+	| uniTextModel |
+	uniTextModel := UniTextModel fromUser.
+	(uniTextModel isNil) ifFalse: [
+		SystemWindow 
+			editText: uniTextModel
+			label: ('Unicode(''' , uniTextModel fileName , ''')' ) asUniString 
+			wrap: true
+	]! !
+
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:23'!
 emptyString
 
@@ -5563,19 +5817,32 @@ fromCodePointCollection: anIntegerCollection
 	^ (UniFlat new initialize with: charBlock size: length) 
 ! !
 
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 4/18/2013 15:32'!
+fromFile: aName
+	"Answer a new UniString. aName MUST name an existing file."
+	
+	| uniFile uniString |
+	uniFile := UniFileStream readOnlyFileNamed: aName.
+	uniString := uniFile contentsOfEntireFile.
+	uniFile close.
+	^ uniString! !
+
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:47'!
 fromPacked: aLong
 	"Convert from a longinteger to a UniString of length 4."
 	
 	^ (String fromPacked: aLong) asUniString ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 4/1/2013 19:59'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 4/18/2013 15:34'!
 fromString: aString
 	"Answer a new UniString"
 
 	(aString class == String)
 	ifFalse: [ DomainError signal: 'UniString fromString: requires a String argument' ]
-	ifTrue: [	 ^ self fromCodePointCollection: (aString asArray collect: [ :c | c unicodeCodePoint]) ]
+	ifTrue: [	 
+		^ self fromCodePointCollection: 
+				(aString asArray collect: [ :c | c unicodeCodePoint]) 
+	]
 ! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 4/5/2013 14:48'!
@@ -5898,8 +6165,12 @@ acceptContentsFrom: aTextModelMorph
 	ifTrue: [ ^(self saveToNewFileNotifying: aTextModelMorph) isNil not ]
 	ifFalse: [ ^(self saveToOldFileNotifying: aTextModelMorph) isNil not ]! !
 
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/8/2013 19:14'!
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/19/2013 08:56'!
 actualContents: aTextOrString
+	"Reset contents"
+
+	(actualContents class = UniLazyString)
+		ifTrue: [ actualContents fileCleanup ]. "Remove old tmp file"
 	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
 	undoRedoCommands resetToStart.
 	self changed: #actualContents! !
@@ -5920,7 +6191,7 @@ fileName
 
 	^ fileName! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 16:13'!
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/19/2013 08:33'!
 fromFile: aFileName
 	"Open the file aFileName if possible and read the file into actualContents.
 	Answer self if successful else nil."
@@ -5932,8 +6203,9 @@ fromFile: aFileName
 			"Found a non-directory file; assume reable UTF-8"
 			fileName := aFileName.
 			timeStamp := aFile directoryEntry modificationDateAndTime.
-			actualContents := aFile contentsOfEntireFile. "@@FIXME make lazy"
 			aFile close.
+			actualContents := (UniLazyString onFileNamed: aFileName) asText.
+			 "aFile contentsOfEntireFile. @@FIXME make lazy"
 			^self
 		]
 	].
@@ -5955,6 +6227,31 @@ openLabel: aString
 	"Create a standard system view of the model, me, and open it."
 	
 	SystemWindow editText: self label: aString asUniString wrap: true! !
+
+!UniTextModel methodsFor: 'misc' stamp: 'KenD 4/19/2013 08:54'!
+refetch
+	"Answer true if actualContents was actually fetched."
+	
+	| dirEntry  |	
+	(actualContents class = UniLazyString)
+		ifTrue: [ actualContents fileCleanup ]. "Remove old tmp file"
+	"Re-read contents"
+	actualContents := (UniLazyString onFileNamed: fileName) asText.
+	"Reset timeStamp"
+	dirEntry :=  (FileDirectory on: fileName) directoryEntry.
+	timeStamp := dirEntry modificationDateAndTime.
+
+	self changed: #refetched.
+		
+	^true! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/19/2013 09:16'!
+releaseCachedState
+	"View is closing; clean up"
+
+	(actualContents class = UniLazyString)
+		ifTrue: [ actualContents fileCleanup ]. "Remove old tmp file"
+! !
 
 !UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 20:35'!
 saveToNewFileNotifying: aTextModelMorph
@@ -6032,6 +6329,7 @@ openLabel: aString
 	self new openLabel: aString asUniString! !
 UniChar initialize!
 UniForms initialize!
+UniLazyString initialize!
 UniSplice initialize!
 UniString initialize!
 UniTextEditor initialize!
