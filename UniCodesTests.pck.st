@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1674] on 18 April 2013 at 9:14:29 am'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1686] on 21 April 2013 at 2:22:28.760763 pm'!
 'Description Tests for UniCodes '!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
@@ -409,6 +409,37 @@ testFormat
  		[ ('\{1}{1}' asUniString) format: { $a } ] -> '{1}a'. 
  	} do: [ :each | 
 		self assert: each key value equals: each value ]! !
+
+!UniCodesTests methodsFor: 'testing' stamp: 'KenD 4/21/2013 14:22'!
+testGraphemeClusters
+	"self debug: #testGraphemeClusters"
+	
+	| regionalIndicators graphemes noneHere |
+	"Table 1a - Unicode annex 29: Text Segmentation"
+	graphemes := UniString fromCodePointCollection: 
+		#(	16r20 16r67 16r0308  "alphabetic,  combining-mark"
+			16r20 16rAC01 	"<space>,  LVT"
+		    	16r20 16r1100 16r1161 16r11A8  "<space>, L, V ,T"
+			16r20 16r0BA8 16r0BBF  "alphabetic,  combining-mark"
+			16r20 16r0E40 "SoutheastAsian"
+			16r20 16r0E01 16r0E33 "SoutheastAsian, SoutheastAsian -- NYI: requires special"
+			16r20 16r0E33 16r0937 16r93F "SoutheastAsian, Alphabetic, CombiningMark"
+			16r20 16r0646 16r200D	
+		  ).
+	regionalIndicators := UniString fromCodePointCollection: 
+		#(	16r20 16r1100 16r0308 16r1F1E6
+			16r20 16r9308 1630308 16r1F1E6
+			16r20 16r1F1F1 16r1F1FA  16r1F1F8 16r1F1EA
+			16r20
+		  ).
+	noneHere := 'No grapheme clusters here!!' asUniString.
+	
+	self assert: (noneHere combinedGraphemePointsBetween: 1 and: noneHere size) isEmpty.
+	self assert: (graphemes combinedGraphemePointsBetween: 1 and: graphemes size) 
+			= { 2@3. 7@9. 11@12. 20@21. 23@24. }.  "NYI: SoutheastAsiam"
+	self assert: (regionalIndicators combinedGraphemePointsBetween: 1 and: regionalIndicators size) 
+		= { 2@3. 4@4. 8@8. 10@13. }.
+! !
 
 !UniCodesTests methodsFor: 'testing' stamp: 'KenD 3/20/2013 19:54'!
 testIsAllDigits

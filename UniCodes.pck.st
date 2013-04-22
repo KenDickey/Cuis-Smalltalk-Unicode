@@ -1,10 +1,10 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1686] on 19 April 2013 at 4:06:54.971374 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1686] on 21 April 2013 at 7:17:32.451617 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
 Object subclass: #UniChar
 	instanceVariableNames: 'codePoint'
-	classVariableNames: 'AI AL B2 BA BB BK CB CJ CL CM CP CR CasedLetterBit Cc Cf Cn Co Compositions ControlBit Cs DecimalProperty Decompositions DefaultBreakChar EX GL GeneralCategory GeneralPropMask H2 H3 HL HY ID IN IS JL JT JV LF LetterBit LineBreakNames LineBreakProperties LineBreakTable LineBreakTypeNames Ll Lm Lo Lt Lu MarkBit Mc Me Mn NL NS NU Nd Nl No NumberBit OP PO PR Pc Pd Pe Pf Pi Po PropertyNames Ps PunctuationBit QU RI SA SG SP SY Sc SeparatorBit Sk Sm SmalltalkSpecialChars So SymbolBit ToCasefold ToLower ToUpper WJ XX ZW ZeroCodePoints Zl Zp Zs'
+	classVariableNames: 'AI AL B2 BA BB BK CB CJ CL CM CP CR CasedLetterBit Cc Cf Cn Co Compositions ControlBit Cs DecimalProperty Decompositions DefaultBreakChar EX GL GeneralCategory GeneralPropMask H2 H3 HL HY ID IN IS JL JT JV L LF LV LVT LVTStateMap LVTStateVec LetterBit LineBreakNames LineBreakProperties LineBreakTable LineBreakTypeNames Ll Lm Lo Lt Lu MarkBit Mc Me Mn NL NS NU Nd Nl No NumberBit OP PO PR Pc Pd Pe Pf Pi Po PropertyNames Ps PunctuationBit QU RI SA SG SP SY Sc SeparatorBit Sk Sm SmalltalkSpecialChars So SymbolBit T ToCasefold ToLower ToUpper V WJ XX ZW ZeroCodePoints Zl Zp Zs'
 	poolDictionaries: ''
 	category: 'UniCodes'!
 !classDefinition: 'UniChar class' category: #UniCodes!
@@ -589,14 +589,18 @@ charCouldStartWord
 	^ ((self generalCategoryCode) anyMask: (LetterBit + NumberBit))
 	! !
 
-!UniChar methodsFor: 'private' stamp: 'KenD 4/19/2013 15:20'!
+!UniChar methodsFor: 'private' stamp: 'KenD 4/21/2013 19:17'!
 charIsGraphemePart
-	"Answer true if this character's codePoint is a grapheme cluster component."
+	"Answer true if my codePoint is a grapheme cluster component."
 	
-	^ ( ( { Mc. Mn. Lm  } includes: (self generalCategoryCode) ) "?? Me ??"
+	"Hangul Jamo (H2 H3 JL JT JV) is tested separately: UniChar>>isHangulJamo .
+	 Regional Indocators (RI tested separately; UniChar>>isRegionalIndicator .
+	 Formatting Marks (Cf) are tested separately: UniChar>>isFormattingMark .
+	"
+
+	^ ( ( { Mc. Mn. Lm. Sk.  } includes: (self generalCategoryCode) ) 
 		"See UniChar class>>initializeGeneralPropertyEnums "
-		or: [ { CM. GL. H2. H3. JL. JT. JV. RI. WJ. }
-				includes: (self lineBreakCategoryCode)] 
+		or: [ { CM. WJ. } includes: (self lineBreakCategoryCode)] 
 		 "See UniChar class>>initializeLineBreakProperties "
 	   )
 		
@@ -696,6 +700,18 @@ hasTagFormat
 hasTagGlue
 
 	^ (self lineBreakCategoryCode = GL)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/21/2013 08:49'!
+hasTagInLVT
+	"Hangul Jamo
+		JL -> L     Leading
+		JV -> V    Vowel
+		JT -> T    Trailing
+		H2 ->  LV    Syllable
+
+	"
+
+	^ { H2. H3. JL. JV.  JT. } includes: (self lineBreakCategoryCode)! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
 hasTagLineSeparator
@@ -875,11 +891,11 @@ hasTagWordNumeric
 	^ ((self generalCategoryCode bitAnd: NumberBit) = NumberBit) 
 ! !
 
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 17:10'!
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/20/2013 10:21'!
 hasTagWordRegionlIndicator
 	"Word Property"
 
-	^ (16r1F1E6 <= codePoint) and: [codePoint <= 16r1F1FF]
+	^ self isRegionalIndicator
 ! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:25'!
@@ -927,6 +943,11 @@ isDigit
 
 	^ self isNumberChar! !
 
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/21/2013 17:20'!
+isFormattingMark
+
+	^ ((self generalCategoryCode) = Cf)! !
+
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/19/2013 18:50'!
 isGenerallyValidInIdentifiers
 	"Answer if generally valid Smalltalk identifier"
@@ -942,6 +963,11 @@ isGenerallyValidStartOfInIdentifiers
 	Warning: Does not account for the fact that some classes could redefine 
 	#allowUnderscoreSelectors"
 	^self isLetter or: [ self  = $_ and: [ Preferences allowUnderscoreSelectors ]]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/21/2013 09:35'!
+isHangulJamo
+
+	^ self hasTagInLVT ! !
 
 !UniChar methodsFor: 'testing' stamp: 'KenD 3/28/2013 15:21'!
 isLF
@@ -987,6 +1013,11 @@ isOtherControl
 isPunctuation
 
 	^ (((self generalCategoryCode) bitAnd: PunctuationBit) = PunctuationBit)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/20/2013 10:16'!
+isRegionalIndicator
+
+	^ (codePoint between: 16r1F1E6 and: 16r1F1FF)! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/28/2013 13:43'!
 isSeparator
@@ -1097,6 +1128,20 @@ lineBreakTableAt: row at: col
 	"See comments in UniChar class>>initializeLineBreakTable"
 	
 	^ (LineBreakTable at: row) at: col! !
+
+!UniChar methodsFor: 'private' stamp: 'KenD 4/21/2013 11:52'!
+nextLVTStateFromState: aState
+	"aState is one of L V T LV LVT or zero (=> exit). 
+	Answer next state based on my lineBreakCategoryCode"
+	
+	"Note table 1c in  Unicode Annex #29: Unicode Text Segmentation
+	and UniChar class>>initializeHangulJamoLVT"
+	| index |
+	(aState between: 1 and: 5) ifFalse: [ ^ 0 ]. "zero" 
+	index := LVTStateMap at: (self lineBreakCategoryCode).
+	(index isZero)
+		ifTrue: [ ^ 0 ] "zero"
+		ifFalse: [ ^ (LVTStateVec at: aState) at: index ] "Next State"! !
 
 !UniChar methodsFor: 'printing' stamp: 'KenD 4/7/2013 09:56'!
 printOn: aStream
@@ -1725,7 +1770,7 @@ initZeroCodePoints
   ).
 ! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/17/2013 15:28'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/21/2013 10:56'!
 initialize
 "
 	UniChar initialize.
@@ -1738,6 +1783,7 @@ initialize
 	self initializeCaseMappings. 
 	self initializeLineBreakProperties. "Must follow initializeGeneralCharacterProperties"
 	self initializeLineBreakTable.
+	self initializeHangulJamoLVT.
 	
 	
 	! !
@@ -1869,6 +1915,36 @@ initializeGeneralPropertyEnums
  	PropertyNames at: Zp 	put: #ParagraphSeparator.
  	PropertyNames at: Zs 	put: #SpaceSeparator.
 	! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/21/2013 11:51'!
+initializeHangulJamoLVT
+	"Used for UniString  Grapheme cluster scanning.'
+	See UniChar>>nextLVTStateFromState:"
+	
+	"Note table 1c in  Unicode Annex #29: Unicode Text Segmentation"
+
+	"Indices into Hangul Jamo Syllable LVT state table"
+	L		:= 1.
+	V	 	:= 2.
+	LV		:= 3.
+	LVT	:= 4.
+	T 		:= 5.
+	"State x Input -> NextState"
+	LVTStateVec := Array new: 5.
+	LVTStateVec at: L		put: {L. V. LV. LVT. T.}. "equals START"
+	LVTStateVec at: V		put: {0. V.  0.    0.   T.}.
+	LVTStateVec at: LV		put: {0. V.  0.    0.   T.}.
+	LVTStateVec at: LVT	put: {0. 0.   0.    0.   T.}.
+	LVTStateVec at: T		put: {0. 0.   0.    0.   T.}.
+	" 0 ->Out == EXIT "
+
+	LVTStateMap := Array new: (LineBreakProperties size) withAll: 0.
+	LVTStateMap at: H2 put: LV.	
+	LVTStateMap at: H3 put: LVT.
+	LVTStateMap at: JL put: L.
+	LVTStateMap at: JV put: V.
+	LVTStateMap at: JT put: T.
+! !
 
 !UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/17/2013 15:21'!
 initializeLineBreakProperties
@@ -4353,47 +4429,118 @@ collect: aBlock
 		[ :uchar | result nextPut: (aBlock value: uchar) ].
 	^ result asUniString ! !
 
-!UniString methodsFor: 'unicode' stamp: 'KenD 4/19/2013 15:47'!
+!UniString methodsFor: 'unicode' stamp: 'KenD 4/21/2013 10:01'!
 combinedGraphemePointsBetween: start and: stop
 	"Answer an array of points (startIndex@endIndex) indicating multiple
-	codePoints making up a grapheme cluster (composite character)"
+	codePoints making up a grapheme cluster (composite character).
+	
+	If first codePoint is a combining mark, the first point will start with index start-1."
 
 	"Note Unicode Annex #29: Unicode Text Segmentation"
 	
-	"@@@FIXME: Add  Hangul Jamo LVT( @@@"
-	
-	| curPos endPos result |
 	self checkIndex: start.
 	self checkIndex: stop.
 	
-	curPos := start.
-	endPos := stop min: self size.
-	(endPos < curPos) ifTrue: [ ^ #() ]. 
-	
-	result := OrderedCollection new.
+	^ (self combinedGraphemePointsBetween: start and: stop inTo: OrderedCollection new) asArray
+! !
 
-	"A 'user perceiived character' is a base character followed by various combining marks"
+!UniString methodsFor: 'private' stamp: 'KenD 4/21/2013 17:16'!
+combinedGraphemePointsBetween: start and: stop inTo: aCollection
+	"Answer an OrderedCollection of points (startIndex@endIndex) indicating multiple
+	codePoints making up a grapheme cluster (composite character).
+	
+	If first codePoint is a combining mark, the first point will start with index start-1."
+
+	"Note Unicode Annex #29: Unicode Text Segmentation"
+	| curPos endPos |
+	curPos := start.
+	endPos := stop.
+	(endPos < curPos) ifTrue: [ ^ aCollection ]. 
+
 	[curPos <= endPos] whileTrue: [ | curChar inComposition |
 		curChar := self at: curPos.
+		
+		"Handle Hangul Jamo syllables separately"
+		(curChar hasTagInLVT) ifTrue: [ "tail call"
+			 ^self combinedHangulJamoPointFrom: curPos 
+					to: stop 
+					inTo: aCollection
+		].
+
+		"Regional Indocators are easy but different."
+		(curChar isRegionalIndicator) ifTrue: [ "tail call"
+			 ^self regionalIndicatorPointFrom: curPos 
+					to: stop 
+					inTo: aCollection
+		].
+	
+		"A 'user perceiived character' is (typically) a base character 
+		 followed by various combining marks"
 		inComposition := curChar charIsGraphemePart.
 
 		inComposition ifTrue: [ | startPos |
-			startPos := curPos - 1. "Note Bene: could be zero!!"
-			[inComposition and: [curPos < endPos]] whileTrue: [ "Find the end of a 'word'"
+			((curChar isRegionalIndicator) or: [curChar hasTagInLVT])
+				ifTrue: [ startPos := curPos ] "Does NOT modify preceeding codePoint"
+				ifFalse: [startPos := curPos - 1]. "Note Bene: could be zero!!"
+			[inComposition and: [curPos < endPos]] whileTrue: [
+				"Find the end of the grapheme cluster"
 				curPos := curPos + 1.
 				curChar := self at: curPos.
 				inComposition := curChar charIsGraphemePart.
-				inComposition
-					ifFalse: [ result addLast: (startPos @ (curPos - 1)) ]
+				inComposition ifFalse: [ 
+					aCollection addLast: (startPos @ (curPos - 1)).
+					(curChar isRegionalIndicator) ifTrue: [ "tail call"
+			 			^self regionalIndicatorPointFrom: curPos 
+								to: stop 
+								inTo: aCollection
+					]
+				]
 			].
 			"Check for special case: end is still in composition"
 			((curPos = endPos) and: [inComposition])
-				ifTrue: [ result addLast: (startPos @ curPos) ].
+				ifTrue: [ aCollection addLast: (startPos @ curPos) ].
 		].
 		curPos := curPos + 1.
 	].
 	
-	^ result asArray
+	^ aCollection
+! !
+
+!UniString methodsFor: 'private' stamp: 'KenD 4/21/2013 11:49'!
+combinedHangulJamoPointFrom: start to: stop inTo: aCollection
+	"Add to an OrderedCollection of points (startIndex@endIndex) 
+	adding a point where two or more codePoints make up 
+	a composite Hangul Jamo character.
+	
+	Continue with #combinedGraphemePointsBetween:and:inTo:
+	if we don't end at stop.
+	"
+	| curPos endPos  curChar scanState |
+	(start = stop) ifTrue: [ ^aCollection ]. "Can't compose a singleton codePoint"
+	curPos := start.
+	scanState := 1. "Start; see UniChar>>nextLVTStateFromState:"
+	
+	curChar := self at: curPos.
+	(curChar hasTagInLVT) ifFalse: [ ^DomainError signal: 'Called on non Hangul-Jamo'].
+	
+	[(curPos <= stop) and: [ scanState isZero not]] whileTrue: [
+		curPos := curPos + 1.
+		curChar := self at: curPos.
+		scanState := curChar nextLVTStateFromState: scanState.
+	].
+	"OK.  Now curPos is beyond end of me or LVT state"
+	endPos := curPos - 1.
+	
+	"Don't add single character graphemes"
+	(endPos > start) ifTrue: [ aCollection addLast: (start @ endPos) ].
+
+	(endPos = stop)
+		ifTrue: [ ^ aCollection ] "Done"
+		ifFalse: [ "Keep Looking for more clusters"  "tail call"
+			^ self combinedGraphemePointsBetween: curPos 
+					and: stop 	
+					inTo: aCollection
+		]
 ! !
 
 !UniString methodsFor: 'comparing' stamp: 'KenD 3/19/2013 12:24'!
@@ -5287,6 +5434,48 @@ rebalance
 	].
 	^ UniString merge: leafNodes start: 1 end: (leafNodes size).! !
 
+!UniString methodsFor: 'private' stamp: 'KenD 4/21/2013 14:17'!
+regionalIndicatorPointFrom: start to: stop inTo: aCollection
+	"Add to an OrderedCollection of points (startIndex@endIndex) 
+	adding a point where one or more codePoints make up 
+	a one or more Regional Indicators followed by Extend or Spacing Marks.
+	
+	Continue with #combinedGraphemePointsBetween:and:inTo:
+	if we don't end at stop.
+	"
+	| curPos  curChar endPos |
+	(start = stop) ifTrue: [
+		aCollection addLast: (start @ stop).
+		 ^aCollection 
+	].
+	curPos := start.
+	curChar := self at: curPos.
+	
+	[(curPos < stop) and: [curChar isRegionalIndicator]] whileTrue: [
+		"Consume Regional Indicators"
+		curPos := curPos + 1.
+		curChar := self at: curPos.
+	].
+	[(curPos < stop) and: [curChar charIsGraphemePart]] whileTrue: [
+		"Consume Extenders and Marks"
+		curPos := curPos + 1.
+		curChar := self at: curPos.
+	].
+	((curPos = stop) and: [curChar charIsGraphemePart])
+		ifTrue: [  endPos := curPos ] 
+		ifFalse: [ endPos := curPos - 1 ].
+	
+	aCollection addLast: (start @ endPos).
+	
+	(endPos = stop)
+		ifTrue: [ ^ aCollection ] "Done"
+		ifFalse: [ "Keep Looking for more clusters"  "tail call"
+			^ self combinedGraphemePointsBetween: curPos 
+					and: stop 	
+					inTo: aCollection
+		]
+! !
+
 !UniString methodsFor: 'copying' stamp: 'KenD 4/3/2013 15:53'!
 replaceFrom: start to: stop with: replacement startingAt: repStart
 		"Answer a new UniString rope with the replacement.
@@ -5954,7 +6143,7 @@ indexOfCodePoint: anInteger inString: aString startingAt: start
 	^ 0
 ! !
 
-!UniString class methodsFor: 'class initialization' stamp: 'KenD 3/18/2013 15:23'!
+!UniString class methodsFor: 'class initialization' stamp: 'KenD 4/21/2013 10:39'!
 initialize
 "
 	UniString initialize.
@@ -5963,7 +6152,10 @@ initialize
 
 	Fibonacci :=   #( 0  1  1  2  3  5  8  13  21  34  55  89  144  233  377  610  987  1597  2584  4181  6765  10946  17711  28657  46368  75025  121393  196418  317811  514229  832040  1346269  2178309  3524578  5702887  9227465  14930352  24157817  39088169  63245986  102334155  165580141  267914296  433494437  701408733  1134903170  1836311903  2971215073  4807526976  7778742049  12586269025  20365011074  32951280099  53316291173  86267571272  139583862445  225851433717  365435296162  591286729879  956722026041  1548008755920  2504730781961  4052739537881  6557470319842  10610209857723  17167680177565  27777890035288  44945570212853  72723460248141  117669030460994  190392490709135  308061521170129  498454011879264  806515533049393  1304969544928657  2111485077978050  3416454622906707  5527939700884757  8944394323791464  14472334024676221  23416728348467685  37889062373143906  61305790721611591  99194853094755497  160500643816367088  259695496911122585  420196140727489673  679891637638612258  1100087778366101931  1779979416004714189  2880067194370816120  4660046610375530309  7540113804746346429 ).
 	
-	MaxRopeDepth := 96.  "rebalance ropes whose depth exceeds this"! !
+	MaxRopeDepth := 96.  "rebalance ropes whose depth exceeds this"
+	
+
+	.! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 13:24'!
 lfString
