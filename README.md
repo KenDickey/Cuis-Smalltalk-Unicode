@@ -68,6 +68,11 @@ Open a text editor on a UniString [Unicode String].  Copy & paste.  Cmd-s to sav
 ````Smalltalk
 	'Some text' asUniString edit.
 ````
+Open a text editor on a file
+````Smalltalk
+	UniTextEditor fromFile: 'utf8sampler.txt'.
+	UniTestEditor fromUser.  "Puts up a file dialog"
+````
 
 Bugs are expected, but please email report to  Ken [dot] Dickey [at] whidbey [dot] com
 
