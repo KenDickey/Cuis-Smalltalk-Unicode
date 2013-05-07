@@ -1,4 +1,4 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1686] on 21 April 2013 at 7:17:32.451617 pm'!
+'From Cuis 4.1 of 12 December 2012 [latest update: #1686] on 7 May 2013 at 2:56:28.847704 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !classDefinition: #UniChar category: #UniCodes!
@@ -6406,6 +6406,29 @@ cmdShortcutsSpec
 		#(		$u	#align:						'Toggle alignment')
 	)! !
 
+!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:39'!
+fromFile: aFileNameString
+"
+	UniTextEditor fromFile: 'utf8sampler.txt'.
+"
+	| textModel |
+	textModel := UniTextModel fromFile: aFileNameString.
+
+	textModel isNil ifFalse: [
+		SystemWindow 
+			editText: textModel
+			label: 'Text Editor (''',  (textModel fileName) ,  ''')'
+			wrap: true.
+	]
+	! !
+
+!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:28'!
+fromUser
+"
+	UniTextEditor fromUser.
+"
+	UniTextModel fromUser! !
+
 !UniTextEditor class methodsFor: 'class initialization' stamp: 'KenD 4/14/2013 18:05'!
 initialize
 
@@ -6450,21 +6473,21 @@ fileName
 
 	^ fileName! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/19/2013 08:33'!
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 5/7/2013 14:55'!
 fromFile: aFileName
 	"Open the file aFileName if possible and read the file into actualContents.
 	Answer self if successful else nil."
 	
-	| aFile |
+	| aFile fullPath |
 	(aFileName isEmpty) ifFalse: [
-		aFile := UniFileStream readOnlyFileNamed: aFileName.
+		fullPath := (FileDirectory default  fullPathFor:  aFileName).
+		aFile := UniFileStream readOnlyFileNamed: fullPath.
 		((aFile isNil) or: [ aFile isDirectory ]) ifFalse: [
 			"Found a non-directory file; assume reable UTF-8"
 			fileName := aFileName.
 			timeStamp := aFile directoryEntry modificationDateAndTime.
 			aFile close.
 			actualContents := (UniLazyString onFileNamed: aFileName) asText.
-			 "aFile contentsOfEntireFile. @@FIXME make lazy"
 			^self
 		]
 	].
@@ -6561,12 +6584,14 @@ fromFile: aFileName
 
 	^self new initialize fromFile: aFileName! !
 
-!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/14/2013 16:22'!
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:32'!
 fromUser
 	"Put up a StandardFileMenu and let the user choose a file to read into me."
 	"Answer an instance of me or nil"
-	
-	| dialogResult slash |
+"
+	UniTextModel fromUser.
+"		
+	| dialogResult slash textModel |
 	dialogResult := (StandardFileMenu new)
 						oldFileFrom: (FileDirectory default) ;
 	 					startUpWithCaption: 'Select a UTF-8 Unicode text file'.
@@ -6575,7 +6600,15 @@ fromUser
 
 	slash := FileDirectory slash.
 
-	^self new initialize fromFile: ( (dialogResult directory fullName) , slash , (dialogResult name) )! !
+	textModel := self new initialize 
+		fromFile: ( (dialogResult directory fullName) , slash , (dialogResult name) ).
+		
+	SystemWindow 
+		editText: textModel
+			label: 'Unicode Text(''',  (dialogResult name) ,  ''')'
+			wrap: true.
+	
+	^ textModel! !
 
 !UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 19:11'!
 openLabel: aString
