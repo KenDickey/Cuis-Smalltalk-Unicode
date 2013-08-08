@@ -1,5 +1,8 @@
 'From Cuis 4.1 of 12 December 2012 [latest update: #1686] on 21 April 2013 at 2:22:28.760763 pm'!
 'Description Tests for UniCodes '!
+!provides: 'UnicodesTests' 1 2!
+!requires: 'UniCodes' 1 2!
+!requires: 'Cuis-Base' 42 1788!
 !classDefinition: #UniCodePerformance category: #UniCodesTests!
 TestCase subclass: #UniCodePerformance
 	instanceVariableNames: ''

@@ -1,6 +1,9 @@
 'From Cuis 4.1 of 12 December 2012 [latest update: #1686] on 7 May 2013 at 2:56:28.847704 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
+!provides: 'UniCodes' 1 2!
+!requires: 'Compression' 1 nil!
+!requires: 'Cuis-Base' 42 1788!
 !classDefinition: #UniChar category: #UniCodes!
 Object subclass: #UniChar
 	instanceVariableNames: 'codePoint'
@@ -1800,7 +1803,7 @@ initializeCaseMappings
   	slash := FileDirectory slash.
 	
 	self parseCaseMappingFrom: (FileStream concreteStream readOnlyFileNamed:
-		'..', slash, 'Cuis-Unicode', slash, 'CaseFolding.txt')..
+		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'CaseFolding.txt')..
 	
 "
 @@FIXME: download using ProgressBarMorph
@@ -1823,7 +1826,7 @@ initializeGeneralCharacterProperties
     	slash := FileDirectory slash.
 	
 	self parseGeneralPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
-		'..', slash, 'Cuis-Unicode', slash, 'UnicodeData.txt')..
+		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'UnicodeData.txt')..
 		
 	"@@FIXME: Download from  http://unicode.org/Public/UNIDATA/UnicodeData.txt "! !
 
@@ -2042,7 +2045,7 @@ initializeLineBreakProperties
   	slash := FileDirectory slash.
 	
 	self parseLineBreakPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
-		'..', slash, 'Cuis-Unicode', slash, 'LineBreak.txt')..
+		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'LineBreak.txt')..
 ! !
 
 !UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/29/2013 16:56'!
@@ -3310,7 +3313,7 @@ initialize
 
 	| slash |
 	slash := FileDirectory slash.
-	FormsArray := self readFormsArray: '..' , slash , 'Cuis-Unicode', slash, 'unifont-5.1.20080907.hex'.
+	FormsArray := self readFormsArray: '..' , slash , 'Cuis-Smalltalk-Unicode', slash, 'unifont-5.1.20080907.hex'.
 	"'unifontfull-5.1.20080820.hex'."
 	"unifont-5.1.20080907.hex"
 	self formForMissingChar: (self defaultFormForMissingChar).

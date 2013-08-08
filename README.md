@@ -47,9 +47,9 @@ This means that the class UniChar does not inherit from Character and UniString 
 
 Import packages and required core scaffolding:
 ````Smalltalk
-    | slash prefix |
+    |slash|
     slash := FileDirectory slash.
-    prefix := ( '..', slash, 'Cuis-Unicode', slash ).
+    prefix := ( '..', slash, 'Cuis-Smalltalk-Unicode', slash ).
     #( 'UniCodes.pck.st' 'UniCodesTests.pck.st' ) do:
     [ :fileName |
       CodePackageFile installPackageStream:
@@ -71,7 +71,7 @@ Open a text editor on a UniString [Unicode String].  Copy & paste.  Cmd-s to sav
 Open a text editor on a file
 ````Smalltalk
 	UniTextEditor fromFile: 'utf8sampler.txt'.
-	UniTestEditor fromUser.  "Puts up a file dialog"
+	UniTextEditor fromUser.  "Puts up a file dialog"
 ````
 
 Bugs are expected, but please email report to  Ken [dot] Dickey [at] whidbey [dot] com
