@@ -4,7 +4,7 @@ Cuis-Unicode
 ### Aim
 
 Design Sketch showing mechanics for Unicode support. Uses Ropes.
-cf https://github.com/KenDickey/Cuis-Ropes
+cf https://github.com/KenDickey/Cuis-Smalltalk-Ropes
 
 
 ### Status
@@ -13,9 +13,7 @@ Incomplete; Pre-Alpha; Not ready yet to see the light of day...
 - Simple edit of Unicode files with copy/cut and paste.
 - NO font support (uses simple 'forms' from GNU UniFont).
 - Currently, there is NO grapheme composition. Unicode code points are displayed, including 'combining marks'.
-- Tested with
-	SystemVersion current highestUpdate. "--> 1686"
-
+- Tested with Cuis 4.2
 
 
 ### Introduction/Overview
