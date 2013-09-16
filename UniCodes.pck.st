@@ -1,17 +1,27 @@
-'From Cuis 4.1 of 12 December 2012 [latest update: #1686] on 7 May 2013 at 2:56:28.847704 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #1803] on 16 September 2013 at 8:33:29.326012 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 2!
-!requires: 'Compression' 1 nil!
-!requires: 'Cuis-Base' 42 1788!
-!classDefinition: #UniChar category: #UniCodes!
-Object subclass: #UniChar
-	instanceVariableNames: 'codePoint'
-	classVariableNames: 'AI AL B2 BA BB BK CB CJ CL CM CP CR CasedLetterBit Cc Cf Cn Co Compositions ControlBit Cs DecimalProperty Decompositions DefaultBreakChar EX GL GeneralCategory GeneralPropMask H2 H3 HL HY ID IN IS JL JT JV L LF LV LVT LVTStateMap LVTStateVec LetterBit LineBreakNames LineBreakProperties LineBreakTable LineBreakTypeNames Ll Lm Lo Lt Lu MarkBit Mc Me Mn NL NS NU Nd Nl No NumberBit OP PO PR Pc Pd Pe Pf Pi Po PropertyNames Ps PunctuationBit QU RI SA SG SP SY Sc SeparatorBit Sk Sm SmalltalkSpecialChars So SymbolBit T ToCasefold ToLower ToUpper V WJ XX ZW ZeroCodePoints Zl Zp Zs'
+!provides: 'UniCodes' 1 5!
+!requires: 'Compression' 1 nil nil!
+!requires: 'Cuis-Base' 42 1788 nil!
+!classDefinition: #UniForms category: #UniCodes!
+AbstractFont subclass: #UniForms
+	instanceVariableNames: ''
+	classVariableNames: 'FormForMissingChar FormsArray'
 	poolDictionaries: ''
 	category: 'UniCodes'!
-!classDefinition: 'UniChar class' category: #UniCodes!
-UniChar class
+!classDefinition: 'UniForms class' category: #UniCodes!
+UniForms class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniTextModel category: #UniCodes!
+TextModel subclass: #UniTextModel
+	instanceVariableNames: 'fileName timeStamp'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniTextModel class' category: #UniCodes!
+UniTextModel class
 	instanceVariableNames: ''!
 
 !classDefinition: #UniFileList category: #UniCodes!
@@ -22,26 +32,6 @@ FileList subclass: #UniFileList
 	category: 'UniCodes'!
 !classDefinition: 'UniFileList class' category: #UniCodes!
 UniFileList class
-	instanceVariableNames: ''!
-
-!classDefinition: #UniFileStream category: #UniCodes!
-StandardFileStream subclass: #UniFileStream
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'UniFileStream class' category: #UniCodes!
-UniFileStream class
-	instanceVariableNames: ''!
-
-!classDefinition: #UniForms category: #UniCodes!
-AbstractFont subclass: #UniForms
-	instanceVariableNames: ''
-	classVariableNames: 'FormForMissingChar FormsArray'
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'UniForms class' category: #UniCodes!
-UniForms class
 	instanceVariableNames: ''!
 
 !classDefinition: #UniString category: #UniCodes!
@@ -104,16 +94,6 @@ UniString subclass: #UniSplice
 UniSplice class
 	instanceVariableNames: ''!
 
-!classDefinition: #UniStringWrapper category: #UniCodes!
-Object subclass: #UniStringWrapper
-	instanceVariableNames: 'uniString'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'UniStringWrapper class' category: #UniCodes!
-UniStringWrapper class
-	instanceVariableNames: ''!
-
 !classDefinition: #UniTextEditor category: #UniCodes!
 TextEditor subclass: #UniTextEditor
 	instanceVariableNames: ''
@@ -124,58 +104,36 @@ TextEditor subclass: #UniTextEditor
 UniTextEditor class
 	instanceVariableNames: ''!
 
-!classDefinition: #UniTextModel category: #UniCodes!
-TextModel subclass: #UniTextModel
-	instanceVariableNames: 'fileName timeStamp'
+!classDefinition: #UniFileStream category: #UniCodes!
+StandardFileStream subclass: #UniFileStream
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'UniCodes'!
-!classDefinition: 'UniTextModel class' category: #UniCodes!
-UniTextModel class
+!classDefinition: 'UniFileStream class' category: #UniCodes!
+UniFileStream class
 	instanceVariableNames: ''!
 
+!classDefinition: #UniChar category: #UniCodes!
+Object subclass: #UniChar
+	instanceVariableNames: 'codePoint'
+	classVariableNames: 'AI AL B2 BA BB BK CB CJ CL CM CP CR CasedLetterBit Cc Cf Cn Co Compositions ControlBit Cs DecimalProperty Decompositions DefaultBreakChar EX GL GeneralCategory GeneralPropMask H2 H3 HL HY ID IN IS JL JT JV L LF LV LVT LVTStateMap LVTStateVec LetterBit LineBreakNames LineBreakProperties LineBreakTable LineBreakTypeNames Ll Lm Lo Lt Lu MarkBit Mc Me Mn NL NS NU Nd Nl No NumberBit OP PO PR Pc Pd Pe Pf Pi Po PropertyNames Ps PunctuationBit QU RI SA SG SP SY Sc SeparatorBit Sk Sm SmalltalkSpecialChars So SymbolBit T ToCasefold ToLower ToUpper V WJ XX ZW ZeroCodePoints Zl Zp Zs'
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniChar class' category: #UniCodes!
+UniChar class
+	instanceVariableNames: ''!
 
-!UniChar commentStamp: '<historical>' prior: 0!
-This is the abstract parent class of Unicode Characters with various representation sizes.
-See http://Unicode.org for information.
+!classDefinition: #UniStringWrapper category: #UniCodes!
+Object subclass: #UniStringWrapper
+	instanceVariableNames: 'uniString'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniStringWrapper class' category: #UniCodes!
+UniStringWrapper class
+	instanceVariableNames: ''!
 
-UniChars are immutable.  
-
-UniChars with the same codePoint are typically NOT unique.
-
-Note that many "tests" (e.g. #isLetter #isUppercase) are property tests and are in category #properies, NOT category #testing.!
-
-!UniFileList commentStamp: '<historical>' prior: 0!
-I am a FileList which can display Unicode.
-!
-
-!UniFileStream commentStamp: '<historical>' prior: 0!
-I read and/or write UniChars and UniStrings from/to UTF-8 Unicode files.
-
-There are three levels of context:
-	Bytes are the disk storage level (file position, buffering)
-	UniChars [code points] are the units read/written (1 2 or 4 Utf8 bytes -> codePoint)
-	Graphemes are the "display characters" people think of (Composed codePoints)
-	
-NOTE: File position is in BYTES but UTF-8 codePoints may consist of 1, 2, or 4 bytes each !!!!
-	
-A UniFileStream deals with the first two only.  Subclass me for Graphemes.
-
-@@@FIXME:  Currently I assume well formed UTF-8.  I do not recover gracefully.
-
-!
-
-!UniFlat commentStamp: '<historical>' prior: 0!
-A flat rope is basically a string.  My instances are "leaves" in a Rope "tree".
-
-Internal storage is all the same size, either 8, 16, or 32 bit chunks holding Unicode codePoints.
-
-This is to say, a CharBlock is one of ByteArray, ShortWordArray, or WordArray as required.
-
-Do not use me directly, use UniString.!
-
-!UniFlatSlice commentStamp: '<historical>' prior: 0!
-I refer to an immutable charBlock slice shared with another UniString.!
 
 !UniForms commentStamp: '<historical>' prior: 0!
 GNU Unifont Forms
@@ -192,6 +150,7 @@ See the class method:
 "U+4E7E is 1st YiJing Hexagram - a Chinese charater"
 
 ((UniForms formForCodePoint: 16r4E7E) magnifyBy: 4)  displayAt: 100@100. 
+(UniForms sliceStart: 16r2701 size: 40) explore. "Dingbats"
 
 | aMorph |
 aMorph := ImageMorph new.
@@ -199,21 +158,16 @@ aMorph image: ((UniForms formForCodePoint: 16r4E7E)  magnifyBy: 8).
 aMorph openInWorld .
 !
 
-!UniLazyString commentStamp: '<historical>' prior: 0!
-I am a UniString which reads from a file as required to satisfy requests.
+!UniTextModel commentStamp: '<historical>' prior: 0!
+I am a TextModel which handles Unicode using UniStrings.
 
-soFar is a UniString read so far.  The rest comes from uniFileStream.
+fileName is the fullName of a file or nil.
+timeStamp is zero or the time the file was read to create a view.
 
-I try to read ChunkSize codePoints when possible to satisfy a request.
-!
+If a user goes to save a file, the timeStamp should not have changed.!
 
-!UniRepeatedCharString commentStamp: '<historical>' prior: 0!
-I am a UniString consisting of a single UniChar repeated count times.!
-
-!UniSplice commentStamp: '<historical>' prior: 0!
-I am the splice/concatenation of two other UniStrings.
-
-I am typically created as a side effect of operaions on UniStrings.
+!UniFileList commentStamp: '<historical>' prior: 0!
+I am a FileList which can display Unicode.
 !
 
 !UniString commentStamp: '<historical>' prior: 0!
@@ -255,6 +209,65 @@ A:  Five
 Correct Answer:  Four.  Calling a tail a leg does not make it one.  ;)
 !
 
+!UniFlat commentStamp: '<historical>' prior: 0!
+A flat rope is basically a string.  My instances are "leaves" in a Rope "tree".
+
+Internal storage is all the same size, either 8, 16, or 32 bit chunks holding Unicode codePoints.
+
+This is to say, a CharBlock is one of ByteArray, ShortWordArray, or WordArray as required.
+
+Do not use me directly, use UniString.!
+
+!UniFlatSlice commentStamp: '<historical>' prior: 0!
+I refer to an immutable charBlock slice shared with another UniString.!
+
+!UniLazyString commentStamp: '<historical>' prior: 0!
+I am a UniString which reads from a file as required to satisfy requests.
+
+soFar is a UniString read so far.  The rest comes from uniFileStream.
+
+I try to read ChunkSize codePoints when possible to satisfy a request.
+!
+
+!UniRepeatedCharString commentStamp: '<historical>' prior: 0!
+I am a UniString consisting of a single UniChar repeated count times.!
+
+!UniSplice commentStamp: '<historical>' prior: 0!
+I am the splice/concatenation of two other UniStrings.
+
+I am typically created as a side effect of operaions on UniStrings.
+!
+
+!UniTextEditor commentStamp: '<historical>' prior: 0!
+I am an editor for Unicode text.
+!
+
+!UniFileStream commentStamp: '<historical>' prior: 0!
+I read and/or write UniChars and UniStrings from/to UTF-8 Unicode files.
+
+There are three levels of context:
+	Bytes are the disk storage level (file position, buffering)
+	UniChars [code points] are the units read/written (1 2 or 4 Utf8 bytes -> codePoint)
+	Graphemes are the "display characters" people think of (Composed codePoints)
+	
+NOTE: File position is in BYTES but UTF-8 codePoints may consist of 1, 2, or 4 bytes each !!!!
+	
+A UniFileStream deals with the first two only.  Subclass me for Graphemes.
+
+@@@FIXME:  Currently I assume well formed UTF-8.  I do not recover gracefully.
+
+!
+
+!UniChar commentStamp: '<historical>' prior: 0!
+This is the abstract parent class of Unicode Characters with various representation sizes.
+See http://Unicode.org for information.
+
+UniChars are immutable.  
+
+UniChars with the same codePoint are typically NOT unique.
+
+Note that many "tests" (e.g. #isLetter #isUppercase) are property tests and are in category #properies, NOT category #testing.!
+
 !UniStringWrapper commentStamp: '<historical>' prior: 0!
 UniString ropes are immutable.  Actual operatrions yield new UniStrings.
 
@@ -268,18 +281,6 @@ Use in place of WriteStream for #nextPut: and #nextPutAll.
  vs:
 	WriteStream on: 'abc',
 !
-
-!UniTextEditor commentStamp: '<historical>' prior: 0!
-I am an editor for Unicode text.
-!
-
-!UniTextModel commentStamp: '<historical>' prior: 0!
-I am a TextModel which handles Unicode using UniStrings.
-
-fileName is the fullName of a file or nil.
-timeStamp is zero or the time the file was read to create a view.
-
-If a user goes to save a file, the timeStamp should not have changed.!
 
 !Array methodsFor: '*unicodes' stamp: 'KenD 4/7/2013 19:02'!
 asUniString
@@ -301,6 +302,21 @@ asUniString
 
 	^ UniString fromUtf8: self! !
 
+!String methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 20:45'!
+asUniString
+
+	^UniString fromString: self! !
+
+!Symbol methodsFor: '*unicodes' stamp: 'KenD 3/20/2013 22:16'!
+asUniString
+
+	^UniString fromString: self asString! !
+
+!FormCanvas methodsFor: '*unicodes' stamp: 'KenD 4/14/2013 21:03'!
+grafPort
+
+	^port! !
+
 !Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 14:08'!
 asUniChar
 	"Answer a Unicode character based on my value interpreted as a code point."
@@ -313,18 +329,17 @@ asUniString
 
 	^UniString fromString: (self asString )! !
 
-!FileListWindow class methodsFor: '*unicodes' stamp: 'KenD 4/13/2013 16:32'!
-openUniFileList
-	"Answer a FileList which can view Unicode"
-	"
-	FileListWindow openUniFileList.
-	"
-	FileListWindow open: (UniFileList new directory: FileDirectory default) label: nil! !
+!Number methodsFor: '*unicodes' stamp: 'KenD 4/15/2013 21:06'!
+asUniChar
+	"Answer a Unicode character [UniChar] with me as a code point"
 
-!FormCanvas methodsFor: '*unicodes' stamp: 'KenD 4/14/2013 21:03'!
-grafPort
+	^UniChar fromCodePoint: self asInteger! !
 
-	^port! !
+!Number methodsFor: '*unicodes' stamp: 'KenD 3/21/2013 16:17'!
+asUniString
+	"Answer a UniString representing me"
+
+	^ UniString fromString: (self asString).! !
 
 !Integer methodsFor: '*unicodes' stamp: 'KenD 4/10/2013 15:40'!
 asUniChar
@@ -414,2720 +429,13 @@ nextUnicodeCodePointFromUtf8: anUtf8Stream
 
 	^nil! !
 
-!Number methodsFor: '*unicodes' stamp: 'KenD 4/15/2013 21:06'!
-asUniChar
-	"Answer a Unicode character [UniChar] with me as a code point"
-
-	^UniChar fromCodePoint: self asInteger! !
-
-!Number methodsFor: '*unicodes' stamp: 'KenD 3/21/2013 16:17'!
-asUniString
-	"Answer a UniString representing me"
-
-	^ UniString fromString: (self asString).! !
-
-!String methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 20:45'!
-asUniString
-
-	^UniString fromString: self! !
-
-!Symbol methodsFor: '*unicodes' stamp: 'KenD 3/20/2013 22:16'!
-asUniString
-
-	^UniString fromString: self asString! !
-
-!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
-< aCharacter 
-	"Answer true if codePoints are ordered as expected"
-
-	^ (self codePoint) < (aCharacter asUniChar codePoint) " NB: Insensitive to case"! !
-
-!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
-= aCharacter 
-	"Answer true if codePoints are equal"
-
-	^ (self codePoint) = (aCharacter asUniChar codePoint) " NB: Insensitive to case"! !
-
-!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
-> aCharacter 
-	"Answer true if codePoints are ordered as expected"
-
-	^ (self codePoint) > (aCharacter asUniChar codePoint) " NB: Insensitive to case"! !
-
-!UniChar methodsFor: 'converting' stamp: 'KenD 3/13/2013 17:04'!
-asCharacter
-
-	(codePoint < 255)
-	ifTrue: [ ^ codePoint asCharacter ]
-	ifFalse: [ DomainError signal: 'Unicode code point out of range for ISO 8859-15' ]! !
-
-!UniChar methodsFor: 'converting' stamp: 'KenD 4/6/2013 16:31'!
-asCursor
-
-	"Answer my 16 x 16 form as a Cursor"
-	
-"
-	16r2740 asUniChar asCursor beCursor.       ""  Flower 'dingbat'.  ""
-	16r2764 asUniChar asCursor beCursor.       ""  Heart 'dingbat'  ""
-"
-	^ CursorWithMask derivedFrom: self form! !
-
-!UniChar methodsFor: 'converting' stamp: 'KenD 2/26/2013 15:32'!
-asInteger
-
-	"Answer my value as an integer"
-	^self codePoint! !
-
-!UniChar methodsFor: 'converting' stamp: 'KenD 3/18/2013 21:41'!
-asLowercase
-
-	^self toLower! !
-
-!UniChar methodsFor: 'converting' stamp: 'KenD 2/17/2013 14:42'!
-asUniChar
-
-	^self! !
-
-!UniChar methodsFor: 'converting' stamp: 'KenD 2/24/2013 15:11'!
-asUniString
-
-	^ UniString fromCodePointCollection: {self codePoint} ! !
-
-!UniChar methodsFor: 'converting' stamp: 'KenD 3/18/2013 21:41'!
-asUppercase
-
-	^self toUpper! !
-
-!UniChar methodsFor: 'streams' stamp: 'KenD 4/5/2013 16:36'!
-asUtf8toStream: aStream
-	"Add self to aStream as Utf8"
-	
-	"codePoint asUtf8toStream: aStream"
-
-	codePoint < 128 ifTrue: [ 
-		^ aStream nextPut: codePoint ].
-	codePoint < 2048 ifTrue: [ 
-		^ aStream 
-			nextPut: (2r11000000 + (codePoint bitShift: -6)); 
-			nextPut: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
-	codePoint < 65535 ifTrue: [ 
-		^ aStream 
-			nextPut: (2r11100000 + (codePoint bitShift: -12));
-			nextPut: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
-			nextPut: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
-	codePoint <= 16r10FFFF  ifTrue: [  "maximumUTF8Code"
-		^ aStream 
-			nextPut: (2r11110000 + (codePoint bitShift: -18));
-			nextPut: (2r10000000 + (codePoint bitShift: -12));
-			nextPut: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
-			nextPut: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
-	self error: 'Unicode character code point outside range'! !
-
-!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:53'!
-canBeGlobalVarInitial
-
-	"Answer if I can be the start of a Smalltalk global identifier name"
-	^self isUppercase! !
-
-!UniChar methodsFor: 'converting' stamp: 'KenD 3/9/2013 10:32'!
-caseFold
-
-	^UniChar value: (ToCasefold at: self codePoint ifAbsent: [ ^self ])! !
-
-!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:50'!
-caseInsensitiveEqual:  aCharacter 
-	"Answer true if codePoints are equal"
-
-	^ (self caseFold codePoint ) = (aCharacter asUniChar caseFold codePoint)! !
-
-!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:17'!
-caseInsensitiveGreater: aCharacter 
-	"Answer true if codePoints are ordered as expected"
-
-	^ (self caseFold codePoint ) > (aCharacter asUniChar caseFold codePoint)! !
-
-!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:16'!
-caseInsensitiveGreaterOrEqual: aCharacter 
-	"Answer true if codePoints are ordered as expected"
-
-	^ (self caseFold codePoint ) >= (aCharacter asUniChar caseFold codePoint)! !
-
-!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:16'!
-caseInsensitiveLess: aCharacter 
-	"Answer true if codePoints are ordered as expected"
-
-	^ (self caseFold codePoint ) < (aCharacter asUniChar caseFold codePoint)! !
-
-!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:16'!
-caseInsensitiveLessOrEqual: aCharacter 
-	"Answer true if codePoints are ordered as expected"
-
-	^ (self caseFold codePoint ) <= (aCharacter asUniChar caseFold codePoint)! !
-
-!UniChar methodsFor: 'private' stamp: 'KenD 4/17/2013 19:08'!
-charCouldBeInsideWord
-	"Answer true if this character's codePoint could be inside 'word'."
-	
-	^ ( ((self generalCategoryCode) anyMask: (LetterBit + NumberBit ))
-		"See UniChar class>>initializeGeneralPropertyEnums "
-			or: [ ({  CM. GL. IN. IS.  H2. H3. HL. HY. JL. JT. JV. PO. PR. NS. WJ. SG. }
-					includes: (self lineBreakCategoryCode))
-					or: [self hasTagWordMinNumLet] ] )
-		 "See UniChar class>>initializeLineBreakProperties "
-	! !
-
-!UniChar methodsFor: 'private' stamp: 'KenD 4/17/2013 19:37'!
-charCouldEndWord
-	"Answer true if this character could start a 'word'."
-	
-	^ ( ((self generalCategoryCode) anyMask: (LetterBit + NumberBit ))
-		"See UniChar class>>initializeGeneralPropertyEnums "
-			or: [ {  CM. GL. IN. H2. H3. HL. JL. JT. JV. PO. PR. NS. WJ. SG. }
-					includes: (self lineBreakCategoryCode) ]	)! !
-
-!UniChar methodsFor: 'private' stamp: 'KenD 4/17/2013 19:19'!
-charCouldStartWord
-	"Answer true if this character could start a 'word'."
-	
-	^ ((self generalCategoryCode) anyMask: (LetterBit + NumberBit))
-	! !
-
-!UniChar methodsFor: 'private' stamp: 'KenD 4/21/2013 19:17'!
-charIsGraphemePart
-	"Answer true if my codePoint is a grapheme cluster component."
-	
-	"Hangul Jamo (H2 H3 JL JT JV) is tested separately: UniChar>>isHangulJamo .
-	 Regional Indocators (RI tested separately; UniChar>>isRegionalIndicator .
-	 Formatting Marks (Cf) are tested separately: UniChar>>isFormattingMark .
+!FileListWindow class methodsFor: '*unicodes' stamp: 'KenD 4/13/2013 16:32'!
+openUniFileList
+	"Answer a FileList which can view Unicode"
 	"
-
-	^ ( ( { Mc. Mn. Lm. Sk.  } includes: (self generalCategoryCode) ) 
-		"See UniChar class>>initializeGeneralPropertyEnums "
-		or: [ { CM. WJ. } includes: (self lineBreakCategoryCode)] 
-		 "See UniChar class>>initializeLineBreakProperties "
-	   )
-		
-	! !
-
-!UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 08:58'!
-codePoint
-
-	^codePoint! !
-
-!UniChar methodsFor: 'accessing' stamp: 'KenD 4/16/2013 09:38'!
-codePointStorageSizeInBytes
-	"Answer a class which will hold this 8, 16, or 32 bit code point or signal a domain error"
-
-	(codePoint < 0)
-	ifTrue: [ DomainError signal: 'Unicode code points must be non-negative' ].
-	
-	(codePoint <= 16rFF)
-	ifTrue: [ ^ 1 ].
-	
-	(codePoint <= 16rFFFF)
-	ifTrue: [ ^ 2 ].
-	
-	(codePoint <= 16rFFFFFFFF)
-	ifTrue: [ ^4 ].
-	
-	DomainError signal: 'Unicode code points must fit within a 32 bit range'! !
-
-!UniChar methodsFor: 'converting' stamp: 'KenD 3/21/2013 19:20'!
-digitValue
-	"Answer value of chareacter taken as a decimal digit."
-	"Note that this differs in behavior from Character>>digitValue"
-	
-		"@@FIXME: Chinese numeric chars are discontiguous and need separate lookup"
-"
-	$2 asUniChar digitValue
-"
-	(codePoint < 16rFF)
-	ifTrue: [ ^ self asCharacter digitValue ]
-	ifFalse: [ ^ self codePoint uniDigit ]! !
-
-!UniChar methodsFor: 'accessing' stamp: 'KenD 4/17/2013 14:31'!
-form
-	"Answer a form if I am in plane zero, else the missing character form from UniForms"
-	
-	| aForm |
-	aForm := UniForms formForCodePoint: codePoint.
-	
-	(aForm isNil)
-	ifTrue: [ ^UniForms formForCodePoint: (UniForms formForMissingChar) ] 
-	ifFalse: [ ^aForm ]! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:52'!
-generalCategory
-
-	"Answer name of category code"
-	^ PropertyNames at: (self generalCategoryCode)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/13/2013 13:30'!
-generalCategoryCode
-
-	(self isCJKIdeograph)
-	ifTrue: [ ^ Lo bitAnd: (ID bitShift: 16) ]
-	ifFalse: [ ^(GeneralCategory at: codePoint ifAbsent: [ Cn ]) bitAnd: 16r00FFFF]! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:59'!
-hasTagCombiningMark
-
-	^ (self lineBreakCategoryCode = CM)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:59'!
-hasTagConnectorPunctuation
-
-	^ (self generalCategoryCode = CP)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:43'!
-hasTagControl
-
-	^ (self generalCategoryCode = Cc)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:00'!
-hasTagDecimalNumber
-
-	^ (self generalCategoryCode = Nd)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:00'!
-hasTagEnclosingMark
-
-	^ (self generalCategoryCode = Me)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:00'!
-hasTagFormat
-
-	^ (self generalCategoryCode = Cf)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
-hasTagGlue
-
-	^ (self lineBreakCategoryCode = GL)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/21/2013 08:49'!
-hasTagInLVT
-	"Hangul Jamo
-		JL -> L     Leading
-		JV -> V    Vowel
-		JT -> T    Trailing
-		H2 ->  LV    Syllable
-
+	FileListWindow openUniFileList.
 	"
-
-	^ { H2. H3. JL. JV.  JT. } includes: (self lineBreakCategoryCode)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
-hasTagLineSeparator
-
-	^ (self generalCategoryCode = Zl)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:57'!
-hasTagLowercase
-
-	^ (self generalCategoryCode = Ll)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
-hasTagNonspacingMark
-
-	^ (self generalCategoryCode = Mn)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
-hasTagOtherNumber
-
-	^ (self generalCategoryCode = No)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
-hasTagParagraphSeparator
-
-	^ (self generalCategoryCode = Zp)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:02'!
-hasTagSpaceSeparator
-
-	^ (self generalCategoryCode = Zs)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
-hasTagSpacingMark
-
-	^ (self generalCategoryCode = Mc)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
-hasTagSurrogate
-
-	^ (self generalCategoryCode = Cs)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
-hasTagTitlecase
-
-	^ (self generalCategoryCode = Lt)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
-hasTagUppercase
-
-	^ (self generalCategoryCode = Lu)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:10'!
-hasTagWordALetter
-	"Word Property"
-
-	^ self isLetter! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:53'!
-hasTagWordExtend
-	"Word Property"
-
-	^ (self generalCategoryCode = Mn) or: [self generalCategoryCode = Mc]
-! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:27'!
-hasTagWordExtendedNumLet
-	"Word Property.  Nota Bene: Not  CR | LF"
-
-   ^ #(	16r005F.     " LOW LINE"
-		16r203F.	"UNDERTIE..CHARACTER TIE"
-		16r2040.	 "UNDERTIE..CHARACTER TIE"
-		16r2054.	" INVERTED UNDERTIE"
-		16rFE33.	"PRESENTATION FORM FOR VERTICAL LOW LINE"
-		16rFE34.   "PRESENTATION FORM FOR VERTICAL WAVY LOW LINE"
-		16rFE4D. 16rFE4E.	 "DASHED LOW LINE"
-		16rFE4F.	"WAVY LOW LINE"
-		16rFF3F.	"FULLWIDTH LOW LINE"
-	) includes: codePoint
-! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
-hasTagWordFormat
-	"Word Property"
-
-	^ (self generalCategoryCode = Cf) 
-! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 14:21'!
-hasTagWordKatakana
-	"Word Property"
-
-	"@@FIXME: use a faster lookup/test"
-	( #( 16r309B. 16r309C. 16r30A0. 
-		16r30FC. 16r30FD. 16r30FE.
-		16r30FF. 16rFF70. 16r1B000. ) includes: codePoint)
-	ifTrue: [ ^true ].
-
-	((16r3031 to: 16r3035) includes: codePoint) ifTrue: [ ^true ].
-	((16r30A1 to: 16r30FA) includes: codePoint) ifTrue: [ ^true ].
-	((16r31F0 to: 16r31FF) includes: codePoint) ifTrue: [ ^true ].
-	((16r32D0 to: 16r32FE) includes: codePoint) ifTrue: [ ^true ].
-	((16r3300 to: 16r3357) includes: codePoint) ifTrue: [ ^true ].
-	((16rFF66 to: 16rFF6F) includes: codePoint) ifTrue: [ ^true ].
-	((16rFF71 to: 16rFF9D) includes: codePoint) ifTrue: [ ^true ].
-
-	^false! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:48'!
-hasTagWordMinLetter
-	"Word Property"
-
-   ^ #(	16r003A.	"COLON"
-		16r00B7.	"MIDDLE DOT"
-		16r0387.	"GREEK ANO TELEIA"
-		16r05F4.	"HEBREW PUNCTUATION GERSHAYIM"
-		16r2027.	"HYPHENATION POINT"
-		16rFE13.	"PRESENTATION FORM FOR VERTICAL COLON"
-		16rFE55.	"SMALL COLON"
-		16rFF1A.	"FULLWIDTH COLON"
-	) includes: codePoint
-! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:46'!
-hasTagWordMinNum
-	"Word Property"
-
-   ^ #(	16r002C.	"COMMA"
-		16r003B .	"SEMICOLON"
-		16r037E.	"GREEK QUESTION MARK"
-		16r0589.	"ARMENIAN FULL STOP"
-		16r060C.	"ARABIC COMMA"
-		16r060D.	"ARABIC DATE SEPARATOR"
-		16r066C.	"ARABIC THOUSANDS SEPARATOR"
-		16r07F8.	"NKO COMMA"
-		16r2044.	"FRACTION SLASH"
-		16rFE10.	"PRESENTATION FORM FOR VERTICAL COMMA"
-		16rFE14.	"PRESENTATION FORM FOR VERTICAL SEMICOLON"
-		16rFE50.	"SMALL COMMA"
-		16rFE54.	"SMALL SEMICOLON"
-		16rFF0C.	"FULLWIDTH COMMA"
-		16rFF1B.	"FULLWIDTH SEMICOLON"
-	) includes: codePoint
-! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:42'!
-hasTagWordMinNumLet
-	"Word Property"
-
-   ^ #(	16r0027.	"APOSTROPHE"
-		16r002E.	"FULL STOP"
-		16r2018.	"LEFT SINGLE QUOTATION MARK"
-		16r2019.	"RIGHT SINGLE QUOTATION MARK"
-		16r2024.	"ONE DOT LEADER"
-		16rFE52.	"SMALL FULL STOP"
-		16rFF07.	"FULLWIDTH APOSTROPHE"
-		16rFF0E.	"FULLWIDTH FULL STOP"
-	) includes: codePoint
-! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:28'!
-hasTagWordNewline
-	"Word Property.  Nota Bene: Not  CR | LF"
-
-   ^ #( 16r000B.  "Control-B"
-	    16r000C.  "Control-C"
-	    16r0085 . "Control-85"
-	    16r2028.  "Line Separator"
-	    16r2029 . "Parageaph Separator"
-	) includes: codePoint
-! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 17:40'!
-hasTagWordNumeric
-	"Word Property"
-
-	 (16r066B = codePoint) ifTrue: [ ^true ].  "ARABIC DECIMAL SEPARATOR"
-	^ ((self generalCategoryCode bitAnd: NumberBit) = NumberBit) 
-! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/20/2013 10:21'!
-hasTagWordRegionlIndicator
-	"Word Property"
-
-	^ self isRegionalIndicator
-! !
-
-!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:25'!
-hash
-	"Hash is reimplemented because = is implemented."
-
-	^codePoint ! !
-
-!UniChar methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:00'!
-icon
-
-	^self form! !
-
-!UniChar methodsFor: 'testing' stamp: 'KenD 4/17/2013 17:34'!
-isAlphaNumeric
-	"Answer whether the receiver is a letter or a digit."
-
-	^self isLetter or: [self isNumberChar]! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 18:58'!
-isCJKIdeograph
-
-	(codePoint between: 16r2E80 and: 16r303F) ifTrue: [ ^true ]. "CJK Ideographic"
-	(codePoint between:16r3300 and: 16rA4CF) ifTrue: [ ^true ]. "CJK Compatibility + Extensions A+"
-	(codePoint between: 16rF900 and: 16rFAFF) ifTrue: [ ^true ].
-	(codePoint between: 16rFE30 and: 16rFE4F) ifTrue: [ ^ true ].  "CJK Compatibility Forms"
-	(codePoint between:16r20000 and: 16r2A6DF) ifTrue: [ ^true ].  "CJK Unified Ideographs Extension B"
-	(codePoint between:16r2A700 and: 16r2B81F) ifTrue: [ ^true ]. "CJK Unified Ideographs Extension C +  D"
-	(codePoint between:16r2F800 and: 16r2FA1F) ifTrue: [ ^true ]. "CJK Compatibility Ideographs Supplement"
-	
-	^ false! !
-
-!UniChar methodsFor: 'testing' stamp: 'KenD 3/28/2013 15:20'!
-isCR
-
-	^ codePoint = 16r000D! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:34'!
-isCasedLetter
-
-	^ (self generalCategoryCode  bitAnd: CasedLetterBit) = CasedLetterBit! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/19/2013 18:24'!
-isDigit
-
-	^ self isNumberChar! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/21/2013 17:20'!
-isFormattingMark
-
-	^ ((self generalCategoryCode) = Cf)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/19/2013 18:50'!
-isGenerallyValidInIdentifiers
-	"Answer if generally valid Smalltalk identifier"
-	
-	"Can c be part of an identifier? (unary or keyword selector, or variable name)
-	Warning: Does not account for the fact that some classes could redefine 
-	#allowUnderscoreSelectors"
-	^self isAlphaNumeric or: [ self  = $_ and: [ Preferences allowUnderscoreSelectors ]]! !
-
-!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:53'!
-isGenerallyValidStartOfInIdentifiers
-	"Can c be the first character of an identifier? (unary or keyword selector, or variable name)
-	Warning: Does not account for the fact that some classes could redefine 
-	#allowUnderscoreSelectors"
-	^self isLetter or: [ self  = $_ and: [ Preferences allowUnderscoreSelectors ]]! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/21/2013 09:35'!
-isHangulJamo
-
-	^ self hasTagInLVT ! !
-
-!UniChar methodsFor: 'testing' stamp: 'KenD 3/28/2013 15:21'!
-isLF
-
-	^ codePoint = 16r000A! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
-isLetter
-
-	^ (((self generalCategoryCode) bitAnd: LetterBit) = LetterBit)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/28/2013 16:45'!
-isLineSeparator
-	"Answer true if Unicode Line Separator OR Smalltalk Line Separator"
-	"Distinguish: isSeparator"
-	
-	^ (  "Unicode:  NextLine, LineSeparator, ParagraphSeparator"
- 		#( 16r0085 16r2028 16r2029 ) includes: codePoint)
-		"Smalltalk:  LineFeed CarriageReturn FormFeed"
-		 	or: [(self codePoint < 16rFF) and: [self asCharacter isLineSeparator]] ! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:49'!
-isLowercase
-
-	^ self hasTagLowercase! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
-isMark
-
-	^ (((self generalCategoryCode) bitAnd: MarkBit) = MarkBit)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
-isNumberChar
-
-	^ (((self generalCategoryCode) bitAnd: NumberBit) = NumberBit)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
-isOtherControl
-
-	^ (((self generalCategoryCode) bitAnd: ControlBit) = ControlBit)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
-isPunctuation
-
-	^ (((self generalCategoryCode) bitAnd: PunctuationBit) = PunctuationBit)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/20/2013 10:16'!
-isRegionalIndicator
-
-	^ (codePoint between: 16r1F1E6 and: 16r1F1FF)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/28/2013 13:43'!
-isSeparator
-	"Answer true if Unicode Separator OR Smalltalk Separator"
-
-	^ (((self generalCategoryCode) bitAnd: SeparatorBit) = SeparatorBit)
-		"LF, FF, Space, Tab, CR"
-		or: [codePoint = 16r0085] "NextLine"
-		or:  [(self codePoint < 16rFF) and: [self asCharacter isSeparator]]
-		
-" Separator = Zl + Zp + Zs:
-
-0020;SPACE;Zs;0;WS;;;;;N;;;;;
-00A0;NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;NON-BREAKING SPACE;;;;
-1680;OGHAM SPACE MARK;Zs;0;WS;;;;;N;;;;;
-180E;MONGOLIAN VOWEL SEPARATOR;Zs;0;WS;;;;;N;;;;;
-2000;EN QUAD;Zs;0;WS;2002;;;;N;;;;;
-2001;EM QUAD;Zs;0;WS;2003;;;;N;;;;;
-2002;EN SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-2003;EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-2004;THREE-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-2005;FOUR-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-2006;SIX-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-2007;FIGURE SPACE;Zs;0;WS;<noBreak> 0020;;;;N;;;;;
-2008;PUNCTUATION SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-2009;THIN SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-200A;HAIR SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-202F;NARROW NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;;;;;
-205F;MEDIUM MATHEMATICAL SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-
-3000;IDEOGRAPHIC SPACE;Zs;0;WS;<wide> 0020;;;;N;;;;;
-
-2028;LINE SEPARATOR;Zl;0;WS;;;;;N;;;;;
-
-2029;PARAGRAPH SEPARATOR;Zp;0;B;;;;;N;;;;;
-
-***Nota Bene***=== 
-**NOT** Classed as Separators by Unicode General Property:
-
-0009;<control>;Cc;0;S;;;;;N;CHARACTER TABULATION (HT);;;;
-000A;<control>;Cc;0;B;;;;;N;LINE FEED (LF);;;;
-000B;<control>;Cc;0;S;;;;;N;LINE TABULATION (VT);;;;
-000C;<control>;Cc;0;WS;;;;;N;FORM FEED (FF);;;;
-000D;<control>;Cc;0;B;;;;;N;CARRIAGE RETURN (CR);;;;
-
-0085;<control>;Cc;0;B;;;;;N;NEXT LINE (NEL);;;;
-==============================
-
-"! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/18/2013 16:30'!
-isSpace
-
-	^ self hasTagSpaceSeparator ! !
-
-!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:56'!
-isSpecial
-	"Answer whether the receiver is one of the Smalltalk special characters"
-	
-	"Nota Bene: This leaves out a lot of Unicode!!!!"
-
-	^ SmalltalkSpecialChars includes: self! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:10'!
-isSymbolGyph
-
-	"We can't use #isSymbol without confusion with Smalltalk Symbols"
-	^ (((self generalCategoryCode) bitAnd: SymbolBit) = SymbolBit)! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:48'!
-isUppercase
-
-	^ self hasTagUppercase ! !
-
-!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:57'!
-isVowel
-	"Answer whether the receiver is one of the vowels, AEIOU, in upper or 
-	lower case, and with various diacritical marks."
-
-	^Character vowels asUniString includes: self! !
-
-!UniChar methodsFor: 'accessing' stamp: 'KenD 4/17/2013 16:27'!
-iso8859s15Code
-"Not really..."
-	^codePoint < 256 ifTrue: [ codePoint ] ifFalse: [ nil ] "@@FIXME: Bogus!!!!@@"! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:52'!
-lineBreakCategory
-
-	"Answer name of category code"
-	| indexCode |
-	indexCode :=  self lineBreakCategoryCode.
-	(indexCode isZero)
-	ifTrue: [ ^ #Unknown ]
-	ifFalse: [ ^ LineBreakProperties at: indexCode ]! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/13/2013 13:31'!
-lineBreakCategoryCode
-
-	(self isCJKIdeograph)
-	ifTrue: [ ^ ID ]
-	ifFalse: [ ^ ((GeneralCategory at: codePoint ifAbsent: [ 0 ]) bitAnd: 16r00FF0000) bitShift: -16 ]! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 16:11'!
-lineBreakTableAt: row at: col
-	"Answer the character specified"
-
-	"See comments in UniChar class>>initializeLineBreakTable"
-	
-	^ (LineBreakTable at: row) at: col! !
-
-!UniChar methodsFor: 'private' stamp: 'KenD 4/21/2013 11:52'!
-nextLVTStateFromState: aState
-	"aState is one of L V T LV LVT or zero (=> exit). 
-	Answer next state based on my lineBreakCategoryCode"
-	
-	"Note table 1c in  Unicode Annex #29: Unicode Text Segmentation
-	and UniChar class>>initializeHangulJamoLVT"
-	| index |
-	(aState between: 1 and: 5) ifFalse: [ ^ 0 ]. "zero" 
-	index := LVTStateMap at: (self lineBreakCategoryCode).
-	(index isZero)
-		ifTrue: [ ^ 0 ] "zero"
-		ifFalse: [ ^ (LVTStateVec at: aState) at: index ] "Next State"! !
-
-!UniChar methodsFor: 'printing' stamp: 'KenD 4/7/2013 09:56'!
-printOn: aStream
-	"Display for humans"
-
-	(codePoint < 16rFF) "Fits in a byte?"
-	ifTrue: [
-		aStream nextPut: $$.
-		aStream nextPut: (Character value: codePoint)
-	]
-	ifFalse: [ "Do what Cuis does as with String>>fromUtf8: "
-		aStream nextPutAll: '&#'.
-		codePoint printOn: aStream base: 10.
-		aStream nextPut: $; 
-	]! !
-
-!UniChar methodsFor: 'private' stamp: 'KenD 2/17/2013 09:00'!
-privateSetCodePoint: aCodePoint
-
-	codePoint := aCodePoint ! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 09:40'!
-rangeInfo
-	"Answer something about me: #( Category BlockName )"
-
-(codePoint  between: 16r0000 and: 16r007F) ifTrue: [ ^ #( 'Latin 1' 'Basic Latin' )].
-(codePoint  between: 16r0080 and: 16r00FF) ifTrue: [ ^ #( 'Latin 1' 'Latin-1 Supplement' )].
-
-(codePoint between: 16r0100 and: 16r017F) ifTrue: [ ^ #( 'Latin Extended 1' 'Latin Extended-A' )].
-(codePoint between: 16r0180 and: 16r024F) ifTrue: [ ^ #( 'Latin Extended 1' 'Latin Extended-B' )].
-(codePoint between: 16r0250 and: 16r02AF) ifTrue: [ ^ #( 'Latin Extended 1' 'IPA Extensions' )].
-
-(codePoint between: 16r02B0 and: 16r02FF) ifTrue: [ ^ #( 'Modifiers' 'Spacing Modifier Letters' )].
-(codePoint between: 16r0300 and: 16r036F) ifTrue: [ ^ #( 'Modifiers' 'Combining Diacritical Marks' )].
-
-(codePoint between: 16r0370 and: 16r03FF) ifTrue: [ ^ #( 'European Alphabetic 1' 'Greek and Coptic' )].
-(codePoint between: 16r0400 and: 16r04FF) ifTrue: [ ^ #( 'European Alphabetic 1' 'Cyrillic' )].
-(codePoint between: 16r0500 and: 16r052F) ifTrue: [ ^ #( 'European Alphabetic 1' 'Cyrillic Supplementary' )].
-(codePoint between: 16r0530 and: 16r058F) ifTrue: [ ^ #( 'European Alphabetic 1' 'Armenian' )].
-
- ^ self rangeInfo2 "too many literals for 1 method"! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 09:41'!
-rangeInfo2
-	"Answer something about me"
-
-(codePoint between: 16r0590 and: 16r05FF) ifTrue: [ ^ #( 'Middle Eastern' 'Hebrew' )].
-(codePoint between: 16r0600 and: 16r06FF) ifTrue: [ ^ #( 'Middle Eastern' 'Arabic' )].
-(codePoint between: 16r0700 and: 16r074F) ifTrue: [ ^ #( 'Middle Eastern' 'Syriac' )].
-(codePoint between: 16r0780 and: 16r07BF) ifTrue: [ ^ #( 'Middle Eastern' 'Thaana' )].
-
-(codePoint between: 16r0900 and: 16r097F) ifTrue: [ ^ #( 'South Asian 1' 'Devanagari' )].
-(codePoint between: 16r0980 and: 16r09FF) ifTrue: [ ^ #( 'South Asian 1' 'Bengali' )].
-(codePoint between: 16r0A00 and: 16r0A7F) ifTrue: [ ^ #( 'South Asian 1' 'Gurmukhi' )].
-(codePoint between: 16r0A80 and: 16r0AFF) ifTrue: [ ^ #( 'South Asian 1' 'Gujarati' )].
-(codePoint between: 16r0B00 and: 16r0B7F) ifTrue: [ ^ #( 'South Asian 1' 'Oriya' )].
-(codePoint between: 16r0B80 and: 16r0BFF) ifTrue: [ ^ #( 'South Asian 1' 'Tamil' )].
-(codePoint between: 16r0C00 and: 16r0C7F) ifTrue: [ ^ #( 'South Asian 1' 'Telugu' )].
-(codePoint between: 16r0C80 and: 16r0CFF) ifTrue: [ ^ #( 'South Asian 1' 'Kannada' )].
-(codePoint between: 16r0D00 and: 16r0D7F) ifTrue: [ ^ #( 'South Asian 1' 'Malayalam' )].
-(codePoint between: 16r0D80 and: 16r0DFF) ifTrue: [ ^ #( 'South Asian 1' 'Sinhala' )].
-
-(codePoint between: 16r0E00 and: 16r0E7F) ifTrue: [ ^ #( 'Southeastern 1' 'Thai' )].
-(codePoint between: 16r0E80 and: 16r0EFF) ifTrue: [ ^ #( 'Southeastern 1' 'Lao' )].
-
-(codePoint between: 16r0F00 and: 16r0FFF) ifTrue: [ ^ #( 'South Asian 1' 'Tibetan' )].
-
-(codePoint between: 16r1000 and: 16r109F) ifTrue: [ ^ #( 'Southeastern 1' 'Myanmar' )].
-
-(codePoint between: 16r10A0 and: 16r10FF) ifTrue: [ ^ #( 'European Alphabetic 2' 'Georgian' )].
-
-(codePoint between: 16r1100 and: 16r11FF) ifTrue: [ ^ #( 'Korean' 'Hangul Jamo' )].
-
-(codePoint between: 16r1200 and: 16r137F) ifTrue: [ ^ #( 'Additional 1' 'Ethiopic' )].
-(codePoint between: 16r13A0 and: 16r13FF) ifTrue: [ ^ #( 'Additional 1' 'Cherokee' )].
-(codePoint between: 16r1400 and: 16r167F) ifTrue: [ ^ #( 'Additional 1' 'Unified Canadian Aboriginal Syllabics' )].
-
-(codePoint between: 16r1680 and: 16r169F) ifTrue: [ ^ #( 'European Alphabetic 3' 'Ogham' )].
-(codePoint between: 16r16A0 and: 16r16FF) ifTrue: [ ^ #( 'European Alphabetic 3' 'Runic' )].
-
-(codePoint between: 16r1700 and: 16r171F) ifTrue: [ ^ #( 'Southeastern 2' 'Tagalog' )].
-(codePoint between: 16r1720 and: 16r173F) ifTrue: [ ^ #( 'Southeastern 2' 'Hanunoo' )].
-(codePoint between: 16r1740 and: 16r175F) ifTrue: [ ^ #( 'Southeastern 2' 'Buhid' )].
-(codePoint between: 16r1760 and: 16r177F) ifTrue: [ ^ #( 'Southeastern 2' 'Tagbanwa' )].
-(codePoint between: 16r1780 and: 16r17FF) ifTrue: [ ^ #( 'Southeastern 2' 'Khmer' )].
-
-(codePoint between: 16r1800 and: 16r18AF) ifTrue: [ ^ #( 'Additional 2' 'Mongolian' )].
-
-(codePoint between: 16r1E00 and: 16r1EFF) ifTrue: [ ^ #( 'European Alphabetic 4' 'Latin Extended Additional' )].
-(codePoint between: 16r1F00 and: 16r1FFF) ifTrue: [ ^ #( 'European Alphabetic 4' 'Greek Extended' )].
-
-(codePoint between: 16r2000 and: 16r206F) ifTrue: [ ^ #( 'Symbols 2' 'General Punctuation' )].
-(codePoint between: 16r2070 and: 16r209F) ifTrue: [ ^ #( 'Symbols 2' 'Superscripts and Subscripts' )].
-(codePoint between: 16r20A0 and: 16r20CF) ifTrue: [ ^ #( 'Symbols 2' 'Currency Symbols' )].
-(codePoint between: 16r20D0 and: 16r20FF) ifTrue: [ ^ #( 'Symbols 2' 'Combining Diacritical Marks for Symbols' )].
-(codePoint between: 16r2100 and: 16r214F) ifTrue: [ ^ #( 'Symbols 2' 'Letterlike Symbols' )].
-(codePoint between: 16r2150 and: 16r218F) ifTrue: [ ^ #( 'Symbols 2' 'Number Forms' )].
-(codePoint between: 16r2190 and: 16r21FF) ifTrue: [ ^ #( 'Symbols 2' 'Arrows' )].
-(codePoint between: 16r2200 and: 16r22FF) ifTrue: [ ^ #( 'Symbols 2' 'Mathematical Operators' )].
-(codePoint between: 16r2300 and: 16r23FF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Technical' )].
-(codePoint between: 16r2400 and: 16r243F) ifTrue: [ ^ #( 'Symbols 2' 'Control Pictures' )].
-(codePoint between: 16r2440 and: 16r245F) ifTrue: [ ^ #( 'Symbols 2' 'Optical Character Recognition' )].
-(codePoint between: 16r2460 and: 16r24FF) ifTrue: [ ^ #( 'Symbols 2' 'Enclosed Alphanumerics' )].
-(codePoint between: 16r2500 and: 16r257F) ifTrue: [ ^ #( 'Symbols 2' 'Box Drawing' )].
-(codePoint between: 16r2580 and: 16r259F) ifTrue: [ ^ #( 'Symbols 2' 'Block Elements' )].
-(codePoint between: 16r25A0 and: 16r25FF) ifTrue: [ ^ #( 'Symbols 2' 'Geometric Shapes' )].
-(codePoint between: 16r2600 and: 16r26FF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Symbols' )].
-(codePoint between: 16r2700 and: 16r27BF) ifTrue: [ ^ #( 'Symbols 2' 'Dingbats' )].
-(codePoint between: 16r27C0 and: 16r27EF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Mathematical Symbols-A' )].
-(codePoint between: 16r27F0 and: 16r27FF) ifTrue: [ ^ #( 'Symbols 2' 'Supplemental Arrows-A' )].
-(codePoint between: 16r2800 and: 16r28FF) ifTrue: [ ^ #( 'Symbols 2' 'Braille Patterns' )].
-(codePoint between: 16r2900 and: 16r297F) ifTrue: [ ^ #( 'Symbols 2' 'Supplemental Arrows-B' )].
-(codePoint between: 16r2980 and: 16r29FF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Mathematical Symbols-B' )].
-(codePoint between: 16r2A00 and: 16r2AFF) ifTrue: [ ^ #( 'Symbols 2' 'Supplemental Mathematical Operators' )].
-
-(codePoint between: 16r2E80 and: 16r2EFF) ifTrue: [ ^ #( 'CJK' 'CJK Radicals Supplement' )].
-(codePoint between: 16r2F00 and: 16r2FDF) ifTrue: [ ^ #( 'CJK' 'Kangxi Radicals' )].
-(codePoint between: 16r2FF0 and: 16r2FFF) ifTrue: [ ^ #( 'CJK' 'Ideographic Description Characters' )].
-(codePoint between: 16r3000 and: 16r303F) ifTrue: [ ^ #( 'CJK' 'CJK Symbols and Punctuation' )].
-(codePoint between: 16r3040 and: 16r309F) ifTrue: [ ^ #( 'CJK' 'Hiragana' )].
-(codePoint between: 16r30A0 and: 16r30FF) ifTrue: [ ^ #( 'CJK' 'Katakana' )].
-(codePoint between: 16r3100 and: 16r312F) ifTrue: [ ^ #( 'CJK' 'Bopomofo' )].
-(codePoint between: 16r3130 and: 16r318F) ifTrue: [ ^ #( 'CJK' 'Hangul Compatibility Jamo' )].
-(codePoint between: 16r3190 and: 16r319F) ifTrue: [ ^ #( 'CJK' 'Kanbun' )].
-(codePoint between: 16r31A0 and: 16r31BF) ifTrue: [ ^ #( 'CJK' 'Bopomofo Extended' )].
-(codePoint between: 16r31F0 and: 16r31FF) ifTrue: [ ^ #( 'CJK' 'Katakana Phonetic Extensions' )].
-(codePoint between: 16r3200 and: 16r32FF) ifTrue: [ ^ #( 'CJK' 'Enclosed CJK Letters and Months' )].
-(codePoint between: 16r3300 and: 16r33FF) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility' )].
-(codePoint between: 16r3400 and: 16r4DBF) ifTrue: [ ^ #( 'CJK' 'CJK Unified Ideographs Extension A' )].
-(codePoint between: 16r4E00 and: 16r9FFF) ifTrue: [ ^ #( 'CJK' 'CJK Unified Ideographs' )].
-(codePoint between: 16rA000 and: 16rA48F) ifTrue: [ ^ #( 'CJK' 'Yi Syllables' )].
-(codePoint between: 16rA490 and: 16rA4CF) ifTrue: [ ^ #( 'CJK' 'Yi Radicals' )].
-
-^self rangeInfo3 "too many literals for 1 method"! !
-
-!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 09:41'!
-rangeInfo3
-	"Answer something about me"
-
-(codePoint between: 16rAC00 and: 16rD7AF) ifTrue: [ ^ #( 'Korean' 'Hangul Syllables' )].
-
-(codePoint between: 16rD800 and: 16rDB7F) ifTrue: [ ^ #( 'Special' 'High Surrogates' )].
-(codePoint between: 16rDB80 and: 16rDBFF) ifTrue: [ ^ #( 'Special' 'High Private Use Surrogates' )].
-(codePoint between: 16rDC00 and: 16rDFFF) ifTrue: [ ^ #( 'Special' 'Low Surrogates' )].
-(codePoint between: 16rE000 and: 16rF8FF) ifTrue: [ ^ #( 'Special' 'Private Use Area' )].
-
-(codePoint between: 16rF900 and: 16rFAFF) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility Ideographs' )].
-
-(codePoint between: 16rFB00 and: 16rFB4F) ifTrue: [ ^ #( 'Middle Eastern 2' 'Alphabetic Presentation Forms' )].
-(codePoint between: 16rFB50 and: 16rFDFF) ifTrue: [ ^ #( 'Middle Eastern 2' 'Arabic Presentation Forms-A' )].
-
-(codePoint between: 16rFE00 and: 16rFE0F) ifTrue: [ ^ #( 'Special' 'Variation Selectors' )].
-(codePoint between: 16rFE20 and: 16rFE2F) ifTrue: [ ^ #( 'Special' 'Combining Half Marks' )].
-
-(codePoint between: 16rFE30 and: 16rFE4F) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility Forms' )].
-
-(codePoint between: 16rFE50 and: 16rFE6F) ifTrue: [ ^ #( 'Symbol 3' 'Small Form Variants' )].
-
-(codePoint between: 16rFE70 and: 16rFEFF) ifTrue: [ ^ #( 'Middle Eastern 3' 'Arabic Presentation Forms-B' )].
-
-(codePoint between: 16rFF00 and: 16rFFEF) ifTrue: [ ^ #( 'Specials' 'Halfwidth and Fullwidth Forms' )].
-(codePoint between: 16rFFF0 and: 16rFFFF) ifTrue: [ ^ #( 'Specials' 'Specials' )].
-
-(codePoint between: 16r10300 and: 16r1032F) ifTrue: [ ^ #( 'European' 'Old Italic' )].
-(codePoint between: 16r10330 and: 16r1034F) ifTrue: [ ^ #( 'European' 'Gothic' )].
-(codePoint between: 16r10400 and: 16r1044F) ifTrue: [ ^ #( 'European' 'Deseret' )].
-
-(codePoint between: 16r1D000 and: 16r1D0FF) ifTrue: [ ^ #( 'Symbols' 'Byzantine Musical Symbols' )].
-(codePoint between: 16r1D100 and: 16r1D1FF) ifTrue: [ ^ #( 'Symbols' 'Musical Symbols' )].
-(codePoint between: 16r1D400 and: 16r1D7FF) ifTrue: [ ^ #( 'Symbols' 'Mathematical Alphanumeric Symbols' )].
-
-(codePoint between: 16r20000 and: 16r2A6DF) ifTrue: [ ^ #( 'CJK' 'CJK Unified Ideographs Extension B' )].
-(codePoint between: 16r2F800 and: 16r2FA1F) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility Ideographs Supplement' )].
-
-(codePoint between: 16rE0000 and: 16rE007F) ifTrue: [ ^ #( 'Special' 'Tags' )].
-(codePoint between: 16rF0000 and: 16rFFFFF) ifTrue: [ ^ #( 'Special' 'Supplementary Private Use Area-A' )].
-(codePoint between: 16r100000 and: 16r10FFFF) ifTrue: [ ^ #( 'Special' 'Supplementary Private Use Area-B' )].
-
-"Default: who knows, who cares"
-^ #( 'Unassigned' 'Unknown' )
-! !
-
-!UniChar methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:33'!
-storeOn: aStream
-	"Character literals are preceded by '$'."
-
-	"store to be read back by computer"
-	(codePoint <= 16rFF)
-	ifTrue: [ aStream nextPut: $$; nextPut: codePoint asCharacter] "Character literal"
-	ifFalse: [aStream nextPutAll: '(UniChar fromCodePoint: '.
-			aStream nextPutAll: codePoint hex.
-			aStream nextPut: $). ]! !
-
-!UniChar methodsFor: 'converting' stamp: 'KenD 3/9/2013 10:31'!
-toLower
-
-	^UniChar value: (ToLower at: self codePoint ifAbsent: [ ^self ])! !
-
-!UniChar methodsFor: 'converting' stamp: 'KenD 3/9/2013 10:32'!
-toUpper
-
-	^UniChar value: (ToUpper at: self codePoint ifAbsent: [ ^self ])! !
-
-!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:58'!
-tokenish
-	"Answer whether the receiver is a valid token-character--letter, digit, or 
-	colon."
-
-	^self isGenerallyValidInIdentifiers or: [self = $:]! !
-
-!UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 17:18'!
-unicodeCodePoint
-
-	^self codePoint! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:23'!
-AI
-	^AL! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
-AL
-	^AL! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:25'!
-B2
-	^B2! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
-BA
-	^BA! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
-BB
-	^BB! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
-BK
-	^BK! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:10'!
-CB
-	^CB! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:26'!
-CJ
-	^CJ! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:05'!
-CL
-	^CL! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
-CM
-	^CM! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
-CP
-	^CP! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
-CR
-	^CR! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
-Cc
-	^Cc! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
-Cf
-	^Cf! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
-Cn
-	^Cn! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
-Co
-	^Co! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
-Cs
-	^Cs! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
-EX
-	^EX! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
-GL
-	^GL! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
-H2
-	^H2! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
-H3
-	^H3! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
-HL
-	^HL! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
-HY
-	^HY! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
-ID
-	^ID! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
-IN
-	^IN! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
-IS
-	^IS! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
-JL
-	^JL! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
-JT
-	^JT! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
-JV
-	^JV! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
-LF
-	^LF! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
-Ll
-	^Ll! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
-Lm
-	^Lm! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
-Lo
-	^Lo! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
-Lt
-	^Lt! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
-Lu
-	^Lu! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
-Mc
-	^Mc! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
-Me
-	^Me! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
-Mn
-	^Mn! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:10'!
-NL
-	^NL! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
-NS
-	^NS! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
-NU
-	^NU! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
-Nd
-	^Nd! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
-Nl
-	^Nl! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
-No
-	^No! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:05'!
-OP
-	^OP! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
-PO
-	^PO! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
-PR
-	^PR! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
-Pc
-	^Pc! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
-Pd
-	^Pd! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
-Pe
-	^Pe! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
-Pf
-	^Pf! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
-Pi
-	^Pi! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
-Po
-	^Po! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
-Ps
-	^Ps! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
-QU
-	^QU! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
-RI
-	^RI! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:24'!
-SA
-	^SA! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
-SG
-	^SG! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:10'!
-SP
-	^SP! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
-SY
-	^SY! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
-Sc
-	^Sc! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
-Sk
-	^Sk! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
-Sm
-	^Sm! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
-So
-	^So! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
-WJ
-	^WJ! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:05'!
-XX
-	^XX! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
-ZW
-	^ZW! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:57'!
-Zl
-	^Zl! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:57'!
-Zp
-	^Zp! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:57'!
-Zs
-	^Zs! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:36'!
-arrowDown
-
-	^ (31 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
-arrowLeft
-
-	^ (28 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
-arrowRight
-
-	^ (29 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
-arrowUp
-
-	^ (30 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
-backspace
-	"Answer the Character representing a backspace."
-
-	^ (8 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:38'!
-crCharacter
-	"Answer the Character representing a carriage return."
-
-	^ (13 asUniChar)! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 4/17/2013 15:27'!
-defaultBreakDisplayChar
-	"Answer a character used to display (char|word|line) breaks in test code"
-	^DefaultBreakChar ! !
-
-!UniChar class methodsFor: 'as yet unclassified' stamp: 'KenD 4/7/2013 09:30'!
-defaultFontClass
-	^UniForms! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:38'!
-delete
-
-	^ (127 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:38'!
-end
-
-	^ (4 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:39'!
-enter
-	"Answer the Character representing enter."
-
-	^ (3 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:39'!
-escape
-	"Answer the ASCII ESC character"
-
-	^ (27 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:46'!
-euro
-	"The Euro currency sign, that E with two dashes.
-	Note that this differs from class Character, as
-	Cuis uses ISO Latin 9 (ISO 8859-15) character encoding."
-
-	^ (16r20AC asUniChar)! !
-
-!UniChar class methodsFor: 'instance creation' stamp: 'KenD 4/15/2013 20:55'!
-fromCodePoint: aCodePoint
-	"Answer a new Unicode character to represent aCodePoint"
-	
-	^ (self new initialize; privateSetCodePoint: aCodePoint; yourself)
-! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:39'!
-home
-
-	^ (1 asUniChar)! !
-
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/7/2013 08:22'!
-initZeroCodePoints
-	"Script digit ranges starting at zero"
-
-	ZeroCodePoints := #(
-       16r0030                "DIGIT ZERO"
-       16r0660                "ARABIC-INDIC DIGIT ZERO"
-       16r06F0                "EXTENDED ARABIC-INDIC DIGIT ZERO"
-       16r07C0                "NKO DIGIT ZERO"
-       16r0966                "DEVANAGARI DIGIT ZERO"
-       16r09E6                "BENGALI DIGIT ZERO"
-       16r0A66                "GURMUKHI DIGIT ZERO"
-       16r0AE6                "GUJARATI DIGIT ZERO"
-       16r0B66                "ORIYA DIGIT ZERO"
-       16r0BE6                "TAMIL DIGIT ZERO"
-       16r0C66                "TELUGU DIGIT ZERO"
-       16r0CE6                "KANNADA DIGIT ZERO"
-       16r0D66                "MALAYALAM DIGIT ZERO"
-       16r0E50                "THAI DIGIT ZERO"
-       16r0ED0                "LAO DIGIT ZERO"
-       16r0F20                "TIBETAN DIGIT ZERO"
-       16r1040                "MYANMAR DIGIT ZERO"
-       16r1090                "MYANMAR SHAN DIGIT ZERO"
-       16r17E0                "KHMER DIGIT ZERO"
-       16r1810                "MONGOLIAN DIGIT ZERO"
-       16r1946                "LIMBU DIGIT ZERO"
-       16r19D0                "NEW TAI LUE DIGIT ZERO"
-       16r1A80                "TAI THAM HORA DIGIT ZERO"
-       16r1A90                "TAI THAM THAM DIGIT ZERO"
-       16r1B50                "BALINESE DIGIT ZERO"
-       16r1BB0                "SUNDANESE DIGIT ZERO"
-       16r1C40                "LEPCHA DIGIT ZERO"
-       16r1C50                "OL CHIKI DIGIT ZERO"
-       16rA620                "VAI DIGIT ZERO"
-       16rA8D0                "SAURASHTRA DIGIT ZERO"
-       16rA900                "KAYAH LI DIGIT ZERO"
-       16rA9D0                "JAVANESE DIGIT ZERO"
-       16rAA50                "CHAM DIGIT ZERO"
-       16rABF0                "MEETEI MAYEK DIGIT ZERO"
-       16rFF10                "FULLWIDTH DIGIT ZERO"
-       16r104A0               "OSMANYA DIGIT ZERO"
-       16r11066               "BRAHMI DIGIT ZERO"
-       16r1D7CE               "MATHEMATICAL BOLD DIGIT ZERO"
-       16r1D7D8               "MATHEMATICAL DOUBLE-STRUCK DIGIT ZERO"
-       16r1D7E2               "MATHEMATICAL SANS-SERIF DIGIT ZERO"
-       16r1D7EC               "MATHEMATICAL SANS-SERIF BOLD DIGIT ZERO"
-       16r1D7F6               "MATHEMATICAL MONOSPACE DIGIT ZERO"
-  ).
-! !
-
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/21/2013 10:56'!
-initialize
-"
-	UniChar initialize.
-"
-	SmalltalkSpecialChars := '+-/\*~<>=@,%|&?!!' asUniString.
-	DefaultBreakChar := 16r23CF asUniChar. "Use EJECT char to show (char|word|line) break"
-	self initZeroCodePoints.
-	self initializeGeneralPropertyEnums.
-	self initializeGeneralCharacterProperties.
-	self initializeCaseMappings. 
-	self initializeLineBreakProperties. "Must follow initializeGeneralCharacterProperties"
-	self initializeLineBreakTable.
-	self initializeHangulJamoLVT.
-	
-	
-	! !
-
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/9/2013 09:41'!
-initializeCaseMappings
-	"UniChar initializeCaseMappings"
- 	
-	 | slash |
-  	ToCasefold 	:= IdentityDictionary new.
-	ToUpper 		:= IdentityDictionary new.
-	ToLower 		:= IdentityDictionary new.
-	
-  	slash := FileDirectory slash.
-	
-	self parseCaseMappingFrom: (FileStream concreteStream readOnlyFileNamed:
-		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'CaseFolding.txt')..
-	
-"
-@@FIXME: download using ProgressBarMorph
-
-	UIManager default informUserDuring: [:bar|
-		| stream |
-		bar value: 'Downloading Unicode data'.
-		stream := HTTPClient httpGet: 'http://www.unicode.org/Public/UNIDATA/CaseFolding.txt'.
-		(stream isKindOf: RWBinaryOrTextStream) ifFalse:[^self error: 'Download failed'].
-		stream reset.
-		bar value: 'Updating Case Mappings'.
-		self parseCaseMappingFrom: stream.
-	]
-".! !
-
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/7/2013 16:37'!
-initializeGeneralCharacterProperties
-
- 	 | slash |
-    	slash := FileDirectory slash.
-	
-	self parseGeneralPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
-		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'UnicodeData.txt')..
-		
-	"@@FIXME: Download from  http://unicode.org/Public/UNIDATA/UnicodeData.txt "! !
-
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/16/2013 19:01'!
-initializeGeneralPropertyEnums
-
-	"16 Bits for general properties.  Upper 8 is Category"
-	CasedLetterBit 	:= 1<<15.
-	LetterBit 			:= 1<<14.
-	MarkBit 			:= 1<<13.
-	NumberBit 		:= 1<<12.
-	PunctuationBit 	:= 1<<11.
-	SymbolBit 			:= 1<<10 .
-	SeparatorBit 		:= 1<<09.
-	ControlBit 			:= 1<<08.
-	
-	"Lower 8 bits have value"
-
-"	CasedLetter := Lu + Ll +  Lt.
-	Letter 		:= Lu + Ll + Lt + Lm + Lo.
-	Mark 		:= Mn + Mc + Me.
-	Number 	:= Nd + Nl + No.
-	Punctuation 	:= Pc + Pd + Ps + Pe + Pi + Pf + Po.
-	Symbol 		:= Sm + Sc + Sk + So .
-	Separator 	:= Zs + Zl + Zp.
-	Control 		:= Cc + Cf + Cs + Co + Cn.
-"
-	Cn 	:= ControlBit.
- 	Cc 	:= ControlBit + 1.
- 	Cf 	:= ControlBit + 2.
- 	Co 	:= ControlBit + 3.
- 	Cs 	:= ControlBit + 4.
- 	Ll 		:= CasedLetterBit + LetterBit + 1.
- 	Lm 	:= LetterBit + 2.
- 	Lo 	:= LetterBit + 3.
- 	Lt 		:= CasedLetterBit + LetterBit + 4.
- 	Lu 	:= CasedLetterBit + LetterBit + 5.
- 	Mc 	:= MarkBit + 1.
- 	Me 	:= MarkBit + 2.
- 	Mn 	:= MarkBit + 3.
- 	Nd 	:= NumberBit + 1.
- 	Nl 		:= NumberBit + 2.
- 	No 	:= NumberBit + 3.
- 	Pc 	:= PunctuationBit + 1.
- 	Pd 	:= PunctuationBit + 2.
- 	Pe 	:= PunctuationBit + 3.
- 	Pf 		:= PunctuationBit + 4.
- 	Pi 		:= PunctuationBit + 5.
- 	Po 	:= PunctuationBit + 6.
- 	Ps 	:= PunctuationBit + 7.
- 	Sc 	:= SymbolBit + 1.
- 	Sk 	:= SymbolBit + 2.
- 	Sm 	:= SymbolBit + 3.
- 	So 	:= SymbolBit + 4.
- 	Zl 		:= SeparatorBit + 1.
- 	Zp 	:= SeparatorBit + 2.
- 	Zs 	:= SeparatorBit + 3.
-
-	
-	PropertyNames := Dictionary new: 30.
-	PropertyNames at: Cn 	put: #Unassigned.
-	PropertyNames at: Cc 	put: #Control.
- 	PropertyNames at: Cf 	put: #Format.
- 	PropertyNames at: Co 	put: #PrivateUse.
- 	PropertyNames at: Cs 	put: #Surrogate.
- 	PropertyNames at: Ll 	put: #LowercaseLetter .
- 	PropertyNames at: Lm 	put: #ModifierLetter.
- 	PropertyNames at: Lo 	put: #OtherLetter.
- 	PropertyNames at: Lt 	put: #TitlecaseLetter..
- 	PropertyNames at: Lu 	put: #UppercaseLetter .
- 	PropertyNames at: Mc 	put: #SpacingMark..
- 	PropertyNames at: Me 	put: #EnclosingMark.
- 	PropertyNames at: Mn 	put: #NonspacingMark.
- 	PropertyNames at: Nd 	put: #DecimalNumber.
- 	PropertyNames at: Nl 	put: #LetterNumber.
- 	PropertyNames at: No 	put: #OtherNumber.
- 	PropertyNames at: Pc 	put: #ConnectorPunctuation.
- 	PropertyNames at: Pd 	put: #DashPunctuation.
- 	PropertyNames at: Pe 	put: #ClosePunctuation.
- 	PropertyNames at: Pf 	put: #FinalPunctuation.
- 	PropertyNames at: Pi 	put: #InitialPunctuation.
- 	PropertyNames at: Po 	put: #OtherPunctuation.
- 	PropertyNames at: Ps 	put: #OpenPunctuation.
- 	PropertyNames at: Sc 	put: #CurrencySymbol.
- 	PropertyNames at: Sk 	put: #ModifierSymbol.
- 	PropertyNames at: Sm 	put: #MathSymbol.
- 	PropertyNames at: So 	put: #OtherSymbol.
- 	PropertyNames at: Zl 	put: #LineSeparator.
- 	PropertyNames at: Zp 	put: #ParagraphSeparator.
- 	PropertyNames at: Zs 	put: #SpaceSeparator.
-	! !
-
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/21/2013 11:51'!
-initializeHangulJamoLVT
-	"Used for UniString  Grapheme cluster scanning.'
-	See UniChar>>nextLVTStateFromState:"
-	
-	"Note table 1c in  Unicode Annex #29: Unicode Text Segmentation"
-
-	"Indices into Hangul Jamo Syllable LVT state table"
-	L		:= 1.
-	V	 	:= 2.
-	LV		:= 3.
-	LVT	:= 4.
-	T 		:= 5.
-	"State x Input -> NextState"
-	LVTStateVec := Array new: 5.
-	LVTStateVec at: L		put: {L. V. LV. LVT. T.}. "equals START"
-	LVTStateVec at: V		put: {0. V.  0.    0.   T.}.
-	LVTStateVec at: LV		put: {0. V.  0.    0.   T.}.
-	LVTStateVec at: LVT	put: {0. 0.   0.    0.   T.}.
-	LVTStateVec at: T		put: {0. 0.   0.    0.   T.}.
-	" 0 ->Out == EXIT "
-
-	LVTStateMap := Array new: (LineBreakProperties size) withAll: 0.
-	LVTStateMap at: H2 put: LV.	
-	LVTStateMap at: H3 put: LVT.
-	LVTStateMap at: JL put: L.
-	LVTStateMap at: JV put: V.
-	LVTStateMap at: JT put: T.
-! !
-
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/17/2013 15:21'!
-initializeLineBreakProperties
-"
-	UniChar initializeLineBreakProperties.
-"
-	"Values in byte 16r00FF0000"
-	| slash |
-	LineBreakProperties := Array new: 40.
-	LineBreakTypeNames := #( BreakAfter DontbreakAfter 
-									BreakBefore DontbreakBefore
-									BreakForPair DontbreakForPair  ).
-	AL := 1.
-	LineBreakProperties at: AL put: #Alphabetic . "DontbreakForPair"
-	B2 := 2.
-	LineBreakProperties at: B2 put: #BeforeAndAfter . "BreakBefore | DontbreakForPair | BreakAfter"
-	BA := 3.
-	LineBreakProperties at: BA put: #BreakAfter . "BreakAfter"
-	BB := 4.
-	LineBreakProperties at: BB put: #BreakBefore . "BreakBefore"
-	BK := 5.
-	LineBreakProperties at: BK put: #MandatoryBreak . "BreakAfter"
-	CB := 6.
-	LineBreakProperties at: CB put: #ContingentBreak . "BreakBefore | BreakAfter"
-	CL := 7.
-	LineBreakProperties at: CL put: #ClosePunctuation . "DontbreakBefore"
-	CP := 8.
-	LineBreakProperties at: CP put: #CloseParenthesis . "DontbreakBefore"
-	CM := 9.
-	LineBreakProperties at: CM put: #CombiningMark . "DontbreakBefore"
-	CR := 10.
-	LineBreakProperties at: CR put: #CarrageReturn . "Always Break unless followed by LF"
-	EX := 11.
-	LineBreakProperties at: EX put: #ExclamationInterrogation . "DontbreakBefore"
-	GL := 12.
-	LineBreakProperties at: GL put: #Glue . "DontbreakBefore | DontbreakAfter"
-	H2 := 13.
-	LineBreakProperties at: H2 put: #HangulLV . "BreakBefore | BreakAfter"
-	H3 := 14.
-	LineBreakProperties at: H3 put: #HangulLVT . "BreakBefore | BreakAfter"
-	HL := 15.
-	LineBreakProperties at: HL put: #HebrewLetter . "DontbreakBefore"
-	HY := 16.
-	LineBreakProperties at: HY put: #Hyphen . "DontbreakBefore"
-	ID := 17.
-	LineBreakProperties at: ID put: #Ideographic . "BreakBefore | BreakAfter"
-	IN := 18.
-	LineBreakProperties at: IN put: #InseparableCharacters . "DontbreakForPair"
-	IS := 19.
-	LineBreakProperties at: IS put: #InfixNumericSeparator . "DontbreakBefore"
-	JL := 20.
-	LineBreakProperties at: JL put: #HangulLJamo . "BreakBefore"
-	JT := 21.
-	LineBreakProperties at: JT put: #HangulTJamo . "BreakAfter"
-	JV := 22.
-	LineBreakProperties at: JV put: #HangulVJamo . "DontbreakBefore | DontbreakAfter"
-	LF := 23.
-	LineBreakProperties at: LF put: #LineFeed . "Always Break unless followed by CR"
-	NL := 24.
-	LineBreakProperties at: NL put: #NextLine . "BreakAfter"
-	NS := 25.
-	LineBreakProperties at: NS put: #NonStarters . "DontbreakBefore"
-	NU := 26.
-	LineBreakProperties at: NU put: #Numeric . "DontbreakForPair"
-	OP := 27.
-	LineBreakProperties at: OP put: #OpenPunctuation . "DontbreakAfter"
-	PO := 28.
-	LineBreakProperties at: PO put: #PostfixNumeric . "DontbreakBefore"
-	PR := 29.
-	LineBreakProperties at: PR put: #PrefixNumeric . "DontbreakAfter"
-	QU := 30.
-	LineBreakProperties at: QU put: #Quotation . "DontbreakBefore | DontbreakAfter"
-	SP := 31.
-	LineBreakProperties at: SP put: #Space . "BreakAfter"
-	SY := 32.
-	LineBreakProperties at: SY put: #Symbols . "BreakAfter"
-	WJ := 33.
-	LineBreakProperties at: WJ put: #WordJoiner . "DontbreakBefore | DontbreakAfter"
-	ZW := 34.
-	LineBreakProperties at: ZW put: #ZeroWidthSpace . "BreakAfter"
-	RI := 35.
-	LineBreakProperties at: RI put: #RegionalIndicator . "BreakBefore | DontbreakForPair | BreakAfter"
-	AI := 36.
-	LineBreakProperties at: AI put: #AlphaOrIdeograph . "Ambiguous; treated the same"
-	XX := 37.
-	LineBreakProperties at: XX put: #Unassigned . "Who knows? Who cares?"
-	SA := 38.
-	LineBreakProperties at: SA put: #SoutheastAsian . "Complex Context Dependent"
-	CJ := 39.
-	LineBreakProperties at: CJ put: #ConditionalJapaneseStarted .
-
-	SG := 40.
-	LineBreakProperties at: SG put: #Surrogate . "DontbreakForPair"
-
-  	slash := FileDirectory slash.
-	
-	self parseLineBreakPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
-		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'LineBreak.txt')..
-! !
-
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/29/2013 16:56'!
-initializeLineBreakTable
-	"From  Unicode Standard Annex #14: Unicode Line Breaking Algorithm"
-
-	LineBreakNames := IdentityDictionary new: 2.
-	LineBreakNames at: $x put: #BreakProhibited.
-	LineBreakNames at: $0 put: #BreakAllowed.
-
-	LineBreakTable := Array new: 40.
-	LineBreakTable at: AL put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
-	LineBreakTable at: B2 put: '0××0×0××××××000×00×000×××0000×××××0000×x'.
-	LineBreakTable at: BA put: '00×0×0×××××0000×00×000×××0000×××××0000×x'.
-	LineBreakTable at: BB put: '×××××0×××××××××××××××××××××××××××××××××x'.
-	LineBreakTable at: BK put: '000000000000000000000000000000000000000x'.
-	LineBreakTable at: CB put: '0000×0××××××000000×000××00000×××××00000x'.
-	LineBreakTable at: CL put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
-	LineBreakTable at: CP put: '×0×0×0××××××00××00×000××××000×××××0××××x'.
-	LineBreakTable at: CM put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
-	LineBreakTable at: CR put: '0000000000000000000000×0000000000000000x'.
-	LineBreakTable at: EX put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
-	LineBreakTable at: GL put: '×××××××××××××××××××××××××××××××××××××××x'.
-	LineBreakTable at: H2 put: '00×0×0××××××000×0××0×××××00×0×××××0000×x'.
-	LineBreakTable at: H3 put: '00×0×0××××××000×0××0×0×××00×0×××××0000×x'.
-	LineBreakTable at: HL put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
-	LineBreakTable at: HY put: '00×0×0×××××0000×00×000××××000×××××0000×x'.
-	LineBreakTable at: ID put: '00×0×0××××××000×0××000×××00×0×××××0000×x'.
-	LineBreakTable at: IN put: '00×0×0××××××000×0××000×××0000×××××0000×x'.
-	LineBreakTable at: IS put: '×0×0×0××××××00××00×000×××0000×××××0××××x'.
-	LineBreakTable at: JL put: '00×0×0××××××××0×0×××0××××00×0×××××0000×x'.
-	LineBreakTable at: JT put: '00×0×0××××××000×0××0×0×××00×0×××××0000×x'.
-	LineBreakTable at: JV put: '00×0×0××××××000×0××0×××××00×0×××××0000×x'.
-	LineBreakTable at: LF put: '000000000000000000000000000000000000000x'.
-	LineBreakTable at: NL put: '000000000000000000000000000000000000000x'.
-	LineBreakTable at: NS put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
-	LineBreakTable at: NU put: '×0×0×0××××××00××0××000××××××××××××0××××x'.
-	LineBreakTable at: OP put: '×××××××××××××××××××××××××××××××××××××××x'.
-	LineBreakTable at: PO put: '×0×0×0××××××00××00×000××××000×××××0××××x'.
-	LineBreakTable at: PR put: '×0×0×0×××××××××××0××××××××000×××××0××××x'.
-	LineBreakTable at: QU put: '×××××××××××××××××××××××××××××××××××××××x'.
-	LineBreakTable at: SP put: '0000×0××0××0000000×000××000000××××00000x'.
-	LineBreakTable at: SY put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
-	LineBreakTable at: WJ put: '×××××××××××××××××××××××××××××××××××××××x'.
-	LineBreakTable at: ZW put: '0000×0000×000000000000××000000×00×00000x'.
-	LineBreakTable at: RI put: '00×0×0××××××000×00×000×××0000××××××000×x'.
-	LineBreakTable at: AI put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
-	LineBreakTable at: XX put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
-	LineBreakTable at: SA put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
-	LineBreakTable at: CJ put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
-	LineBreakTable at: SG put: '×××××××××××××××××××××××××××××××××××××××'.
-! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
-insert
-
-	^ (5 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing' stamp: 'KenD 4/17/2013 15:17'!
-isCharBreakBetween: leftChar and:  rightChar
-	"Answer true if a Character break is allowed between the two characters.
-	
-	This is required because Combining Marks and other codePoints 
-	must be combined into a single display character."
-
-	^ ((LineBreakTable at: (leftChar lineBreakCategoryCode)) "@@FIXME: Bogus!!!!@@"
-						   at: (rightChar lineBreakCategoryCode)) = $0! !
-
-!UniChar class methodsFor: 'accessing' stamp: 'KenD 4/17/2013 15:12'!
-isLineBreakBetween: leftChar and:  rightChar
-	"Answer true if a line break is allowed between the two characters."
-
-	"See comments in UniChar class>>initializeLineBreakTable"
-	^ ((LineBreakTable at: (leftChar lineBreakCategoryCode))
-						   at: (rightChar lineBreakCategoryCode)) = $0! !
-
-!UniChar class methodsFor: 'accessing' stamp: 'KenD 4/17/2013 16:10'!
-isWordBreakBetween: leftChar and:  rightChar
-	"Answer true if a Word break is allowed between the two characters."
-
-	"See Unicode Anned 29: Unicode Text Segmenation"
-
-	"@@FIXME: brute force@@"
-	| leftGenProp rightGenProp leftLineProp rightLineProp |
-	leftGenProp := leftChar generalCategoryCode.
-	rightGenProp := rightChar generalCategoryCode.
-	leftLineProp := leftChar lineBreakCategory.
-	rightLineProp := rightChar lineBreakCategory.
-	
-	! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
-lfCharacter
-	"Answer the Character representing a linefeed."
-
-	^ (10 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 3/24/2013 15:37'!
-lineBreakNameAt: anIndex
-
-	^ LineBreakNames at: anIndex! !
-
-!UniChar class methodsFor: 'accessing' stamp: 'KenD 3/24/2013 21:38'!
-lineBreakPropNameAt: lineBreakPropertyCode
-
-	(lineBreakPropertyCode isZero)
-	ifTrue: [ ^ #Unknown ]
-	ifFalse: [ ^ LineBreakProperties at: lineBreakPropertyCode ]! !
-
-!UniChar class methodsFor: 'accessing' stamp: 'KenD 3/24/2013 21:32'!
-lineBreakTableAt: row at: col
-	"Answer the character specified"
-
-	"See comments in UniChar class>>initializeLineBreakTable"
-	
-	^ (LineBreakTable at: row) at: col! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 3/27/2013 21:18'!
-lineSeparator
-	"Answer Unicode LS"
-
-	^ (2028 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
-nbsp
-	"non-breakable space."
-
-	^ (202 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:41'!
-newLineCharacter
-	"Answer the Character representing a newLine, that is, a linefeed.
-	This should be the only method in the system that knows about this detail.
-	Everybody else should eventually ask us."
-
-	^ self lfCharacter! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:41'!
-newPage
-	"Answer the Character representing a form feed."
-
-	^ (12 asUniChar)! !
-
-!UniChar class methodsFor: 'streams' stamp: 'KenD 4/5/2013 16:41'!
-nextUniCharFromUtf8: anUtf8Stream
-	"anUtf8Stream can be over a ByteArray
-	Answer nil if conversion not possible, because of invalid UTF-8.
-	Also answer nil for codePoint U+FEFF (BOM, unneededly added by Win clipboard)"
-
-	| byte1 byte2 byte3 byte4 codePoint |
-	byte1 := anUtf8Stream next asInteger.
-	byte1 < 128 ifTrue: [ ^ byte1 asUniChar ]. "single byte"
-	
-	"At least 2 bytes"
-	byte2 := anUtf8Stream next asInteger.
-	(byte2 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
-	
-	(byte1 bitAnd: 16rE0) = 192 ifTrue: [ "two bytes"
-		codePoint :=  (((byte1 bitAnd: 31) bitShift: 6) 
-					 + (byte2 bitAnd: 63)).
-		^ codePoint asUniChar
-	].
-	
-	"At least 3 bytes"
-	byte3 := anUtf8Stream next asInteger.
-	(byte3 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
-	
-	(byte1 bitAnd: 16rF0) = 224 ifTrue: [ "three bytes"
-		codePoint :=  ((byte1 bitAnd: 15) bitShift: 12) 
-					+ ((byte2 bitAnd: 63) bitShift: 6) 
-					+ (byte3 bitAnd: 63).
-		^ codePoint asUniChar
-	].
-
-	"4 bytes"
-	byte4 := anUtf8Stream next asInteger.
-	(byte4 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
-	
-	(byte1 bitAnd: 16rF8) = 240 ifTrue: [  "four bytes"
-		codePoint :=  ((byte1 bitAnd: 16r7) bitShift: 18) 
-					+ ((byte2 bitAnd: 63)   bitShift: 12) 
-					+ ((byte3 bitAnd: 63)   bitShift:   6) 
-					+ (byte4 bitAnd: 63).
-		^ codePoint asUniChar
-	].
-
-	^nil! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:41'!
-null
-	"Answer the null Character."
-
-	^ (0 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
-pageDown
-
-	^ (12 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
-pageUp
-
-	^ (11 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 3/27/2013 21:18'!
-paragraphSeparator
-	"Answer Unicode PS"
-
-	^ (2029 asUniChar)! !
-
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/9/2013 10:27'!
-parseCaseMappingFrom: stream
-	"Parse the Unicode casing mappings from the given stream.
-	Handle only the simple mappings"
-	"
-		UniChar initializeCaseMappings.
-	"
-	|  toNumber |
-	toNumber := [:quad | ('16r', quad) asNumber].
-	
-	ToCasefold 	:= IdentityDictionary new: 2048.
-	ToUpper 		:= IdentityDictionary new: 2048.
-	ToLower 		:= IdentityDictionary new: 2048.
-
-	[stream atEnd] whileFalse:[
-		| fields line srcCode dstCode |
-		line := stream nextLine copyUpTo: $#.
-		fields := line withBlanksTrimmed findTokens: $;.
-		(fields size > 2 and: [#('C' 'S') includes: (fields at: 2) withBlanksTrimmed]) ifTrue:[
-			srcCode := toNumber value:(fields at: 1) withBlanksTrimmed.
-			dstCode := toNumber value: (fields at: 3) withBlanksTrimmed..
-			ToCasefold at: srcCode put: dstCode.
-		].
-	].
-
-	ToCasefold keysAndValuesDo:
-		[:k :v |
-		((self value: k) isUppercase)
-			ifTrue:
-				["In most cases, uppercase letter are folded to lower case"
-				ToUpper at: v put: k.
-				ToLower at: k put: v].
-		((self value: k) isLowercase)
-			ifTrue:
-				["In a few cases, two lower case letters are folded to the same lower case.
-				We must find an upper case letter folded to the same letter"
-				| up |
-				up := ToCasefold keys detect: [:e | ((self value: e) isUppercase) 
-													and: [(ToCasefold at: e) = v]] ifNone: [nil].
-				up ifNotNil: [ToUpper at: k put: up]]].
-! !
-
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/13/2013 15:31'!
-parseGeneralPropertiesFrom: aStream
-
-	|  toNumber |
-	toNumber := [:quad | ('16r', quad) asNumber].
-
-	GeneralCategory := IdentityDictionary new: 24430..
-	
-	[aStream atEnd] whileFalse:[
-		| fields line codePoint generalCategory  |
-		line := aStream nextLine.
-		fields := line withBlanksTrimmed findTokens: $;.
-		(fields size > 3) ifTrue: [.
-			codePoint := toNumber value: (fields at: 1).
-			(codePoint asUniChar isCJKIdeograph) ifFalse: [ "add it"
-				generalCategory := self perform: ((fields at: 3) asSymbol).
-				GeneralCategory at: codePoint put: generalCategory
-			]
-		]
-	].
-! !
-
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/13/2013 15:28'!
-parseLineBreakPropertiesFrom: aStream
-
-	|  toNumber  |
-	toNumber := [:quad | ('16r', quad) asNumber].
-
-	"GeneralCategory initialized before this is invoked"
-	
-	[aStream atEnd] whileFalse:[
-		| fields line codePoint  lbCategory otherInfo |
-		line := aStream nextLine copyUpTo: $#.
-		fields := line withBlanksTrimmed findTokens: $; .
-		(fields size > 1) ifTrue: [.
-			codePoint := toNumber value: (fields at: 1).
-			(codePoint asUniChar isCJKIdeograph) ifFalse: [ "add it"
-				lbCategory := self perform: ((fields at: 2) asSymbol).
-				(lbCategory isZero) ifFalse: [
-					otherInfo := GeneralCategory at: codePoint ifAbsent: [ Cn ].
-					GeneralCategory at: codePoint put: (otherInfo + (lbCategory bitShift: 16)).
-				]
-			]
-		].
-	].
-! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/11/2013 17:30'!
-propNamesForCode: propCode
-	
-	| lineBreakProp lineBreakPropName generalPropName |
-	generalPropName := PropertyNames at: (propCode bitAnd: 16r00FFFF).
-	lineBreakProp := ((propCode bitAnd: 16r00FF0000) bitShift: -16).
-	(lineBreakProp isZero) 
-	ifTrue: [ lineBreakPropName := #Unknown]
-	ifFalse: [ lineBreakPropName := LineBreakProperties at: lineBreakProp].
-
-	^ { generalPropName.  lineBreakPropName }! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 3/13/2013 13:32'!
-propStats
-"
-	UniChar propStats.
-"
-
-	| propCountsDict "countsDict" valueCounterProc |
-	
-	valueCounterProc :=
-		[ :dict | | countDict |
-			countDict := IdentityDictionary new.
-			dict valuesDo: [ :val |
-				countDict at: val
-						   put: (1 + (countDict at: val ifAbsent: [0]))
-		].
-		countDict
-	].
-
-	"Count shared codePoints"
-	propCountsDict := valueCounterProc value: GeneralCategory.
-	
-	Transcript newLine .
-	propCountsDict keysAndValuesDo: [ :key :count |
-		(count > 900)
-		ifTrue: [
-				Transcript newLine.
-				Transcript show: 'Count: ', 
-								count asString , 
-								' PropCode: ', 
-								key hex,
-								'  ', 
-								((UniChar propNamesForCode: key) asString).
-		]
-	].
-	Transcript newLine .
-
-	"Count number of times a codepoint is shared with the same count"
-"
-	countsDict := valueCounterProc value: propCountsDict.
-	
-	^ { propCountsDict. countsDict. }
-"
-	^ propCountsDict 
-			! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
-space
-	"Answer the Character representing a space."
-
-	^ (32 asUniChar)! !
-
-!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
-tab
-	"Answer the Character representing a tab."
-
-	^ (9 asUniChar)! !
-
-!UniChar class methodsFor: 'instance creation' stamp: 'KenD 3/11/2013 09:49'!
-value: aCodePoint
-
-	^self fromCodePoint: aCodePoint asNumber! !
-
-!UniChar class methodsFor: 'private' stamp: 'KenD 2/24/2013 09:36'!
-zeroCodePoints
-	
-	^ZeroCodePoints! !
-
-!UniFileList methodsFor: 'contents' stamp: 'KenD 4/19/2013 08:19'!
-acceptedContents
-	^ Text
-		initialFont: UniForms default
-		stringOrText: self acceptedStringOrText! !
-
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 15:59'!
-acceptedStringOrText
-	"Answer the contents of the file, reading it first if needed."
-	"Possible brevityState values:
-		FileList,
-		fullFile, briefFile, needToGetFull, needToGetBrief,
-		fullHex, briefHex, needToGetFullHex, needToGetBriefHex"
-
-	(listIndex = 0) | (brevityState == #FileList) ifTrue: [ ^ self defaultContents ].  "no file selected"
-	
-	({ #fullFile. #fullHex. #fullUnicode. #briefFile. #briefHex. #briefUnicode. }
-		includes: 	brevityState) 
-	ifTrue: [ ^ acceptedContentsCache ].
-
-	brevityState == #needToGetUnicode ifTrue: [^ self readContentsUnicode: false ].
-"	brevityState == #needToGetFullUnicode ifTrue: [^ self readContentsUnicode: false ].
-	brevityState == #needToGetBriefUnicode ifTrue: [^ self readContentsUnicode: true ].
-"
-	brevityState == #needToGetFullHex ifTrue: [^ self readContentsHex: false ].
-	brevityState == #needToGetBriefHex ifTrue: [^ self readContentsHex: true ].
-
-	brevityState == #needToGetFull ifTrue:  [^ self readContentsBrief: false ].
-	brevityState == #needToGetBrief ifTrue: [ ^ self readContentsBrief: true ].  "default"
-
-	self halt: 'unknown state ' , brevityState printString! !
-
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/13/2013 15:49'!
-defaultContents
-	acceptedContentsCache := (list
-		ifNil: [ String emptyString ]
-		ifNotNil: [
-			(String streamContents:
-				[:s | s nextPutAll: 'NO FILE SELECTED'; newLine.
-				 s nextPutAll: '  -- Folder Summary --'; newLine.
-				 list do: [:item | s nextPutAll: item; newLine]] 
-			) 
-		]
-	).
-	brevityState _ #FileList.
-	^ acceptedContentsCache! !
-
-!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/14/2013 19:22'!
-editorClass
-
-	^UniTextEditor! !
-
-!UniFileList methodsFor: 'file menu action' stamp: 'KenD 4/12/2013 15:56'!
-getUnicode
-	"Get contents of file again, and display in Unicode. Do this by making the cancel string be the contents, and doing a cancel."
-
-	Cursor read showWhile: [
-		brevityState := #needToGetUnicode.  
-		"See method: acceptedStringOrText"
-		self acceptedContentsChanged ]! !
-
-!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/12/2013 15:47'!
-itemsForAnyFile2
-	"Answer a list of universal services that could apply to any file"
-	
-	| services |
-	services := super itemsForAnyFile2.
-	services addFirst: self serviceGetUnicode.
-	^services
-
-! !
-
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/19/2013 08:35'!
-put: aText
-	"Private - put the supplied text onto the file"
-
-	| ff type |
-	(brevityState == #fullUnicode)
-	ifTrue: [ff _ UniFileStream newFileNamed: self fullName.
-		Cursor write showWhile: [ff nextPutAll: aText asString; close].
-		fileName = ff localName 
-			ifTrue: [ acceptedContentsCache _ aText asUniString asText]  "@@@UniLazyString@@@"
-			ifFalse: [self updateFileList].		"user renamed the file"
-		^ true  "accepted"].
-
-	listIndex = 0 ifTrue:
-		[self inform: 'No fileName is selected'.
-		^ false  "failed"].
-	type _ 'These'.
-	brevityState = #fullFile ifTrue: [type _ 'Ascii'].
-	brevityState = #briefFile ifTrue: [type _ 'Abbreviated'].
-	brevityState = #briefHex ifTrue: [type _ 'Abbreviated'].
-	brevityState = #fullHex ifTrue: [type _ 'Hexadecimal'].
-	brevityState = #briefUnicode ifTrue: [type _ 'Unicode'].
-"	brevityState = #fullUnicode ifTrue: [type _ 'Unicode']."
-	brevityState = #FileList ifTrue: [type _ 'Directory'].
-	self inform: ('{1} contents cannot
-meaningfully be saved at present.' format:{type}).
-	^ false  "failed"
-! !
-
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/19/2013 08:35'!
-readContentsUnicode: brevity
-	"retrieve the contents from the external file unless it is too long.
-	  Don't create a file here.  Check if exists."
-	| uniFileStream"  uniString" |
-
-	uniFileStream := UniFileStream oldFileOrNoneNamed: self fullName. 
-	uniFileStream ifNil: [^ 'For some reason, this file cannot be read']
-		ifNotNil: [uniFileStream close].
-"	uniString := uniFileStream contentsOfEntireFile.
-	brevityState := #fullUnicode.
-	uniFileStream close. 
-	acceptedContentsCache := uniString.
-"	
-	brevityState := #fullUnicode.
-	
-	(acceptedContentsCache class = UniLazyString)
-		ifTrue: [ acceptedContentsCache fileCleanup ]. "Remove old tmp file"
-		
-	^ acceptedContentsCache := (UniLazyString onFileNamed: self fullName) asText
-! !
-
-!UniFileList methodsFor: 'own services' stamp: 'KenD 4/12/2013 14:42'!
-serviceGetUnicode
-
-	^  (SimpleServiceEntry 
-			provider: self 
-			label: 'view as Unicode' 
-			selector: #getUnicode
-			description: 'view as Unicode')
-			! !
-
-!UniFileStream methodsFor: 'properties-setting' stamp: 'KenD 4/10/2013 09:49'!
-ascii
-	"We don't do ASCII"
-	
-	DomainError signal: 'Unicode does not fit into ASCII; ASCII is a subset of Unicode'! !
-
-!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 16:56'!
-contents
-	"Answer the file contrents as a UniString"
-	
-	"@@FIXME: answer a lazy file UniString @@"
-	| oldPos result |
-	oldPos := self position.
-	self resetToStart.
-	result := self upToEnd.
-	self position: oldPos.
-	^result! !
-
-!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 17:00'!
-contentsOfEntireFile
-	"Read all of the contents of the receiver."
-	
-	^ self contents! !
-
-!UniFileStream methodsFor: 'initialize-release' stamp: 'KenD 4/10/2013 21:38'!
-initialize
-
-	super initialize.
-	self binary.   "My buffer of bytes in UTF-8 encoding"
-! !
-
-!UniFileStream methodsFor: 'testing' stamp: 'KenD 4/10/2013 15:43'!
-isAscii
-	^false! !
-
-!UniFileStream methodsFor: 'testing' stamp: 'KenD 4/10/2013 15:43'!
-isBinary
-	^false! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 10:06'!
-next
-	"Answer the next UniChar"
-
-	^ self nextCodePoint asUniChar! !
-
-!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 16:58'!
-next: anInteger 
-	"Answer the next anInteger elements of my collection."
-	
-	^ self nextUpTo: anInteger ! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:43'!
-next: count into: aUniString startingAt: startIndex
-	"Answer a UniString altered by reading count Unicode characters spliced in at startIndex .
-	Return a UniString or a partial copy if less than count elements have been read."
-	
-	| splice uString |
-	splice := self nextUpTo: count.
-	uString := aUniString asUniString.
-	
-	^ (uString copyFrom: 1 to: (startIndex - 1)) , 
-	  splice , 
-	  (uString copyFrom: startIndex to: uString size)
-! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:04'!
-next: anInteger putAll: aCollection startingAt: startIndex
-	"Store the next anInteger elements from the given collection."
-	
-	^ self nextPutAll: ((aCollection asUniString) copyFrom: startIndex to: (aCollection size)).
-! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/17/2013 08:16'!
-nextCodePoint
-	"Answer the next Unicode codePoint"
-	
-	"@@FIXME: Error recovery (perhaps ^nil) rather than signalling an error?"
-
-	| byte1 byte2 byte3 byte4 codePoint |
-	byte1 _ super next asInteger.
-	byte1 < 128 ifTrue: [ ^ byte1 ].	"single byte"
-		
-	
-	"At least 2 bytes"
-	byte2 _ super next asInteger.
-	(byte2 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
-	(byte1 bitAnd: 16rE0) = 192 ifTrue: [ "two bytes"
-		codePoint := ((byte1 bitAnd: 31) bitShift: 6) 
-		 				+ (byte2 bitAnd: 63).
-		^ codePoint
-	].
-	
-	"At least 3 bytes"
-	byte3 := super next asInteger.
-	(byte3 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
-	(byte1 bitAnd: 16rF0) = 224 ifTrue: [ "three bytes"
-		codePoint :=  ((byte1 bitAnd: 15) bitShift: 12) 
-						+ ((byte2 bitAnd: 63) bitShift: 6) 
-						+ (byte3 bitAnd: 63).
-		^codePoint.
-	].
-
-	"4 bytes"
-	byte4 := super next asInteger.
-	(byte4 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
-	(byte1 bitAnd: 16rF8) = 240 ifTrue: [  "four bytes"
-		codePoint := ((byte1 bitAnd: 16r7) bitShift: 18) 
-						+ ((byte2 bitAnd: 63) bitShift: 12) 
-						+ ((byte3 bitAnd: 63) bitShift: 6) 
-						+ (byte4 bitAnd: 63).
-		^ codePoint
-	].
-! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 10:15'!
-nextPut: uniChar
-	"Write the UniChar codePoint to this file encoded as UTF-8."
-
-	| codePoint |
-	codePoint := uniChar codePoint.
-	codePoint < 128 ifTrue: [ 
-		^ self nextPutByte: codePoint ].
-	codePoint < 2048 ifTrue: [ 
-		^ self 
-			nextPutByte: (2r11000000 + (codePoint bitShift: -6)); 
-			nextPutByte: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
-	codePoint < 65535 ifTrue: [ 
-		^ self 
-			nextPutByte: (2r11100000 + (codePoint bitShift: -12));
-			nextPutByte: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
-			nextPutByte: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
-	codePoint <= 16r10FFFF  ifTrue: [  "maximumUTF8Code"
-		^ self 
-			nextPutByte: (2r11110000 + (codePoint bitShift: -18));
-			nextPutByte: (2r10000000 + (codePoint bitShift: -12));
-			nextPutByte: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
-			nextPutByte: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
-	self error: 'Unicode character code point outside range'
-! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:06'!
-nextPutAll: aCollection
-	"Write all the Unicode characters of the given colection to this file."
-	
-	(aCollection asUniString) codePointsDo: [ :codePoint | self nextPut: codePoint ].
-	^ aCollection "what StandardFileStream returns"
-! !
-
-!UniFileStream methodsFor: 'private' stamp: 'KenD 4/10/2013 21:50'!
-nextPutByte: aByte
-	"Write the given byte to a file"
-
-	^ super nextPut: aByte asCharacter
-"	rwmode ifFalse: [^ self error: 'Cannot write a read-only file'].
-	collection ifNotNil: [ 
-		position < readLimit ifTrue: [ self flushReadBuffer ] ].
-	buffer1 at: 1 put: aByte.
-	self primWrite: fileID from: buffer1 startingAt: 1 count: 1.
-	^ aByte
-"! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/18/2013 20:15'!
-nextUpTo: count
-	"Answer a subcollection from the current access position through count or EOF."
-		
-	| result numRead |
-	result := UniStringWrapper new.
-	numRead := 0.
-	
-	[(self atEnd) or: [numRead >= count]] whileFalse: [ 
-		result nextPut: self next.
-		numRead := numRead + 1.
-	].
-
-	^ result asUniString! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 15:48'!
-padToEndWith: aChar
-	"On the Mac, files do not truncate.  One can delete the old file and write a new one, but sometime deletion fails (file still open? file stale?).  This is a sad compromise.  Just let the file be the same length but pad it with a harmless character."
-
-	| pad |
-	pad := aChar asUniChar.
-	[self atEnd] whileFalse:  [ self nextPut: pad ].! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 15:50'!
-peek
-	"Answer what would be returned if the message next were sent to the receiver. If the receiver is at the end, answer nil.  "
-	| next oldPos |
-	self atEnd ifTrue: [ ^ nil ].
-	oldPos := self position.
-	next _ self next.
-	self position: oldPos.
-	^ next! !
-
-!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 16:51'!
-peekFor: item 
-	"Answer false and do not advance if the next element is not equal to item, or if this stream is at the end.  If the next element is equal to item, then advance over it and return true"
-	| next oldPos |
-	oldPos := self position.
-	
-	(next _ self next) ifNil: [ ^ false ].
-
-	(item = next) ifTrue: [ ^ true ].
-
-	self position: oldPos.
-	^ false! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:11'!
-readInto: byteArray startingAt: startIndex count: count
-	"Read into the given array as specified, and return the count
-	actually transferred.  index and count are in units of bytes or
-	longs depending on whether the array is Bitmap, String or ByteArray"
-	
-	"This is a DANGEROUS way to get binary data dirtectly without opening a binary fileStream.
-	 There is NO synchronization between bytes and UTF-8 encoded codePoints.
-	NOTE: This will NOT work with a UniString in place of a byteArray!!"
-	Transcript log: 'WARNING: UniFileStream>>readInto:startingAt:count: invoked on ',
-						(self printString).
-
-	^super readInto: byteArray startingAt: startIndex count: count! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/17/2013 08:13'!
-skip: anInteger
-	"Set the byte position to anInteger bytes from the current position.
-	anInteger can be positive o negative.
-	Error if not enough bytes left in the file. "
-
-	| newPos |
-	newPos := self position + anInteger.
-	
-	(newPos < 0) 
-	ifTrue: [ self error: 'Can''t set file position to before beginning of file' ].
-	
-	(newPos > readLimit) 
-	ifTrue: [ self error: 'Can''t set file position past end of file' ].
-	
-	^ self position: (self position + anInteger)! !
-
-!UniFileStream methodsFor: 'properties-setting' stamp: 'KenD 4/10/2013 21:34'!
-unicode
-	"the only thing we do"
-	self binary! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:14'!
-upTo: delim 
-	"Answer a UniString of UniChars up to the delimiter or EOF."
-	"Read but do NOT return the delimiter"
-	
-	| result delimiter |
-	delimiter := delim asUniChar.
-	result := UniStringWrapper new.
-	[self atEnd] whileFalse: [ | nextUniChar |
-		nextUniChar := self next.
-		
-		(nextUniChar = delimiter) 
-		ifTrue: [ ^ result asUniString ]
-		ifFalse: [ result nextPut: nextUniChar ].
-	].
-	"Reached EOF = End Of File"
-	^ result asUniString! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:18'!
-upToAny: aCollection 
-	"Similar to upTo:, but find any of the objects in aCollection"
-	
-	| result delimiters |
-	(aCollection isKindOf: UniString)
-	ifTrue: [ delimiters := aCollection ] 
-	ifFalse: [ delimiters := (aCollection collect: [ :elt | elt asUniChar ]) asUniString ].
-	
-	result := UniStringWrapper new.
-	[self atEnd] whileFalse: [ | nextUniChar |
-		nextUniChar := self next.
-		
-		(delimiters includes: nextUniChar) 
-		ifTrue: [ ^ result asUniString ]
-		ifFalse: [ result nextPut: nextUniChar ].
-	].
-	"Reached EOF = End Of File"
-	^ result asUniString! !
-
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:15'!
-upToEnd
-	"Answer a subcollection from the current access position through the last element of the receiver."
-		
-	| result |
-	result := UniStringWrapper new.
-	
-	[self atEnd] whileFalse: [ result nextPut: self next ].
-
-	^ result asUniString! !
-
-!UniFileStream class methodsFor: 'concrete classes' stamp: 'KenD 4/12/2013 15:32'!
-concreteStream
-	"Who should we really direct class queries to? "
-	^ UniFileStream! !
-
-!UniFlat methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:11'!
-at: anIndex
-	
-	^(self codePointAt: anIndex) asUniChar! !
-
-!UniFlat methodsFor: 'accessing' stamp: 'KenD 2/17/2013 20:58'!
-at: index put: aCharacter 
-
-	"Answer a new UniString"
-	(self size = 1)
-	ifTrue: [
-		(index = 1)
-		ifTrue: [^ aCharacter asUniString]
-		ifFalse: [self errorSubscriptBounds: index]
-	].
-	
-	(index = 1)
-	ifTrue: [ ^ (aCharacter asUniString , (self copyFrom: 2 to: self size))].
-	
-	(index = self size)
-	ifTrue: [ ^ (self copyFrom: 1 to: (self size - 1)) , aCharacter asUniString ].
-	
-	^ (self copyFrom: 1 to: (index - 1)) ,
-	   aCharacter asUniString ,
-	   (self copyFrom: (index + 1) to: (self size))! !
-
-!UniFlat methodsFor: 'private' stamp: 'KenD 3/18/2013 21:50'!
-balanceAsRequired
-
-	^self "No action required"! !
-
-!UniFlat methodsFor: 'private' stamp: 'KenD 2/17/2013 16:09'!
-charBlock
-
-	^charBlock! !
-
-!UniFlat methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:10'!
-codePointAt: anIndex
-	
-	^self charBlock at: anIndex! !
-
-!UniFlat methodsFor: 'enumerating' stamp: 'KenD 4/1/2013 19:31'!
-codePointsDo: aBlock
-	"aBlock takes each codePoint in me as an argument"
-
-	(1 to: length) do: [ :index | aBlock value: (charBlock at: index)].! !
-
-!UniFlat methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:11'!
-copyFrom: start to: stop 
-	"Answer a UniString."
-
-	"Handle odd case the same way as OrderedCollection"
-	(stop < start) ifTrue: [^ UniFlat fromString: ''].
-
-	((start = 1) and: (stop = self size))
-	ifTrue: [^self].
-	
-	((1 <= start) and: [stop <= self size])
-	ifTrue: [
-		^(UniFlatSlice new initialize;
-			charBlock: (self charBlock) startIndex: start length: (stop - start + 1))
-	]
-	ifFalse: [
-		(stop > self size) 
-		ifTrue: [self errorSubscriptBounds: stop]
-		ifFalse: [self errorSubscriptBounds: start]
-	]! !
-
-!UniFlat methodsFor: 'private' stamp: 'KenD 2/17/2013 16:11'!
-depth
-	"I am a leaf"
-	
-	^0! !
-
-!UniFlat methodsFor: 'enumerating' stamp: 'KenD 4/1/2013 19:32'!
-do: aBlock
-	"aBlock takes each Unicode character in me as an argument"
-
-	self codePointsDo: [ :codePoint | aBlock value: (codePoint asUniChar) ]! !
-
-!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 19:38'!
-initialize
-
-	super initialize.
-	length := 0. "default"! !
-
-!UniFlat methodsFor: 'accessing' stamp: 'KenD 4/1/2013 19:42'!
-size
-	
-	^ length ! !
-
-!UniFlat methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:13'!
-substringFrom: startIndex length: numChars
-
-	((0 <= startIndex) and: [startIndex + numChars <= self size])
-	ifTrue: [
-		^(UniFlatSlice new initialize;  charBlock: (self charBlock) startIndex: startIndex length: numChars)
-	]
-	ifFalse: [self errorSubscriptBounds: startIndex]! !
-
-!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 19:22'!
-with: aCharBlock
-
-	| blockClass |
-	blockClass := aCharBlock class.
-	"Nota Bene:  (ShortWordArray new: 7) size. ==> 8
-	Use #UniFlat:with:size:"
-	length := aCharBlock size. 
-
-	(blockClass == String) ifTrue: [ 
-		charBlock := aCharBlock asByteArray. 
-		^self 
-	].
-	
-	((blockClass == ByteArray) or: [(blockClass == ShortWordArray) or: [ blockClass == WordArray]])
-	ifTrue: [	 charBlock := aCharBlock. ^self]  "Nota Bene: assumed immutable"
-
-	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
-
-!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/15/2013 21:14'!
-with: aCharBlock size: size
-
-	| blockClass |
-	blockClass := aCharBlock class.
-	length := size.
-	
-	(blockClass == String) ifTrue: [ 
-		charBlock := aCharBlock asByteArray. 
-		^self 
-	].
-	
-	((blockClass == ByteArray) or: [(blockClass == ShortWordArray) or: [ blockClass == WordArray]])
-	ifTrue: [ charBlock := aCharBlock. ^self]  "Nota Bene: assumed immutable"
-
-	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
-
-!UniFlat class methodsFor: 'user interface' stamp: 'KenD 4/8/2013 21:14'!
-fromString: aString
-	"Answer a new UniString.
-	As the string must be immutable, we will keep a copy."
-	
-	^ (self basicNew initialize with: (aString asString copy) size: aString size; yourself)! !
-
-!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 21:52'!
-at: anIndex
-
-	^(self codePointAt: anIndex) asUniChar "Nota Bene: #codePointAt: does the index offset"! !
-
-!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/19/2013 15:43'!
-at: index put: aCharacter 
-
-	"Answer a new rope"
-	| offsetIndex firstIndex endIndex |
-	
-	firstIndex := self startIndex.
-	endIndex := firstIndex + self size - 1.
-	offsetIndex := index +  firstIndex - 1.
-	
-	(self size = 1)
-	ifTrue:  [
-		(offsetIndex = 1)
-		ifTrue: [^ aCharacter asUniString ]
-		ifFalse: [self errorSubscriptBounds: index]
-	].
-	
-	(index = 1)
-	ifTrue: [ ^ aCharacter asUniString , (self copyFrom: 2 to: self size)].
-	
-	(offsetIndex = endIndex)
-	ifTrue: [ ^ (self copyFrom: 1 to: (index - 1)) , aCharacter asUniString ].
-	
-	^ (self copyFrom: 1 to: (index - 1)) ,
-	   aCharacter asUniString ,
-	   (self copyFrom: (index + 1) to: self size )! !
-
-!UniFlatSlice methodsFor: 'private' stamp: 'KenD 3/18/2013 21:51'!
-balanceAsRequired
-
-	^self "No action required"! !
-
-!UniFlatSlice methodsFor: 'private' stamp: 'KenD 2/17/2013 16:32'!
-charBlock
-
-	^charBlock ! !
-
-!UniFlatSlice methodsFor: 'initialize-release' stamp: 'KenD 2/17/2013 16:36'!
-charBlock: aCharBlock startIndex: anIndex length: numberOfChars
-	
-	startIndex := anIndex.
-	length := numberOfChars.
-	charBlock := aCharBlock.
-	
-	"Idiot checks"
-	(aCharBlock size < (numberOfChars - anIndex + 1))
-	ifTrue: [self error: 'Length exceeds max' , (numberOfChars - anIndex + 1) printString ].
-	
-	(numberOfChars < 0)
-	ifTrue: [self error: 'Can''t have negative length' , numberOfChars].
-	
-	((anIndex < 1) or: (anIndex > aCharBlock size))
-	ifTrue: [self errorSubscriptBounds: anIndex].
-	
-	^self! !
-
-!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:32'!
-codePointAt: anIndex
-
-	^self charBlock at: (anIndex + startIndex - 1)! !
-
-!UniFlatSlice methodsFor: 'enumerating' stamp: 'KenD 4/1/2013 19:34'!
-codePointsDo: aBlock
-	"aBlock takes each codePoint in me as an argument"
-
-	startIndex to: (startIndex + length - 1) do: [ :index |  aBlock value: (charBlock at: index) ]! !
-
-!UniFlatSlice methodsFor: 'copying' stamp: 'KenD 2/17/2013 22:07'!
-copyFrom: start to: stop 
-	"Answer a UniFlatSlice which shares my string"
-	
-	| offsetStart offsetStop |
-	offsetStart := start - 1 + self startIndex.
-	offsetStop := stop  - 1 + self startIndex.
-	
-	"Handle odd case the same way as OrderedCollection"
-	(stop < start) ifTrue: [^ UniFlatSlice fromString: ''].
-
-	((1 <= start) and: [stop <= (self charBlock size)])
-	ifTrue: [
-		^(UniFlatSlice new initialize 
-			charBlock: (self charBlock) 
-			startIndex: offsetStart
-			length: (stop - start + 1))
-	]
-	ifFalse: [
-		(offsetStop > self charBlock size) 
-		ifTrue: [self errorSubscriptBounds: stop]
-		ifFalse: [self errorSubscriptBounds: start]
-	]! !
-
-!UniFlatSlice methodsFor: 'private' stamp: 'KenD 2/17/2013 16:36'!
-depth
-	"I am a leaf"
-
-	^0! !
-
-!UniFlatSlice methodsFor: 'enumerating' stamp: 'KenD 2/17/2013 20:07'!
-do: aBlock
-	"aBlock takes each Unicode character in me as an argument"
-
-	self codePointsDo: [ :codePoint |  aBlock value: (codePoint asUniChar) ]! !
-
-!UniFlatSlice methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 20:06'!
-initialize
-
-	super initialize.
-	"set defaults"
-	length := 0.
-	startIndex := 1.! !
-
-!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:37'!
-size
-
-	^length! !
-
-!UniFlatSlice methodsFor: 'private' stamp: 'KenD 2/17/2013 16:37'!
-startIndex
-
-	^startIndex! !
-
-!UniFlatSlice methodsFor: 'private' stamp: 'KenD 3/18/2013 15:36'!
-string
-
-	"Answer my slice [a UniFlat]"
-	^ (charBlock from: startIndex to: (startIndex + length - 1)) as: UniString! !
+	FileListWindow open: (UniFileList new directory: FileDirectory default) label: nil! !
 
 !UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 16:57'!
 approxWidthOfText: aText
@@ -3520,6 +828,20 @@ readFormsArray: fileName
 	
 	! !
 
+!UniForms class methodsFor: 'accessing' stamp: 'KenD 8/18/2013 19:08'!
+sliceStart: codePoint size: arraySize
+	"Answer a slice of forms"
+" Dingbats
+	(UniForms sliceStart: 16r2701 size: 40) explore. 
+"
+	| slice |
+	slice := Array new: arraySize.
+	1 to: arraySize do: [ :idx |
+		slice at: idx put: (UniForms formForCodePoint: idx - 1 + codePoint)
+	].
+
+	^ slice! !
+
 !UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:06'!
 widthOf: aCharacterOrCodePoint
 		"@@FIXME: Zero (combining marks, zero width space, ..), 8 (half width :Latin), 16 (full width)"
@@ -3540,523 +862,316 @@ widthOfStringOrText: aStringOrText
 
 	^ self widthOfString: aStringOrText asUniString! !
 
-!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:20'!
-at: anIndex
-	"Read as much as is required to satisfy the request.  Answer a UniChar"
+!UniTextModel methodsFor: 'commands' stamp: 'KenD 4/14/2013 19:59'!
+acceptContentsFrom: aTextModelMorph
+	"The user has typed Cmd+s -> Accept.
+	Update backing file (query if needed).
+	Answer true if OK, else false."
 	
-	self extendForIndex: anIndex.
-	^ (soFar codePointAt: anIndex) asUniChar! !
+	(fileName isNil)
+	ifTrue: [ ^(self saveToNewFileNotifying: aTextModelMorph) isNil not ]
+	ifFalse: [ ^(self saveToOldFileNotifying: aTextModelMorph) isNil not ]! !
 
-!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:20'!
-at: anIndex put: aUniChar
-	"Read as much as is required to satisfy the request.  Answer a UniString"
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/19/2013 08:56'!
+actualContents: aTextOrString
+	"Reset contents"
+
+	(actualContents class = UniLazyString)
+		ifTrue: [ actualContents fileCleanup ]. "Remove old tmp file"
+	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
+	undoRedoCommands resetToStart.
+	self changed: #actualContents! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/8/2013 19:14'!
+basicActualContents: aTextOrString
+	"Do not throw events... Not nice... Use with care... Clean some day..."
+	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
+	undoRedoCommands resetToStart.! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 19:17'!
+editorClass
+
+	^UniTextEditor! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:57'!
+fileName
+
+	^ fileName! !
+
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 5/7/2013 14:55'!
+fromFile: aFileName
+	"Open the file aFileName if possible and read the file into actualContents.
+	Answer self if successful else nil."
 	
-	self extendForIndex: anIndex.
-	^ (soFar at: anIndex put: aUniChar asUniChar)! !
+	| aFile fullPath |
+	(aFileName isEmpty) ifFalse: [
+		fullPath := (FileDirectory default  fullPathFor:  aFileName).
+		aFile := UniFileStream readOnlyFileNamed: fullPath.
+		((aFile isNil) or: [ aFile isDirectory ]) ifFalse: [
+			"Found a non-directory file; assume reable UTF-8"
+			fileName := aFileName.
+			timeStamp := aFile directoryEntry modificationDateAndTime.
+			aFile close.
+			actualContents := (UniLazyString onFileNamed: aFileName) asText.
+			^self
+		]
+	].
+	"Not a readable file"
+	^nil
 
-!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:20'!
-codePointAt: anIndex
+			! !
 
-	self extendForIndex: anIndex.
-	^ (soFar codePointAt: anIndex)! !
+!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/14/2013 14:55'!
+initialize
+	"Initialize the state of the receiver with its default contents."
 
-!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:51'!
-codePointsDo: aBlock
-	"aBlock takes each codePoint in me as an argument"
+	actualContents _ UniString emptyString asText.
+	timeStamp := 0.
+	self flushUndoRedoCommands! !
 
-	self readEntireContents.
-	^ soFar codePointsDo: aBlock! !
-
-!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:50'!
-collect: aBlock
-	"Evaluate aBlock with each of the receiver's elements as the argument. 
-	Collect the resulting values into a collection like the receiver. Answer 
-	the new collection."
-
-	self readEntireContents.
-	^ soFar collect: aBlock! !
-
-!UniLazyString methodsFor: 'copying' stamp: 'KenD 4/18/2013 21:53'!
-copyFrom: start to: stop 
-	"Answer a UniString."
+!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 19:14'!
+openLabel: aString 
+	"Create a standard system view of the model, me, and open it."
 	
-	"Handle odd case the same way as OrderedCollection"
-	(stop < start) ifTrue: [^ UniString emptyString ].
+	SystemWindow editText: self label: aString asUniString wrap: true! !
 
-	self extendForIndex: stop.
+!UniTextModel methodsFor: 'misc' stamp: 'KenD 4/19/2013 16:05'!
+refetch
+	"Answer true if actualContents was actually fetched."
 	
-	^ soFar copyFrom: start to: stop! !
+	(actualContents class = UniLazyString) ifTrue: [
+		 "Remove old tmp file"
+		actualContents fileCleanup. 
+	].
+	(self fileName) ifNotNil: [ | dirEntry  |	
+		"(Re)read contents"
+		actualContents := (UniLazyString onFileNamed: fileName) asText.
+		"Reset timeStamp"
+		dirEntry :=  (FileDirectory on: fileName) directoryEntry.
+		timeStamp := dirEntry modificationDateAndTime.
+	].
 
-!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 17:16'!
-depth
-	"I cannot be rebalanced"
-	^ 0! !
+	self changed: #refetched.
+		
+	^true! !
 
-!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:50'!
-do: aBlock
-	"aBlock takes each UniChar in me as an argument"
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 20:35'!
+saveToNewFileNotifying: aTextModelMorph
+	"Answer true if OK, else nil"
 
-	self readEntireContents.
-	^ soFar do: aBlock! !
-
-!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:33'!
-extendForIndex: anIndex
-	"If (anIndex > soFar size),  Extend soFar to include anIndex"
-"
-Transcript log: 'UniLazyString>>extendForIndex: ',
-				(anIndex  asString), '  ', (soFar size) asString ,
-  				String newLineString.
-"			
-	(anIndex > (soFar size)) ifTrue: [ | delta |
-		delta := anIndex - (soFar size).
-		(delta < ChunkSize)
-			ifTrue: [ soFar := soFar , (uniFileStream nextUpTo: ChunkSize) ]
-			ifFalse: [ soFar := soFar , (uniFileStream nextUpTo: (delta + 100)) ].
-		self fileCheck.
+	| dialogResult |	
+	dialogResult := (StandardFileMenu new) 
+   					newFileFrom: (FileDirectory default)
+					withPattern: '*' ; 
+					startUpWithCaption: 'Type new file name for save'.
+	
+	(dialogResult isNil)
+	ifTrue: [ ^nil ]
+	ifFalse: [ | uniFileStream  |
+		fileName := (dialogResult directory) fullPathFor: (dialogResult name).
+		uniFileStream := UniFileStream newFileNamed: fileName.
+		uniFileStream nextPutAll: self actualContents asUniString; close.
+		timeStamp := (FileDirectory on: fileName) directoryEntry modificationDateAndTime.
+		"@@@FIXME Notify aTextModelMorph"
+		^true
 	]! !
 
-!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:33'!
-fileCheck
-	"Close and remove tempFile if all characters consumed"
-"
-Transcript log: 'UniLazyString>>fileCheck  closed? >> ',
-				(uniFileStream closed asString),
-  				String newLineString.
-"			
-	((uniFileStream closed not) and: [uniFileStream atEnd])
-		 ifTrue: [ self fileCleanup ]! !
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 20:35'!
+saveToOldFileNotifying: aTextModelMorph
+	"Answer true if OK, else nil"
 
-!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 17:30'!
-fileCleanup
-	"Close and remove tempFile"
-
-	 | fileName |
-	fileName := uniFileStream name.
-	uniFileStream close.
-	FileDirectory deleteFilePath: fileName.! !
-
-!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 18:03'!
-finalize
-
-	super finalize.
-	self fileCleanup.
-	! !
-
-!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 18:26'!
-genTempFileName
-	"Answer the name of a file which is different than one that exists"
-	
-	"@@FIXME: Use /tmp on Unix, ??? on Windows"
-	
-	| dir looking rand fileName |
-	
-	looking := true.
-	dir := FileDirectory default.
-	[looking] whileTrue: [
-		 rand := 777 atRandom: (Random new initialize).
- 		 fileName := 'tmp' , rand asString.
- 		 looking := dir fileExists: fileName.
-	].
-	^ fileName
-! !
-
-!UniLazyString methodsFor: 'initialize-release' stamp: 'KenD 4/18/2013 21:31'!
-initializeFromFile: aName
-	
-	| tmpFileName |
-	super initialize.
-	"As UniStrings are immutable, copy the file"
-	tmpFileName := self genTempFileName.
-	FileDirectory default copyFileNamed: aName toFileNamed: tmpFileName.
-	
-	"Open a UniFileStream on the copy"
-	fileName := aName.
-	totalCount := nil.
-	uniFileStream := UniFileStream readOnlyFileNamed: tmpFileName.
-	soFar := uniFileStream nextUpTo: ChunkSize.
-	
-	^self
-	! !
-
-!UniLazyString methodsFor: 'printing' stamp: 'KenD 4/18/2013 21:35'!
-printOn: aStream 
-	"Look good in the inspector"
-"
-	'little string thing' asUniString inspect.
-"
-	aStream nextPutAll: 'UniLazyString(''' , fileName , ''')'
-	! !
-
-!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:33'!
-readEntireContents
-	"Enumerators process the entire range of characters"
-"
-Transcript log: 'UniLazyString>>readEntireContents closed? >> ',
-				(uniFileStream closed asString),
-  				String newLineString.
-"
-	(uniFileStream closed) ifFalse: [ 
-		soFar := soFar , (uniFileStream upToEnd).
-		self fileCleanup.
-	].
-	(totalCount isNil) ifFalse: [ totalCount := soFar size ]! !
-
-!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:50'!
-select: aBlock
-	"Refer to the comment in Collection>>select:."
-
-	self readEntireContents.
-	^ soFar select: aBlock! !
-
-!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:21'!
-size
-	"Answer the niumber of codePoints in me"
-
-	| oldPos count |
-	(totalCount isNil) ifFalse: [ ^totalCount ].
-	(uniFileStream closed) ifTrue: [ ^totalCount := soFar size ].
-	
-	oldPos := uniFileStream position.
-	count := 0.
-	[uniFileStream atEnd] whileFalse: [
-		"Read the count of codePoints (NOT Bytes!!)"
-		uniFileStream nextCodePoint. "But don't save"
-		count := count + 1.
-	].
-	uniFileStream position: oldPos.
-	totalCount := (soFar size) + count.
-	
-	^ totalCount
-! !
-
-!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:34'!
-soFar
-	"Debug only"
-	^soFar! !
-
-!UniLazyString class methodsFor: 'class initialization' stamp: 'KenD 4/18/2013 19:10'!
-initialize
-"
-	UniLazyString initialize.
-"
-	ChunkSize := 1024.
-	! !
-
-!UniLazyString class methodsFor: 'instance creation' stamp: 'KenD 4/18/2013 20:54'!
-onFileNamed: aName
-	"Answer a new instance of me"
-"
-ls := (UniLazyString onFileNamed: 'Pasted.utf8').
-ls := (UniLazyString onFileNamed: 'test-utf8.txt').
-"
-	 | dirEntry |
-	(FileDirectory default fileExists: aName)
-		ifFalse: [ ^ self error: 'Failed to find file ' , aName ].
-
-	dirEntry := FileDirectory directoryEntryFor: aName.
-	(dirEntry isDirectory) 
-		ifTrue: [ ^self error: 'Not a text file: ' , aName ].
-		
-	((dirEntry fileSize) < ChunkSize)
-	ifTrue: [ ^ UniString fromFile: aName ] "Too small to bother with"
-	ifFalse: [ ^ self new initializeFromFile: aName ]
-
-	! !
-
-!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:10'!
-at: anIndex
-
-	self checkIndex: anIndex.
-	
-	^char! !
-
-!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:14'!
-at: index put: aCharacter 
-	"Answer a new UniString"
-	
-	self checkIndex: index.
-	(self size = 1)
-	ifTrue: [ ^ aCharacter asUniString].
-	
-	(index = 1)
-	ifTrue: [ ^ (aCharacter asUniString , (self copyFrom: 2 to: self size))].
-	
-	(index = self size)
-	ifTrue: [ ^ (self copyFrom: 1 to: (self size - 1)) , aCharacter asUniString ].
-	
-	^ (self copyFrom: 1 to: (index - 1)) ,
-	   aCharacter asUniString ,
-	   (self copyFrom: (index + 1) to: (self size))! !
-
-!UniRepeatedCharString methodsFor: 'private' stamp: 'KenD 4/8/2013 20:09'!
-checkIndex: anIndex
-
-	(anIndex < 1 or: [anIndex > count])
-	ifTrue: [ self error: 'Index out of range ' , (anIndex asString)]! !
-
-!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:10'!
-codePointAt: anIndex
-
-	self checkIndex: anIndex.
-
-	^ (char codePoint)! !
-
-!UniRepeatedCharString methodsFor: 'enumerating' stamp: 'KenD 4/8/2013 20:20'!
-codePointsDo: aBlock
-	"aBlock takes each codePoint in me as an argument"
-
-	| code |
-	code := char codePoint.
-	(1 to: count) do: [ :ignore | aBlock value: code].! !
-
-!UniRepeatedCharString methodsFor: 'copying' stamp: 'KenD 4/8/2013 20:57'!
-copyFrom: start to: stop 
-	"Answer a UniString."
-
-	"Handle odd case the same way as OrderedCollection"
-	(stop < start) ifTrue: [^ UniString emptyString ].
-	
-	self checkIndex: start.
-	self checkIndex: stop.
-
-	^ UniRepeatedCharString withChar: char repeatCount: (stop - start + 1)! !
-
-!UniRepeatedCharString methodsFor: 'private' stamp: 'KenD 4/8/2013 20:22'!
-depth
-	"I am a leaf"
-	
-	^0! !
-
-!UniRepeatedCharString methodsFor: 'enumerating' stamp: 'KenD 4/8/2013 20:20'!
-do: aBlock
-	"aBlock takes each codePoint in me as an argument"
-
-	(1 to: count) do: [ :ignore | aBlock value: char].! !
-
-!UniRepeatedCharString methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 20:42'!
-initialize
-
-	super initialize.
-	char := UniChar space.
-	count := 0. "Empty"! !
-
-!UniRepeatedCharString methodsFor: 'testing' stamp: 'KenD 4/8/2013 19:59'!
-isEmpty
-
-	^ (count = 0)! !
-
-!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:07'!
-size
-	
-	^count! !
-
-!UniRepeatedCharString methodsFor: 'copying' stamp: 'KenD 4/8/2013 20:57'!
-substringFrom: startIndex length: numChars
-	"Answer a UniString."
-	
-	self checkIndex: startIndex.
-	self checkIndex: (startIndex + numChars - 1).
-
-	^ UniRepeatedCharString withChar: char repeatCount: numChars! !
-
-!UniRepeatedCharString methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 21:00'!
-withChar: aChar repeatCount: repeatCount
-
-	char := aChar asUniChar.
-	count := repeatCount.! !
-
-!UniRepeatedCharString class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 20:57'!
-new:  repeatCount
-
-	^ (self basicNew withChar: UniChar space repeatCount: repeatCount)! !
-
-!UniRepeatedCharString class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 20:57'!
-ofSize: repeatCount
-
-	^ (self withChar: UniChar space repeatCount: repeatCount)! !
-
-!UniRepeatedCharString class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 20:59'!
-withChar: aChar repeatCount: repeatCount
-
-	^ (self basicNew withChar: aChar repeatCount: repeatCount) ! !
-
-!UniSplice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 20:35'!
-at: anIndex
-
-	| leftLength |
-	leftLength := self leftRope size.
-	(anIndex <= leftLength)
-	ifTrue:  [^leftRope  at: anIndex]
-	ifFalse: [^rightRope at: (anIndex - leftLength)]! !
-
-!UniSplice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 21:05'!
-at: index put: aCharacter 
-
-	"Answer a new UniString"
-	| leftLength |
-	leftLength := self leftRope size.
-	(index <= leftLength)
-	ifTrue: [ ^ (self leftRope at: index put: (aCharacter asUniChar)) , self rightRope]
-	ifFalse: [ ^ self leftRope ,
-		          (self rightRope at: (index - leftLength) put: (aCharacter asUniChar))]! !
-
-!UniSplice methodsFor: 'private' stamp: 'KenD 2/17/2013 21:26'!
-balanceAsRequired
-	"Rebalance as required"
-
-	(self depth > (UniString maxRopeDepth))
-	ifTrue:  [ ^ self rebalance ]
-	ifFalse: [ ^ self ]! !
-
-!UniSplice methodsFor: 'accessing' stamp: 'KenD 3/19/2013 16:29'!
-codePointAt: anIndex
-
-	| leftLength |
-	leftLength := self leftRope size.
-	(anIndex <= leftLength)
-	ifTrue:  [^leftRope  codePointAt: anIndex]
-	ifFalse: [^rightRope codePointAt: (anIndex - leftLength)]! !
-
-!UniSplice methodsFor: 'enumerating' stamp: 'KenD 2/17/2013 21:40'!
-codePointsDo: aBlock
-	"aBlock takes each codePoint in me as an argument"
-
-	"recurse into the leaves, give them aBlock, and let them do the work"
-	self leftRope  codePointsDo: aBlock.
-	self rightRope codePointsDo: aBlock.! !
-
-!UniSplice methodsFor: 'copying' stamp: 'KenD 4/17/2013 08:37'!
-copyFrom: start to: stop 
-	"Answer a UniString."
-	
-	| leftMaxIndex left right |
-	"Handle odd case the same way as OrderedCollection"
-	(stop < start) ifTrue: [^ UniString emptyString ].
-
-	((1 <= start) and: [stop <= self size])
+	| dirEntry uniFileStream  |	
+	dirEntry :=  (FileDirectory on: fileName) directoryEntry.
+	(timeStamp = dirEntry  modificationDateAndTime) 
 	ifFalse: [
-		(1 <= start) 
-		ifTrue:  [self errorSubscriptBounds: stop]
-		ifFalse: [self errorSubscriptBounds: start]
+		(self confirm: 
+'Caution!! Contents were saved
+elsewhere since you started
+editing them here.  Accept anyway?' ) 
+		ifFalse: [ aTextModelMorph flash. ^nil ]
 	].
+					
+	uniFileStream := UniFileStream newFileNamed: fileName.
+	uniFileStream nextPutAll: self actualContents asUniString; close.
+	timeStamp := (FileDirectory on: fileName) directoryEntry modificationDateAndTime.
+	"@@@FIXME Notify aTextModelMorph"
+	^true
+! !
 
-	leftMaxIndex := self leftRope size.
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:56'!
+timeStamp
+
+	^ timeStamp! !
+
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/14/2013 15:38'!
+fromFile: aFileName
+	"Answer an instance of me if aFileName denotes a readable text file, else nil"
+
+	^self new initialize fromFile: aFileName! !
+
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:32'!
+fromUser
+	"Put up a StandardFileMenu and let the user choose a file to read into me."
+	"Answer an instance of me or nil"
+"
+	UniTextModel fromUser.
+"		
+	| dialogResult slash textModel |
+	dialogResult := (StandardFileMenu new)
+						oldFileFrom: (FileDirectory default) ;
+	 					startUpWithCaption: 'Select a UTF-8 Unicode text file'.
 	
-	"Contained in left rope?"
-	(stop <= leftMaxIndex)
-	ifTrue: [^self leftRope copyFrom: start to: stop].
+	((dialogResult isNil) or: [dialogResult isDirectory]) ifTrue: [ ^nil ].
+
+	slash := FileDirectory slash.
+
+	textModel := self new initialize 
+		fromFile: ( (dialogResult directory fullName) , slash , (dialogResult name) ).
+		
+	SystemWindow 
+		editText: textModel
+			label: 'Unicode Text(''',  (dialogResult name) ,  ''')'
+			wrap: true.
 	
-	"Contained in right ropt?"
-	(start > leftMaxIndex)
-	ifTrue: [^self rightRope copyFrom: (start - leftMaxIndex) to: (stop - leftMaxIndex)].
+	^ textModel! !
+
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 19:11'!
+openLabel: aString
+
+	self new openLabel: aString asUniString! !
+
+!UniFileList methodsFor: 'contents' stamp: 'KenD 4/19/2013 08:19'!
+acceptedContents
+	^ Text
+		initialFont: UniForms default
+		stringOrText: self acceptedStringOrText! !
+
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 15:59'!
+acceptedStringOrText
+	"Answer the contents of the file, reading it first if needed."
+	"Possible brevityState values:
+		FileList,
+		fullFile, briefFile, needToGetFull, needToGetBrief,
+		fullHex, briefHex, needToGetFullHex, needToGetBriefHex"
+
+	(listIndex = 0) | (brevityState == #FileList) ifTrue: [ ^ self defaultContents ].  "no file selected"
 	
-	"Spans both ropes"
-	left   := self leftRope  copyFrom: start to: leftMaxIndex..
-	right := self rightRope copyFrom: 1     to: (stop - leftMaxIndex).
-	^UniSplice splice: left with: right
+	({ #fullFile. #fullHex. #fullUnicode. #briefFile. #briefHex. #briefUnicode. }
+		includes: 	brevityState) 
+	ifTrue: [ ^ acceptedContentsCache ].
+
+	brevityState == #needToGetUnicode ifTrue: [^ self readContentsUnicode: false ].
+"	brevityState == #needToGetFullUnicode ifTrue: [^ self readContentsUnicode: false ].
+	brevityState == #needToGetBriefUnicode ifTrue: [^ self readContentsUnicode: true ].
+"
+	brevityState == #needToGetFullHex ifTrue: [^ self readContentsHex: false ].
+	brevityState == #needToGetBriefHex ifTrue: [^ self readContentsHex: true ].
+
+	brevityState == #needToGetFull ifTrue:  [^ self readContentsBrief: false ].
+	brevityState == #needToGetBrief ifTrue: [ ^ self readContentsBrief: true ].  "default"
+
+	self halt: 'unknown state ' , brevityState printString! !
+
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/13/2013 15:49'!
+defaultContents
+	acceptedContentsCache := (list
+		ifNil: [ String emptyString ]
+		ifNotNil: [
+			(String streamContents:
+				[:s | s nextPutAll: 'NO FILE SELECTED'; newLine.
+				 s nextPutAll: '  -- Folder Summary --'; newLine.
+				 list do: [:item | s nextPutAll: item; newLine]] 
+			) 
+		]
+	).
+	brevityState _ #FileList.
+	^ acceptedContentsCache! !
+
+!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/14/2013 19:22'!
+editorClass
+
+	^UniTextEditor! !
+
+!UniFileList methodsFor: 'file menu action' stamp: 'KenD 4/12/2013 15:56'!
+getUnicode
+	"Get contents of file again, and display in Unicode. Do this by making the cancel string be the contents, and doing a cancel."
+
+	Cursor read showWhile: [
+		brevityState := #needToGetUnicode.  
+		"See method: acceptedStringOrText"
+		self acceptedContentsChanged ]! !
+
+!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/12/2013 15:47'!
+itemsForAnyFile2
+	"Answer a list of universal services that could apply to any file"
+	
+	| services |
+	services := super itemsForAnyFile2.
+	services addFirst: self serviceGetUnicode.
+	^services
 
 ! !
 
-!UniSplice methodsFor: 'private' stamp: 'KenD 2/17/2013 20:19'!
-depth
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/19/2013 08:35'!
+put: aText
+	"Private - put the supplied text onto the file"
+
+	| ff type |
+	(brevityState == #fullUnicode)
+	ifTrue: [ff _ UniFileStream newFileNamed: self fullName.
+		Cursor write showWhile: [ff nextPutAll: aText asString; close].
+		fileName = ff localName 
+			ifTrue: [ acceptedContentsCache _ aText asUniString asText]  "@@@UniLazyString@@@"
+			ifFalse: [self updateFileList].		"user renamed the file"
+		^ true  "accepted"].
+
+	listIndex = 0 ifTrue:
+		[self inform: 'No fileName is selected'.
+		^ false  "failed"].
+	type _ 'These'.
+	brevityState = #fullFile ifTrue: [type _ 'Ascii'].
+	brevityState = #briefFile ifTrue: [type _ 'Abbreviated'].
+	brevityState = #briefHex ifTrue: [type _ 'Abbreviated'].
+	brevityState = #fullHex ifTrue: [type _ 'Hexadecimal'].
+	brevityState = #briefUnicode ifTrue: [type _ 'Unicode'].
+"	brevityState = #fullUnicode ifTrue: [type _ 'Unicode']."
+	brevityState = #FileList ifTrue: [type _ 'Directory'].
+	self inform: ('{1} contents cannot
+meaningfully be saved at present.' format:{type}).
+	^ false  "failed"
+! !
+
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/19/2013 08:35'!
+readContentsUnicode: brevity
+	"retrieve the contents from the external file unless it is too long.
+	  Don't create a file here.  Check if exists."
+	| uniFileStream"  uniString" |
+
+	uniFileStream := UniFileStream oldFileOrNoneNamed: self fullName. 
+	uniFileStream ifNil: [^ 'For some reason, this file cannot be read']
+		ifNotNil: [uniFileStream close].
+"	uniString := uniFileStream contentsOfEntireFile.
+	brevityState := #fullUnicode.
+	uniFileStream close. 
+	acceptedContentsCache := uniString.
+"	
+	brevityState := #fullUnicode.
 	
-	^depth! !
-
-!UniSplice methodsFor: 'enumerating' stamp: 'KenD 2/17/2013 21:43'!
-do: aBlock
-	"aBlock takes each UniChar in me as an argument"
-
-	"recurse into the leaves, give them aBlock, and let them do the work"
-	self leftRope  do: aBlock.
-	self rightRope do: aBlock.! !
-
-!UniSplice methodsFor: 'private' stamp: 'KenD 2/17/2013 20:19'!
-leftRope
-	
-	^leftRope! !
-
-!UniSplice methodsFor: 'private' stamp: 'KenD 2/17/2013 20:19'!
-rightRope
-	
-	^rightRope! !
-
-!UniSplice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 20:36'!
-size
-
-	^totalLength! !
-
-!UniSplice methodsFor: 'initialize-release' stamp: 'KenD 3/31/2013 23:18'!
-withLeft: aRope andRight: anotherRope
-
-	leftRope := aRope asUniString .
-	rightRope := anotherRope asUniString.
-	totalLength := aRope size + anotherRope size.
-	
-	"Common special cases to optimize"
-	
-	"Meld two short flat ropes"
-	(UniSplice shouldMeld: leftRope with: rightRope)
-	ifTrue: [ ^ (aRope meldWith: anotherRope) ].
-	
-	"If left rope has short right child and right rope is short, meld them"
-	((leftRope class == UniSplice )
-		and: [ UniSplice shouldMeld: (leftRope rightRope) with: rightRope ])
-	ifTrue: [
-		^((UniSplice 
-			splice: (leftRope leftRope) "LeftRope's left child"
-			with: ( (leftRope rightRope) meldWith: rightRope  )
-		    ) balanceAsRequired)
-	].
-
-	"The General Case"
-	
-	"depth is not defined for Strings; be sure to use Ropes"
-	depth := 1 + (leftRope depth max: (rightRope depth)).
-	^(self balanceAsRequired)! !
-
-!UniSplice class methodsFor: 'class initialization' stamp: 'KenD 4/10/2013 20:16'!
-initialize
-	"UniSplice class initialization"
-"
-	UniSplice initialize.
-"
-	MeldThreshold := 17.! !
-
-!UniSplice class methodsFor: 'private' stamp: 'KenD 2/17/2013 16:43'!
-meldThreshold
-	"Meld short Unicode character sequences if same representation size and (combined lenth < meldThreshold) get melded (joined) together"
-
-	^MeldThreshold ! !
-
-!UniSplice class methodsFor: 'private' stamp: 'KenD 4/17/2013 08:29'!
-shouldMeld: leftRope with: rightRope
-
-	^( (leftRope isKindOf: UniFlat) 
-	     and: [rightRope isKindOf: UniFlat]
-	       and: [(leftRope size + rightRope size) < self meldThreshold]
-	         and: [ (leftRope bytesPerElement) = (rightRope bytesPerElement) ] )! !
-
-!UniSplice class methodsFor: 'instance creation' stamp: 'KenD 2/17/2013 20:29'!
-splice: aUniString with: anotherUniString
-
-	"Answer a new UniString"
-
-	"Don't bother to concat zero length strings"
-	(aUniString size = 0)
-		ifTrue: [^anotherUniString asUniString ].
+	(acceptedContentsCache class = UniLazyString)
+		ifTrue: [ acceptedContentsCache fileCleanup ]. "Remove old tmp file"
 		
-	(anotherUniString size = 0)
-		ifTrue: [^aUniString asUniString].
+	^ acceptedContentsCache := (UniLazyString onFileNamed: self fullName) asText
+! !
 
-	"Non-trivial. Answer a new instance"	
-	^(self new initialize withLeft: aUniString andRight: anotherUniString) "NB: may return a FlatRope"! !
+!UniFileList methodsFor: 'own services' stamp: 'KenD 4/12/2013 14:42'!
+serviceGetUnicode
 
-!UniSplice class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:41'!
-with:  aUniString with: anotherUniString
-
-	"Answer a new UniString"
-
-	^ self splice: aUniString with: anotherUniString ! !
+	^  (SimpleServiceEntry 
+			provider: self 
+			label: 'view as Unicode' 
+			selector: #getUnicode
+			description: 'view as Unicode')
+			! !
 
 !UniString methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:40'!
 , aStringOrUniString
@@ -6283,6 +3398,3145 @@ with: aThing with: bThing with: cThing
 
 	^ (aThing asUniString) , (bThing asUniString)  , (cThing asUniString)! !
 
+!UniFlat methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:11'!
+at: anIndex
+	
+	^(self codePointAt: anIndex) asUniChar! !
+
+!UniFlat methodsFor: 'accessing' stamp: 'KenD 2/17/2013 20:58'!
+at: index put: aCharacter 
+
+	"Answer a new UniString"
+	(self size = 1)
+	ifTrue: [
+		(index = 1)
+		ifTrue: [^ aCharacter asUniString]
+		ifFalse: [self errorSubscriptBounds: index]
+	].
+	
+	(index = 1)
+	ifTrue: [ ^ (aCharacter asUniString , (self copyFrom: 2 to: self size))].
+	
+	(index = self size)
+	ifTrue: [ ^ (self copyFrom: 1 to: (self size - 1)) , aCharacter asUniString ].
+	
+	^ (self copyFrom: 1 to: (index - 1)) ,
+	   aCharacter asUniString ,
+	   (self copyFrom: (index + 1) to: (self size))! !
+
+!UniFlat methodsFor: 'private' stamp: 'KenD 3/18/2013 21:50'!
+balanceAsRequired
+
+	^self "No action required"! !
+
+!UniFlat methodsFor: 'private' stamp: 'KenD 2/17/2013 16:09'!
+charBlock
+
+	^charBlock! !
+
+!UniFlat methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:10'!
+codePointAt: anIndex
+	
+	^self charBlock at: anIndex! !
+
+!UniFlat methodsFor: 'enumerating' stamp: 'KenD 4/1/2013 19:31'!
+codePointsDo: aBlock
+	"aBlock takes each codePoint in me as an argument"
+
+	(1 to: length) do: [ :index | aBlock value: (charBlock at: index)].! !
+
+!UniFlat methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:11'!
+copyFrom: start to: stop 
+	"Answer a UniString."
+
+	"Handle odd case the same way as OrderedCollection"
+	(stop < start) ifTrue: [^ UniFlat fromString: ''].
+
+	((start = 1) and: (stop = self size))
+	ifTrue: [^self].
+	
+	((1 <= start) and: [stop <= self size])
+	ifTrue: [
+		^(UniFlatSlice new initialize;
+			charBlock: (self charBlock) startIndex: start length: (stop - start + 1))
+	]
+	ifFalse: [
+		(stop > self size) 
+		ifTrue: [self errorSubscriptBounds: stop]
+		ifFalse: [self errorSubscriptBounds: start]
+	]! !
+
+!UniFlat methodsFor: 'private' stamp: 'KenD 2/17/2013 16:11'!
+depth
+	"I am a leaf"
+	
+	^0! !
+
+!UniFlat methodsFor: 'enumerating' stamp: 'KenD 4/1/2013 19:32'!
+do: aBlock
+	"aBlock takes each Unicode character in me as an argument"
+
+	self codePointsDo: [ :codePoint | aBlock value: (codePoint asUniChar) ]! !
+
+!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 19:38'!
+initialize
+
+	super initialize.
+	length := 0. "default"! !
+
+!UniFlat methodsFor: 'accessing' stamp: 'KenD 4/1/2013 19:42'!
+size
+	
+	^ length ! !
+
+!UniFlat methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:13'!
+substringFrom: startIndex length: numChars
+
+	((0 <= startIndex) and: [startIndex + numChars <= self size])
+	ifTrue: [
+		^(UniFlatSlice new initialize;  charBlock: (self charBlock) startIndex: startIndex length: numChars)
+	]
+	ifFalse: [self errorSubscriptBounds: startIndex]! !
+
+!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 19:22'!
+with: aCharBlock
+
+	| blockClass |
+	blockClass := aCharBlock class.
+	"Nota Bene:  (ShortWordArray new: 7) size. ==> 8
+	Use #UniFlat:with:size:"
+	length := aCharBlock size. 
+
+	(blockClass == String) ifTrue: [ 
+		charBlock := aCharBlock asByteArray. 
+		^self 
+	].
+	
+	((blockClass == ByteArray) or: [(blockClass == ShortWordArray) or: [ blockClass == WordArray]])
+	ifTrue: [	 charBlock := aCharBlock. ^self]  "Nota Bene: assumed immutable"
+
+	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
+
+!UniFlat methodsFor: 'initialize-release' stamp: 'KenD 4/15/2013 21:14'!
+with: aCharBlock size: size
+
+	| blockClass |
+	blockClass := aCharBlock class.
+	length := size.
+	
+	(blockClass == String) ifTrue: [ 
+		charBlock := aCharBlock asByteArray. 
+		^self 
+	].
+	
+	((blockClass == ByteArray) or: [(blockClass == ShortWordArray) or: [ blockClass == WordArray]])
+	ifTrue: [ charBlock := aCharBlock. ^self]  "Nota Bene: assumed immutable"
+
+	ifFalse: [ DomainError signal: 'UniString storage must be a ByteArray, ShortIntegerArray, or WordArray']! !
+
+!UniFlat class methodsFor: 'user interface' stamp: 'KenD 4/8/2013 21:14'!
+fromString: aString
+	"Answer a new UniString.
+	As the string must be immutable, we will keep a copy."
+	
+	^ (self basicNew initialize with: (aString asString copy) size: aString size; yourself)! !
+
+!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 21:52'!
+at: anIndex
+
+	^(self codePointAt: anIndex) asUniChar "Nota Bene: #codePointAt: does the index offset"! !
+
+!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/19/2013 15:43'!
+at: index put: aCharacter 
+
+	"Answer a new rope"
+	| offsetIndex firstIndex endIndex |
+	
+	firstIndex := self startIndex.
+	endIndex := firstIndex + self size - 1.
+	offsetIndex := index +  firstIndex - 1.
+	
+	(self size = 1)
+	ifTrue:  [
+		(offsetIndex = 1)
+		ifTrue: [^ aCharacter asUniString ]
+		ifFalse: [self errorSubscriptBounds: index]
+	].
+	
+	(index = 1)
+	ifTrue: [ ^ aCharacter asUniString , (self copyFrom: 2 to: self size)].
+	
+	(offsetIndex = endIndex)
+	ifTrue: [ ^ (self copyFrom: 1 to: (index - 1)) , aCharacter asUniString ].
+	
+	^ (self copyFrom: 1 to: (index - 1)) ,
+	   aCharacter asUniString ,
+	   (self copyFrom: (index + 1) to: self size )! !
+
+!UniFlatSlice methodsFor: 'private' stamp: 'KenD 3/18/2013 21:51'!
+balanceAsRequired
+
+	^self "No action required"! !
+
+!UniFlatSlice methodsFor: 'private' stamp: 'KenD 2/17/2013 16:32'!
+charBlock
+
+	^charBlock ! !
+
+!UniFlatSlice methodsFor: 'initialize-release' stamp: 'KenD 2/17/2013 16:36'!
+charBlock: aCharBlock startIndex: anIndex length: numberOfChars
+	
+	startIndex := anIndex.
+	length := numberOfChars.
+	charBlock := aCharBlock.
+	
+	"Idiot checks"
+	(aCharBlock size < (numberOfChars - anIndex + 1))
+	ifTrue: [self error: 'Length exceeds max' , (numberOfChars - anIndex + 1) printString ].
+	
+	(numberOfChars < 0)
+	ifTrue: [self error: 'Can''t have negative length' , numberOfChars].
+	
+	((anIndex < 1) or: (anIndex > aCharBlock size))
+	ifTrue: [self errorSubscriptBounds: anIndex].
+	
+	^self! !
+
+!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:32'!
+codePointAt: anIndex
+
+	^self charBlock at: (anIndex + startIndex - 1)! !
+
+!UniFlatSlice methodsFor: 'enumerating' stamp: 'KenD 4/1/2013 19:34'!
+codePointsDo: aBlock
+	"aBlock takes each codePoint in me as an argument"
+
+	startIndex to: (startIndex + length - 1) do: [ :index |  aBlock value: (charBlock at: index) ]! !
+
+!UniFlatSlice methodsFor: 'copying' stamp: 'KenD 2/17/2013 22:07'!
+copyFrom: start to: stop 
+	"Answer a UniFlatSlice which shares my string"
+	
+	| offsetStart offsetStop |
+	offsetStart := start - 1 + self startIndex.
+	offsetStop := stop  - 1 + self startIndex.
+	
+	"Handle odd case the same way as OrderedCollection"
+	(stop < start) ifTrue: [^ UniFlatSlice fromString: ''].
+
+	((1 <= start) and: [stop <= (self charBlock size)])
+	ifTrue: [
+		^(UniFlatSlice new initialize 
+			charBlock: (self charBlock) 
+			startIndex: offsetStart
+			length: (stop - start + 1))
+	]
+	ifFalse: [
+		(offsetStop > self charBlock size) 
+		ifTrue: [self errorSubscriptBounds: stop]
+		ifFalse: [self errorSubscriptBounds: start]
+	]! !
+
+!UniFlatSlice methodsFor: 'private' stamp: 'KenD 2/17/2013 16:36'!
+depth
+	"I am a leaf"
+
+	^0! !
+
+!UniFlatSlice methodsFor: 'enumerating' stamp: 'KenD 2/17/2013 20:07'!
+do: aBlock
+	"aBlock takes each Unicode character in me as an argument"
+
+	self codePointsDo: [ :codePoint |  aBlock value: (codePoint asUniChar) ]! !
+
+!UniFlatSlice methodsFor: 'initialize-release' stamp: 'KenD 4/1/2013 20:06'!
+initialize
+
+	super initialize.
+	"set defaults"
+	length := 0.
+	startIndex := 1.! !
+
+!UniFlatSlice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 16:37'!
+size
+
+	^length! !
+
+!UniFlatSlice methodsFor: 'private' stamp: 'KenD 2/17/2013 16:37'!
+startIndex
+
+	^startIndex! !
+
+!UniFlatSlice methodsFor: 'private' stamp: 'KenD 3/18/2013 15:36'!
+string
+
+	"Answer my slice [a UniFlat]"
+	^ (charBlock from: startIndex to: (startIndex + length - 1)) as: UniString! !
+
+!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:20'!
+at: anIndex
+	"Read as much as is required to satisfy the request.  Answer a UniChar"
+	
+	self extendForIndex: anIndex.
+	^ (soFar codePointAt: anIndex) asUniChar! !
+
+!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:20'!
+at: anIndex put: aUniChar
+	"Read as much as is required to satisfy the request.  Answer a UniString"
+	
+	self extendForIndex: anIndex.
+	^ (soFar at: anIndex put: aUniChar asUniChar)! !
+
+!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:20'!
+codePointAt: anIndex
+
+	self extendForIndex: anIndex.
+	^ (soFar codePointAt: anIndex)! !
+
+!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:51'!
+codePointsDo: aBlock
+	"aBlock takes each codePoint in me as an argument"
+
+	self readEntireContents.
+	^ soFar codePointsDo: aBlock! !
+
+!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:50'!
+collect: aBlock
+	"Evaluate aBlock with each of the receiver's elements as the argument. 
+	Collect the resulting values into a collection like the receiver. Answer 
+	the new collection."
+
+	self readEntireContents.
+	^ soFar collect: aBlock! !
+
+!UniLazyString methodsFor: 'copying' stamp: 'KenD 4/18/2013 21:53'!
+copyFrom: start to: stop 
+	"Answer a UniString."
+	
+	"Handle odd case the same way as OrderedCollection"
+	(stop < start) ifTrue: [^ UniString emptyString ].
+
+	self extendForIndex: stop.
+	
+	^ soFar copyFrom: start to: stop! !
+
+!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 17:16'!
+depth
+	"I cannot be rebalanced"
+	^ 0! !
+
+!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:50'!
+do: aBlock
+	"aBlock takes each UniChar in me as an argument"
+
+	self readEntireContents.
+	^ soFar do: aBlock! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:33'!
+extendForIndex: anIndex
+	"If (anIndex > soFar size),  Extend soFar to include anIndex"
+"
+Transcript log: 'UniLazyString>>extendForIndex: ',
+				(anIndex  asString), '  ', (soFar size) asString ,
+  				String newLineString.
+"			
+	(anIndex > (soFar size)) ifTrue: [ | delta |
+		delta := anIndex - (soFar size).
+		(delta < ChunkSize)
+			ifTrue: [ soFar := soFar , (uniFileStream nextUpTo: ChunkSize) ]
+			ifFalse: [ soFar := soFar , (uniFileStream nextUpTo: (delta + 100)) ].
+		self fileCheck.
+	]! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:33'!
+fileCheck
+	"Close and remove tempFile if all characters consumed"
+"
+Transcript log: 'UniLazyString>>fileCheck  closed? >> ',
+				(uniFileStream closed asString),
+  				String newLineString.
+"			
+	((uniFileStream closed not) and: [uniFileStream atEnd])
+		 ifTrue: [ self fileCleanup ]! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 17:30'!
+fileCleanup
+	"Close and remove tempFile"
+
+	 | fileName |
+	fileName := uniFileStream name.
+	uniFileStream close.
+	FileDirectory deleteFilePath: fileName.! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 18:03'!
+finalize
+
+	super finalize.
+	self fileCleanup.
+	! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 18:26'!
+genTempFileName
+	"Answer the name of a file which is different than one that exists"
+	
+	"@@FIXME: Use /tmp on Unix, ??? on Windows"
+	
+	| dir looking rand fileName |
+	
+	looking := true.
+	dir := FileDirectory default.
+	[looking] whileTrue: [
+		 rand := 777 atRandom: (Random new initialize).
+ 		 fileName := 'tmp' , rand asString.
+ 		 looking := dir fileExists: fileName.
+	].
+	^ fileName
+! !
+
+!UniLazyString methodsFor: 'initialize-release' stamp: 'KenD 4/18/2013 21:31'!
+initializeFromFile: aName
+	
+	| tmpFileName |
+	super initialize.
+	"As UniStrings are immutable, copy the file"
+	tmpFileName := self genTempFileName.
+	FileDirectory default copyFileNamed: aName toFileNamed: tmpFileName.
+	
+	"Open a UniFileStream on the copy"
+	fileName := aName.
+	totalCount := nil.
+	uniFileStream := UniFileStream readOnlyFileNamed: tmpFileName.
+	soFar := uniFileStream nextUpTo: ChunkSize.
+	
+	^self
+	! !
+
+!UniLazyString methodsFor: 'printing' stamp: 'KenD 4/18/2013 21:35'!
+printOn: aStream 
+	"Look good in the inspector"
+"
+	'little string thing' asUniString inspect.
+"
+	aStream nextPutAll: 'UniLazyString(''' , fileName , ''')'
+	! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:33'!
+readEntireContents
+	"Enumerators process the entire range of characters"
+"
+Transcript log: 'UniLazyString>>readEntireContents closed? >> ',
+				(uniFileStream closed asString),
+  				String newLineString.
+"
+	(uniFileStream closed) ifFalse: [ 
+		soFar := soFar , (uniFileStream upToEnd).
+		self fileCleanup.
+	].
+	(totalCount isNil) ifFalse: [ totalCount := soFar size ]! !
+
+!UniLazyString methodsFor: 'enumerating' stamp: 'KenD 4/18/2013 18:50'!
+select: aBlock
+	"Refer to the comment in Collection>>select:."
+
+	self readEntireContents.
+	^ soFar select: aBlock! !
+
+!UniLazyString methodsFor: 'accessing' stamp: 'KenD 4/18/2013 20:21'!
+size
+	"Answer the niumber of codePoints in me"
+
+	| oldPos count |
+	(totalCount isNil) ifFalse: [ ^totalCount ].
+	(uniFileStream closed) ifTrue: [ ^totalCount := soFar size ].
+	
+	oldPos := uniFileStream position.
+	count := 0.
+	[uniFileStream atEnd] whileFalse: [
+		"Read the count of codePoints (NOT Bytes!!)"
+		uniFileStream nextCodePoint. "But don't save"
+		count := count + 1.
+	].
+	uniFileStream position: oldPos.
+	totalCount := (soFar size) + count.
+	
+	^ totalCount
+! !
+
+!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 21:34'!
+soFar
+	"Debug only"
+	^soFar! !
+
+!UniLazyString class methodsFor: 'class initialization' stamp: 'KenD 4/18/2013 19:10'!
+initialize
+"
+	UniLazyString initialize.
+"
+	ChunkSize := 1024.
+	! !
+
+!UniLazyString class methodsFor: 'instance creation' stamp: 'KenD 4/18/2013 20:54'!
+onFileNamed: aName
+	"Answer a new instance of me"
+"
+ls := (UniLazyString onFileNamed: 'Pasted.utf8').
+ls := (UniLazyString onFileNamed: 'test-utf8.txt').
+"
+	 | dirEntry |
+	(FileDirectory default fileExists: aName)
+		ifFalse: [ ^ self error: 'Failed to find file ' , aName ].
+
+	dirEntry := FileDirectory directoryEntryFor: aName.
+	(dirEntry isDirectory) 
+		ifTrue: [ ^self error: 'Not a text file: ' , aName ].
+		
+	((dirEntry fileSize) < ChunkSize)
+	ifTrue: [ ^ UniString fromFile: aName ] "Too small to bother with"
+	ifFalse: [ ^ self new initializeFromFile: aName ]
+
+	! !
+
+!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:10'!
+at: anIndex
+
+	self checkIndex: anIndex.
+	
+	^char! !
+
+!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:14'!
+at: index put: aCharacter 
+	"Answer a new UniString"
+	
+	self checkIndex: index.
+	(self size = 1)
+	ifTrue: [ ^ aCharacter asUniString].
+	
+	(index = 1)
+	ifTrue: [ ^ (aCharacter asUniString , (self copyFrom: 2 to: self size))].
+	
+	(index = self size)
+	ifTrue: [ ^ (self copyFrom: 1 to: (self size - 1)) , aCharacter asUniString ].
+	
+	^ (self copyFrom: 1 to: (index - 1)) ,
+	   aCharacter asUniString ,
+	   (self copyFrom: (index + 1) to: (self size))! !
+
+!UniRepeatedCharString methodsFor: 'private' stamp: 'KenD 4/8/2013 20:09'!
+checkIndex: anIndex
+
+	(anIndex < 1 or: [anIndex > count])
+	ifTrue: [ self error: 'Index out of range ' , (anIndex asString)]! !
+
+!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:10'!
+codePointAt: anIndex
+
+	self checkIndex: anIndex.
+
+	^ (char codePoint)! !
+
+!UniRepeatedCharString methodsFor: 'enumerating' stamp: 'KenD 4/8/2013 20:20'!
+codePointsDo: aBlock
+	"aBlock takes each codePoint in me as an argument"
+
+	| code |
+	code := char codePoint.
+	(1 to: count) do: [ :ignore | aBlock value: code].! !
+
+!UniRepeatedCharString methodsFor: 'copying' stamp: 'KenD 4/8/2013 20:57'!
+copyFrom: start to: stop 
+	"Answer a UniString."
+
+	"Handle odd case the same way as OrderedCollection"
+	(stop < start) ifTrue: [^ UniString emptyString ].
+	
+	self checkIndex: start.
+	self checkIndex: stop.
+
+	^ UniRepeatedCharString withChar: char repeatCount: (stop - start + 1)! !
+
+!UniRepeatedCharString methodsFor: 'private' stamp: 'KenD 4/8/2013 20:22'!
+depth
+	"I am a leaf"
+	
+	^0! !
+
+!UniRepeatedCharString methodsFor: 'enumerating' stamp: 'KenD 4/8/2013 20:20'!
+do: aBlock
+	"aBlock takes each codePoint in me as an argument"
+
+	(1 to: count) do: [ :ignore | aBlock value: char].! !
+
+!UniRepeatedCharString methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 20:42'!
+initialize
+
+	super initialize.
+	char := UniChar space.
+	count := 0. "Empty"! !
+
+!UniRepeatedCharString methodsFor: 'testing' stamp: 'KenD 4/8/2013 19:59'!
+isEmpty
+
+	^ (count = 0)! !
+
+!UniRepeatedCharString methodsFor: 'accessing' stamp: 'KenD 4/8/2013 20:07'!
+size
+	
+	^count! !
+
+!UniRepeatedCharString methodsFor: 'copying' stamp: 'KenD 4/8/2013 20:57'!
+substringFrom: startIndex length: numChars
+	"Answer a UniString."
+	
+	self checkIndex: startIndex.
+	self checkIndex: (startIndex + numChars - 1).
+
+	^ UniRepeatedCharString withChar: char repeatCount: numChars! !
+
+!UniRepeatedCharString methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 21:00'!
+withChar: aChar repeatCount: repeatCount
+
+	char := aChar asUniChar.
+	count := repeatCount.! !
+
+!UniRepeatedCharString class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 20:57'!
+new:  repeatCount
+
+	^ (self basicNew withChar: UniChar space repeatCount: repeatCount)! !
+
+!UniRepeatedCharString class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 20:57'!
+ofSize: repeatCount
+
+	^ (self withChar: UniChar space repeatCount: repeatCount)! !
+
+!UniRepeatedCharString class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 20:59'!
+withChar: aChar repeatCount: repeatCount
+
+	^ (self basicNew withChar: aChar repeatCount: repeatCount) ! !
+
+!UniSplice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 20:35'!
+at: anIndex
+
+	| leftLength |
+	leftLength := self leftRope size.
+	(anIndex <= leftLength)
+	ifTrue:  [^leftRope  at: anIndex]
+	ifFalse: [^rightRope at: (anIndex - leftLength)]! !
+
+!UniSplice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 21:05'!
+at: index put: aCharacter 
+
+	"Answer a new UniString"
+	| leftLength |
+	leftLength := self leftRope size.
+	(index <= leftLength)
+	ifTrue: [ ^ (self leftRope at: index put: (aCharacter asUniChar)) , self rightRope]
+	ifFalse: [ ^ self leftRope ,
+		          (self rightRope at: (index - leftLength) put: (aCharacter asUniChar))]! !
+
+!UniSplice methodsFor: 'private' stamp: 'KenD 2/17/2013 21:26'!
+balanceAsRequired
+	"Rebalance as required"
+
+	(self depth > (UniString maxRopeDepth))
+	ifTrue:  [ ^ self rebalance ]
+	ifFalse: [ ^ self ]! !
+
+!UniSplice methodsFor: 'accessing' stamp: 'KenD 3/19/2013 16:29'!
+codePointAt: anIndex
+
+	| leftLength |
+	leftLength := self leftRope size.
+	(anIndex <= leftLength)
+	ifTrue:  [^leftRope  codePointAt: anIndex]
+	ifFalse: [^rightRope codePointAt: (anIndex - leftLength)]! !
+
+!UniSplice methodsFor: 'enumerating' stamp: 'KenD 2/17/2013 21:40'!
+codePointsDo: aBlock
+	"aBlock takes each codePoint in me as an argument"
+
+	"recurse into the leaves, give them aBlock, and let them do the work"
+	self leftRope  codePointsDo: aBlock.
+	self rightRope codePointsDo: aBlock.! !
+
+!UniSplice methodsFor: 'copying' stamp: 'KenD 4/17/2013 08:37'!
+copyFrom: start to: stop 
+	"Answer a UniString."
+	
+	| leftMaxIndex left right |
+	"Handle odd case the same way as OrderedCollection"
+	(stop < start) ifTrue: [^ UniString emptyString ].
+
+	((1 <= start) and: [stop <= self size])
+	ifFalse: [
+		(1 <= start) 
+		ifTrue:  [self errorSubscriptBounds: stop]
+		ifFalse: [self errorSubscriptBounds: start]
+	].
+
+	leftMaxIndex := self leftRope size.
+	
+	"Contained in left rope?"
+	(stop <= leftMaxIndex)
+	ifTrue: [^self leftRope copyFrom: start to: stop].
+	
+	"Contained in right ropt?"
+	(start > leftMaxIndex)
+	ifTrue: [^self rightRope copyFrom: (start - leftMaxIndex) to: (stop - leftMaxIndex)].
+	
+	"Spans both ropes"
+	left   := self leftRope  copyFrom: start to: leftMaxIndex..
+	right := self rightRope copyFrom: 1     to: (stop - leftMaxIndex).
+	^UniSplice splice: left with: right
+
+! !
+
+!UniSplice methodsFor: 'private' stamp: 'KenD 2/17/2013 20:19'!
+depth
+	
+	^depth! !
+
+!UniSplice methodsFor: 'enumerating' stamp: 'KenD 2/17/2013 21:43'!
+do: aBlock
+	"aBlock takes each UniChar in me as an argument"
+
+	"recurse into the leaves, give them aBlock, and let them do the work"
+	self leftRope  do: aBlock.
+	self rightRope do: aBlock.! !
+
+!UniSplice methodsFor: 'private' stamp: 'KenD 2/17/2013 20:19'!
+leftRope
+	
+	^leftRope! !
+
+!UniSplice methodsFor: 'private' stamp: 'KenD 2/17/2013 20:19'!
+rightRope
+	
+	^rightRope! !
+
+!UniSplice methodsFor: 'accessing' stamp: 'KenD 2/17/2013 20:36'!
+size
+
+	^totalLength! !
+
+!UniSplice methodsFor: 'initialize-release' stamp: 'KenD 3/31/2013 23:18'!
+withLeft: aRope andRight: anotherRope
+
+	leftRope := aRope asUniString .
+	rightRope := anotherRope asUniString.
+	totalLength := aRope size + anotherRope size.
+	
+	"Common special cases to optimize"
+	
+	"Meld two short flat ropes"
+	(UniSplice shouldMeld: leftRope with: rightRope)
+	ifTrue: [ ^ (aRope meldWith: anotherRope) ].
+	
+	"If left rope has short right child and right rope is short, meld them"
+	((leftRope class == UniSplice )
+		and: [ UniSplice shouldMeld: (leftRope rightRope) with: rightRope ])
+	ifTrue: [
+		^((UniSplice 
+			splice: (leftRope leftRope) "LeftRope's left child"
+			with: ( (leftRope rightRope) meldWith: rightRope  )
+		    ) balanceAsRequired)
+	].
+
+	"The General Case"
+	
+	"depth is not defined for Strings; be sure to use Ropes"
+	depth := 1 + (leftRope depth max: (rightRope depth)).
+	^(self balanceAsRequired)! !
+
+!UniSplice class methodsFor: 'class initialization' stamp: 'KenD 4/10/2013 20:16'!
+initialize
+	"UniSplice class initialization"
+"
+	UniSplice initialize.
+"
+	MeldThreshold := 17.! !
+
+!UniSplice class methodsFor: 'private' stamp: 'KenD 2/17/2013 16:43'!
+meldThreshold
+	"Meld short Unicode character sequences if same representation size and (combined lenth < meldThreshold) get melded (joined) together"
+
+	^MeldThreshold ! !
+
+!UniSplice class methodsFor: 'private' stamp: 'KenD 4/17/2013 08:29'!
+shouldMeld: leftRope with: rightRope
+
+	^( (leftRope isKindOf: UniFlat) 
+	     and: [rightRope isKindOf: UniFlat]
+	       and: [(leftRope size + rightRope size) < self meldThreshold]
+	         and: [ (leftRope bytesPerElement) = (rightRope bytesPerElement) ] )! !
+
+!UniSplice class methodsFor: 'instance creation' stamp: 'KenD 2/17/2013 20:29'!
+splice: aUniString with: anotherUniString
+
+	"Answer a new UniString"
+
+	"Don't bother to concat zero length strings"
+	(aUniString size = 0)
+		ifTrue: [^anotherUniString asUniString ].
+		
+	(anotherUniString size = 0)
+		ifTrue: [^aUniString asUniString].
+
+	"Non-trivial. Answer a new instance"	
+	^(self new initialize withLeft: aUniString andRight: anotherUniString) "NB: may return a FlatRope"! !
+
+!UniSplice class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:41'!
+with:  aUniString with: anotherUniString
+
+	"Answer a new UniString"
+
+	^ self splice: aUniString with: anotherUniString ! !
+
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 4/13/2013 19:09'!
+save: aKeyboardEvent
+	"Submit the current text.  Equivalent to 'accept' "
+
+	self acceptContents.
+	^ true! !
+
+!UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 4/13/2013 19:08'!
+cmdShortcutsSpec
+	"
+	Editor initialize
+	"
+	"arranged in QWERTY keyboard order"
+	^#(
+		#(		$0 	changeEmphasis:			'Normal')
+		#(		$1 	changeEmphasis:			'Bold')
+		#(		$2 	changeEmphasis:			'Italic')
+		#(		$3 	changeEmphasis:			'Underline')
+		#(		$4 	changeEmphasis:			'Strikeout')
+		#(		$5 	changeEmphasis:			'Negative kern (letters 1 pixel closer)')
+		#(		$6 	changeEmphasis:			'Positive kern (letters 1 pixel larger spread)')
+		#(		$8	#offerColorMenu:			'Change color')
+
+		#(		$k	#offerFontMenu:			'Set font')
+		
+		#(		$s	#save:							'Save (i.e. accept)')
+
+		#(		$u	#align:						'Toggle alignment')
+	)! !
+
+!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:39'!
+fromFile: aFileNameString
+"
+	UniTextEditor fromFile: 'utf8sampler.txt'.
+"
+	| textModel |
+	textModel := UniTextModel fromFile: aFileNameString.
+
+	textModel isNil ifFalse: [
+		SystemWindow 
+			editText: textModel
+			label: 'Text Editor (''',  (textModel fileName) ,  ''')'
+			wrap: true.
+	]
+	! !
+
+!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:28'!
+fromUser
+"
+	UniTextEditor fromUser.
+"
+	UniTextModel fromUser! !
+
+!UniTextEditor class methodsFor: 'class initialization' stamp: 'KenD 4/14/2013 18:05'!
+initialize
+
+"
+	UniTextEditor initialize.
+"
+	super initialize! !
+
+!UniFileStream methodsFor: 'properties-setting' stamp: 'KenD 4/10/2013 09:49'!
+ascii
+	"We don't do ASCII"
+	
+	DomainError signal: 'Unicode does not fit into ASCII; ASCII is a subset of Unicode'! !
+
+!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 16:56'!
+contents
+	"Answer the file contrents as a UniString"
+	
+	"@@FIXME: answer a lazy file UniString @@"
+	| oldPos result |
+	oldPos := self position.
+	self resetToStart.
+	result := self upToEnd.
+	self position: oldPos.
+	^result! !
+
+!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 17:00'!
+contentsOfEntireFile
+	"Read all of the contents of the receiver."
+	
+	^ self contents! !
+
+!UniFileStream methodsFor: 'initialize-release' stamp: 'KenD 4/10/2013 21:38'!
+initialize
+
+	super initialize.
+	self binary.   "My buffer of bytes in UTF-8 encoding"
+! !
+
+!UniFileStream methodsFor: 'testing' stamp: 'KenD 4/10/2013 15:43'!
+isAscii
+	^false! !
+
+!UniFileStream methodsFor: 'testing' stamp: 'KenD 4/10/2013 15:43'!
+isBinary
+	^false! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 10:06'!
+next
+	"Answer the next UniChar"
+
+	^ self nextCodePoint asUniChar! !
+
+!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 16:58'!
+next: anInteger 
+	"Answer the next anInteger elements of my collection."
+	
+	^ self nextUpTo: anInteger ! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:43'!
+next: count into: aUniString startingAt: startIndex
+	"Answer a UniString altered by reading count Unicode characters spliced in at startIndex .
+	Return a UniString or a partial copy if less than count elements have been read."
+	
+	| splice uString |
+	splice := self nextUpTo: count.
+	uString := aUniString asUniString.
+	
+	^ (uString copyFrom: 1 to: (startIndex - 1)) , 
+	  splice , 
+	  (uString copyFrom: startIndex to: uString size)
+! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:04'!
+next: anInteger putAll: aCollection startingAt: startIndex
+	"Store the next anInteger elements from the given collection."
+	
+	^ self nextPutAll: ((aCollection asUniString) copyFrom: startIndex to: (aCollection size)).
+! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/17/2013 08:16'!
+nextCodePoint
+	"Answer the next Unicode codePoint"
+	
+	"@@FIXME: Error recovery (perhaps ^nil) rather than signalling an error?"
+
+	| byte1 byte2 byte3 byte4 codePoint |
+	byte1 _ super next asInteger.
+	byte1 < 128 ifTrue: [ ^ byte1 ].	"single byte"
+		
+	
+	"At least 2 bytes"
+	byte2 _ super next asInteger.
+	(byte2 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
+	(byte1 bitAnd: 16rE0) = 192 ifTrue: [ "two bytes"
+		codePoint := ((byte1 bitAnd: 31) bitShift: 6) 
+		 				+ (byte2 bitAnd: 63).
+		^ codePoint
+	].
+	
+	"At least 3 bytes"
+	byte3 := super next asInteger.
+	(byte3 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
+	(byte1 bitAnd: 16rF0) = 224 ifTrue: [ "three bytes"
+		codePoint :=  ((byte1 bitAnd: 15) bitShift: 12) 
+						+ ((byte2 bitAnd: 63) bitShift: 6) 
+						+ (byte3 bitAnd: 63).
+		^codePoint.
+	].
+
+	"4 bytes"
+	byte4 := super next asInteger.
+	(byte4 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
+	(byte1 bitAnd: 16rF8) = 240 ifTrue: [  "four bytes"
+		codePoint := ((byte1 bitAnd: 16r7) bitShift: 18) 
+						+ ((byte2 bitAnd: 63) bitShift: 12) 
+						+ ((byte3 bitAnd: 63) bitShift: 6) 
+						+ (byte4 bitAnd: 63).
+		^ codePoint
+	].
+! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 10:15'!
+nextPut: uniChar
+	"Write the UniChar codePoint to this file encoded as UTF-8."
+
+	| codePoint |
+	codePoint := uniChar codePoint.
+	codePoint < 128 ifTrue: [ 
+		^ self nextPutByte: codePoint ].
+	codePoint < 2048 ifTrue: [ 
+		^ self 
+			nextPutByte: (2r11000000 + (codePoint bitShift: -6)); 
+			nextPutByte: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	codePoint < 65535 ifTrue: [ 
+		^ self 
+			nextPutByte: (2r11100000 + (codePoint bitShift: -12));
+			nextPutByte: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
+			nextPutByte: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	codePoint <= 16r10FFFF  ifTrue: [  "maximumUTF8Code"
+		^ self 
+			nextPutByte: (2r11110000 + (codePoint bitShift: -18));
+			nextPutByte: (2r10000000 + (codePoint bitShift: -12));
+			nextPutByte: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
+			nextPutByte: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	self error: 'Unicode character code point outside range'
+! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:06'!
+nextPutAll: aCollection
+	"Write all the Unicode characters of the given colection to this file."
+	
+	(aCollection asUniString) codePointsDo: [ :codePoint | self nextPut: codePoint ].
+	^ aCollection "what StandardFileStream returns"
+! !
+
+!UniFileStream methodsFor: 'private' stamp: 'KenD 4/10/2013 21:50'!
+nextPutByte: aByte
+	"Write the given byte to a file"
+
+	^ super nextPut: aByte asCharacter
+"	rwmode ifFalse: [^ self error: 'Cannot write a read-only file'].
+	collection ifNotNil: [ 
+		position < readLimit ifTrue: [ self flushReadBuffer ] ].
+	buffer1 at: 1 put: aByte.
+	self primWrite: fileID from: buffer1 startingAt: 1 count: 1.
+	^ aByte
+"! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/18/2013 20:15'!
+nextUpTo: count
+	"Answer a subcollection from the current access position through count or EOF."
+		
+	| result numRead |
+	result := UniStringWrapper new.
+	numRead := 0.
+	
+	[(self atEnd) or: [numRead >= count]] whileFalse: [ 
+		result nextPut: self next.
+		numRead := numRead + 1.
+	].
+
+	^ result asUniString! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 15:48'!
+padToEndWith: aChar
+	"On the Mac, files do not truncate.  One can delete the old file and write a new one, but sometime deletion fails (file still open? file stale?).  This is a sad compromise.  Just let the file be the same length but pad it with a harmless character."
+
+	| pad |
+	pad := aChar asUniChar.
+	[self atEnd] whileFalse:  [ self nextPut: pad ].! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 15:50'!
+peek
+	"Answer what would be returned if the message next were sent to the receiver. If the receiver is at the end, answer nil.  "
+	| next oldPos |
+	self atEnd ifTrue: [ ^ nil ].
+	oldPos := self position.
+	next _ self next.
+	self position: oldPos.
+	^ next! !
+
+!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 16:51'!
+peekFor: item 
+	"Answer false and do not advance if the next element is not equal to item, or if this stream is at the end.  If the next element is equal to item, then advance over it and return true"
+	| next oldPos |
+	oldPos := self position.
+	
+	(next _ self next) ifNil: [ ^ false ].
+
+	(item = next) ifTrue: [ ^ true ].
+
+	self position: oldPos.
+	^ false! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:11'!
+readInto: byteArray startingAt: startIndex count: count
+	"Read into the given array as specified, and return the count
+	actually transferred.  index and count are in units of bytes or
+	longs depending on whether the array is Bitmap, String or ByteArray"
+	
+	"This is a DANGEROUS way to get binary data dirtectly without opening a binary fileStream.
+	 There is NO synchronization between bytes and UTF-8 encoded codePoints.
+	NOTE: This will NOT work with a UniString in place of a byteArray!!"
+	Transcript log: 'WARNING: UniFileStream>>readInto:startingAt:count: invoked on ',
+						(self printString).
+
+	^super readInto: byteArray startingAt: startIndex count: count! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/17/2013 08:13'!
+skip: anInteger
+	"Set the byte position to anInteger bytes from the current position.
+	anInteger can be positive o negative.
+	Error if not enough bytes left in the file. "
+
+	| newPos |
+	newPos := self position + anInteger.
+	
+	(newPos < 0) 
+	ifTrue: [ self error: 'Can''t set file position to before beginning of file' ].
+	
+	(newPos > readLimit) 
+	ifTrue: [ self error: 'Can''t set file position past end of file' ].
+	
+	^ self position: (self position + anInteger)! !
+
+!UniFileStream methodsFor: 'properties-setting' stamp: 'KenD 4/10/2013 21:34'!
+unicode
+	"the only thing we do"
+	self binary! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:14'!
+upTo: delim 
+	"Answer a UniString of UniChars up to the delimiter or EOF."
+	"Read but do NOT return the delimiter"
+	
+	| result delimiter |
+	delimiter := delim asUniChar.
+	result := UniStringWrapper new.
+	[self atEnd] whileFalse: [ | nextUniChar |
+		nextUniChar := self next.
+		
+		(nextUniChar = delimiter) 
+		ifTrue: [ ^ result asUniString ]
+		ifFalse: [ result nextPut: nextUniChar ].
+	].
+	"Reached EOF = End Of File"
+	^ result asUniString! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:18'!
+upToAny: aCollection 
+	"Similar to upTo:, but find any of the objects in aCollection"
+	
+	| result delimiters |
+	(aCollection isKindOf: UniString)
+	ifTrue: [ delimiters := aCollection ] 
+	ifFalse: [ delimiters := (aCollection collect: [ :elt | elt asUniChar ]) asUniString ].
+	
+	result := UniStringWrapper new.
+	[self atEnd] whileFalse: [ | nextUniChar |
+		nextUniChar := self next.
+		
+		(delimiters includes: nextUniChar) 
+		ifTrue: [ ^ result asUniString ]
+		ifFalse: [ result nextPut: nextUniChar ].
+	].
+	"Reached EOF = End Of File"
+	^ result asUniString! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 16:15'!
+upToEnd
+	"Answer a subcollection from the current access position through the last element of the receiver."
+		
+	| result |
+	result := UniStringWrapper new.
+	
+	[self atEnd] whileFalse: [ result nextPut: self next ].
+
+	^ result asUniString! !
+
+!UniFileStream class methodsFor: 'concrete classes' stamp: 'KenD 4/12/2013 15:32'!
+concreteStream
+	"Who should we really direct class queries to? "
+	^ UniFileStream! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
+< aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self codePoint) < (aCharacter asUniChar codePoint) " NB: Insensitive to case"! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
+= aCharacter 
+	"Answer true if codePoints are equal"
+
+	^ (self codePoint) = (aCharacter asUniChar codePoint) " NB: Insensitive to case"! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
+> aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self codePoint) > (aCharacter asUniChar codePoint) " NB: Insensitive to case"! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/13/2013 17:04'!
+asCharacter
+
+	(codePoint < 255)
+	ifTrue: [ ^ codePoint asCharacter ]
+	ifFalse: [ DomainError signal: 'Unicode code point out of range for ISO 8859-15' ]! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 4/6/2013 16:31'!
+asCursor
+
+	"Answer my 16 x 16 form as a Cursor"
+	
+"
+	16r2740 asUniChar asCursor beCursor.       ""  Flower 'dingbat'.  ""
+	16r2764 asUniChar asCursor beCursor.       ""  Heart 'dingbat'  ""
+"
+	^ CursorWithMask derivedFrom: self form! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 2/26/2013 15:32'!
+asInteger
+
+	"Answer my value as an integer"
+	^self codePoint! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/18/2013 21:41'!
+asLowercase
+
+	^self toLower! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 2/17/2013 14:42'!
+asUniChar
+
+	^self! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 2/24/2013 15:11'!
+asUniString
+
+	^ UniString fromCodePointCollection: {self codePoint} ! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/18/2013 21:41'!
+asUppercase
+
+	^self toUpper! !
+
+!UniChar methodsFor: 'streams' stamp: 'KenD 4/5/2013 16:36'!
+asUtf8toStream: aStream
+	"Add self to aStream as Utf8"
+	
+	"codePoint asUtf8toStream: aStream"
+
+	codePoint < 128 ifTrue: [ 
+		^ aStream nextPut: codePoint ].
+	codePoint < 2048 ifTrue: [ 
+		^ aStream 
+			nextPut: (2r11000000 + (codePoint bitShift: -6)); 
+			nextPut: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	codePoint < 65535 ifTrue: [ 
+		^ aStream 
+			nextPut: (2r11100000 + (codePoint bitShift: -12));
+			nextPut: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
+			nextPut: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	codePoint <= 16r10FFFF  ifTrue: [  "maximumUTF8Code"
+		^ aStream 
+			nextPut: (2r11110000 + (codePoint bitShift: -18));
+			nextPut: (2r10000000 + (codePoint bitShift: -12));
+			nextPut: (2r10000000 + ((codePoint bitShift: -6) bitAnd: 2r111111)); 
+			nextPut: (2r10000000 + (codePoint bitAnd: 2r111111)) ].
+	self error: 'Unicode character code point outside range'! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:53'!
+canBeGlobalVarInitial
+
+	"Answer if I can be the start of a Smalltalk global identifier name"
+	^self isUppercase! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/9/2013 10:32'!
+caseFold
+
+	^UniChar value: (ToCasefold at: self codePoint ifAbsent: [ ^self ])! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:50'!
+caseInsensitiveEqual:  aCharacter 
+	"Answer true if codePoints are equal"
+
+	^ (self caseFold codePoint ) = (aCharacter asUniChar caseFold codePoint)! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:17'!
+caseInsensitiveGreater: aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self caseFold codePoint ) > (aCharacter asUniChar caseFold codePoint)! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:16'!
+caseInsensitiveGreaterOrEqual: aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self caseFold codePoint ) >= (aCharacter asUniChar caseFold codePoint)! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:16'!
+caseInsensitiveLess: aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self caseFold codePoint ) < (aCharacter asUniChar caseFold codePoint)! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 3/21/2013 18:16'!
+caseInsensitiveLessOrEqual: aCharacter 
+	"Answer true if codePoints are ordered as expected"
+
+	^ (self caseFold codePoint ) <= (aCharacter asUniChar caseFold codePoint)! !
+
+!UniChar methodsFor: 'private' stamp: 'KenD 4/17/2013 19:08'!
+charCouldBeInsideWord
+	"Answer true if this character's codePoint could be inside 'word'."
+	
+	^ ( ((self generalCategoryCode) anyMask: (LetterBit + NumberBit ))
+		"See UniChar class>>initializeGeneralPropertyEnums "
+			or: [ ({  CM. GL. IN. IS.  H2. H3. HL. HY. JL. JT. JV. PO. PR. NS. WJ. SG. }
+					includes: (self lineBreakCategoryCode))
+					or: [self hasTagWordMinNumLet] ] )
+		 "See UniChar class>>initializeLineBreakProperties "
+	! !
+
+!UniChar methodsFor: 'private' stamp: 'KenD 4/17/2013 19:37'!
+charCouldEndWord
+	"Answer true if this character could start a 'word'."
+	
+	^ ( ((self generalCategoryCode) anyMask: (LetterBit + NumberBit ))
+		"See UniChar class>>initializeGeneralPropertyEnums "
+			or: [ {  CM. GL. IN. H2. H3. HL. JL. JT. JV. PO. PR. NS. WJ. SG. }
+					includes: (self lineBreakCategoryCode) ]	)! !
+
+!UniChar methodsFor: 'private' stamp: 'KenD 4/17/2013 19:19'!
+charCouldStartWord
+	"Answer true if this character could start a 'word'."
+	
+	^ ((self generalCategoryCode) anyMask: (LetterBit + NumberBit))
+	! !
+
+!UniChar methodsFor: 'private' stamp: 'KenD 4/21/2013 19:17'!
+charIsGraphemePart
+	"Answer true if my codePoint is a grapheme cluster component."
+	
+	"Hangul Jamo (H2 H3 JL JT JV) is tested separately: UniChar>>isHangulJamo .
+	 Regional Indocators (RI tested separately; UniChar>>isRegionalIndicator .
+	 Formatting Marks (Cf) are tested separately: UniChar>>isFormattingMark .
+	"
+
+	^ ( ( { Mc. Mn. Lm. Sk.  } includes: (self generalCategoryCode) ) 
+		"See UniChar class>>initializeGeneralPropertyEnums "
+		or: [ { CM. WJ. } includes: (self lineBreakCategoryCode)] 
+		 "See UniChar class>>initializeLineBreakProperties "
+	   )
+		
+	! !
+
+!UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 08:58'!
+codePoint
+
+	^codePoint! !
+
+!UniChar methodsFor: 'accessing' stamp: 'KenD 4/16/2013 09:38'!
+codePointStorageSizeInBytes
+	"Answer a class which will hold this 8, 16, or 32 bit code point or signal a domain error"
+
+	(codePoint < 0)
+	ifTrue: [ DomainError signal: 'Unicode code points must be non-negative' ].
+	
+	(codePoint <= 16rFF)
+	ifTrue: [ ^ 1 ].
+	
+	(codePoint <= 16rFFFF)
+	ifTrue: [ ^ 2 ].
+	
+	(codePoint <= 16rFFFFFFFF)
+	ifTrue: [ ^4 ].
+	
+	DomainError signal: 'Unicode code points must fit within a 32 bit range'! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/21/2013 19:20'!
+digitValue
+	"Answer value of chareacter taken as a decimal digit."
+	"Note that this differs in behavior from Character>>digitValue"
+	
+		"@@FIXME: Chinese numeric chars are discontiguous and need separate lookup"
+"
+	$2 asUniChar digitValue
+"
+	(codePoint < 16rFF)
+	ifTrue: [ ^ self asCharacter digitValue ]
+	ifFalse: [ ^ self codePoint uniDigit ]! !
+
+!UniChar methodsFor: 'accessing' stamp: 'KenD 4/17/2013 14:31'!
+form
+	"Answer a form if I am in plane zero, else the missing character form from UniForms"
+	
+	| aForm |
+	aForm := UniForms formForCodePoint: codePoint.
+	
+	(aForm isNil)
+	ifTrue: [ ^UniForms formForCodePoint: (UniForms formForMissingChar) ] 
+	ifFalse: [ ^aForm ]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:52'!
+generalCategory
+
+	"Answer name of category code"
+	^ PropertyNames at: (self generalCategoryCode)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/13/2013 13:30'!
+generalCategoryCode
+
+	(self isCJKIdeograph)
+	ifTrue: [ ^ Lo bitAnd: (ID bitShift: 16) ]
+	ifFalse: [ ^(GeneralCategory at: codePoint ifAbsent: [ Cn ]) bitAnd: 16r00FFFF]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:59'!
+hasTagCombiningMark
+
+	^ (self lineBreakCategoryCode = CM)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:59'!
+hasTagConnectorPunctuation
+
+	^ (self generalCategoryCode = CP)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:43'!
+hasTagControl
+
+	^ (self generalCategoryCode = Cc)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:00'!
+hasTagDecimalNumber
+
+	^ (self generalCategoryCode = Nd)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:00'!
+hasTagEnclosingMark
+
+	^ (self generalCategoryCode = Me)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:00'!
+hasTagFormat
+
+	^ (self generalCategoryCode = Cf)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
+hasTagGlue
+
+	^ (self lineBreakCategoryCode = GL)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/21/2013 08:49'!
+hasTagInLVT
+	"Hangul Jamo
+		JL -> L     Leading
+		JV -> V    Vowel
+		JT -> T    Trailing
+		H2 ->  LV    Syllable
+
+	"
+
+	^ { H2. H3. JL. JV.  JT. } includes: (self lineBreakCategoryCode)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
+hasTagLineSeparator
+
+	^ (self generalCategoryCode = Zl)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:57'!
+hasTagLowercase
+
+	^ (self generalCategoryCode = Ll)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
+hasTagNonspacingMark
+
+	^ (self generalCategoryCode = Mn)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
+hasTagOtherNumber
+
+	^ (self generalCategoryCode = No)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:01'!
+hasTagParagraphSeparator
+
+	^ (self generalCategoryCode = Zp)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:02'!
+hasTagSpaceSeparator
+
+	^ (self generalCategoryCode = Zs)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
+hasTagSpacingMark
+
+	^ (self generalCategoryCode = Mc)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
+hasTagSurrogate
+
+	^ (self generalCategoryCode = Cs)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
+hasTagTitlecase
+
+	^ (self generalCategoryCode = Lt)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
+hasTagUppercase
+
+	^ (self generalCategoryCode = Lu)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:10'!
+hasTagWordALetter
+	"Word Property"
+
+	^ self isLetter! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:53'!
+hasTagWordExtend
+	"Word Property"
+
+	^ (self generalCategoryCode = Mn) or: [self generalCategoryCode = Mc]
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:27'!
+hasTagWordExtendedNumLet
+	"Word Property.  Nota Bene: Not  CR | LF"
+
+   ^ #(	16r005F.     " LOW LINE"
+		16r203F.	"UNDERTIE..CHARACTER TIE"
+		16r2040.	 "UNDERTIE..CHARACTER TIE"
+		16r2054.	" INVERTED UNDERTIE"
+		16rFE33.	"PRESENTATION FORM FOR VERTICAL LOW LINE"
+		16rFE34.   "PRESENTATION FORM FOR VERTICAL WAVY LOW LINE"
+		16rFE4D. 16rFE4E.	 "DASHED LOW LINE"
+		16rFE4F.	"WAVY LOW LINE"
+		16rFF3F.	"FULLWIDTH LOW LINE"
+	) includes: codePoint
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 20:03'!
+hasTagWordFormat
+	"Word Property"
+
+	^ (self generalCategoryCode = Cf) 
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 14:21'!
+hasTagWordKatakana
+	"Word Property"
+
+	"@@FIXME: use a faster lookup/test"
+	( #( 16r309B. 16r309C. 16r30A0. 
+		16r30FC. 16r30FD. 16r30FE.
+		16r30FF. 16rFF70. 16r1B000. ) includes: codePoint)
+	ifTrue: [ ^true ].
+
+	((16r3031 to: 16r3035) includes: codePoint) ifTrue: [ ^true ].
+	((16r30A1 to: 16r30FA) includes: codePoint) ifTrue: [ ^true ].
+	((16r31F0 to: 16r31FF) includes: codePoint) ifTrue: [ ^true ].
+	((16r32D0 to: 16r32FE) includes: codePoint) ifTrue: [ ^true ].
+	((16r3300 to: 16r3357) includes: codePoint) ifTrue: [ ^true ].
+	((16rFF66 to: 16rFF6F) includes: codePoint) ifTrue: [ ^true ].
+	((16rFF71 to: 16rFF9D) includes: codePoint) ifTrue: [ ^true ].
+
+	^false! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:48'!
+hasTagWordMinLetter
+	"Word Property"
+
+   ^ #(	16r003A.	"COLON"
+		16r00B7.	"MIDDLE DOT"
+		16r0387.	"GREEK ANO TELEIA"
+		16r05F4.	"HEBREW PUNCTUATION GERSHAYIM"
+		16r2027.	"HYPHENATION POINT"
+		16rFE13.	"PRESENTATION FORM FOR VERTICAL COLON"
+		16rFE55.	"SMALL COLON"
+		16rFF1A.	"FULLWIDTH COLON"
+	) includes: codePoint
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:46'!
+hasTagWordMinNum
+	"Word Property"
+
+   ^ #(	16r002C.	"COMMA"
+		16r003B .	"SEMICOLON"
+		16r037E.	"GREEK QUESTION MARK"
+		16r0589.	"ARMENIAN FULL STOP"
+		16r060C.	"ARABIC COMMA"
+		16r060D.	"ARABIC DATE SEPARATOR"
+		16r066C.	"ARABIC THOUSANDS SEPARATOR"
+		16r07F8.	"NKO COMMA"
+		16r2044.	"FRACTION SLASH"
+		16rFE10.	"PRESENTATION FORM FOR VERTICAL COMMA"
+		16rFE14.	"PRESENTATION FORM FOR VERTICAL SEMICOLON"
+		16rFE50.	"SMALL COMMA"
+		16rFE54.	"SMALL SEMICOLON"
+		16rFF0C.	"FULLWIDTH COMMA"
+		16rFF1B.	"FULLWIDTH SEMICOLON"
+	) includes: codePoint
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:42'!
+hasTagWordMinNumLet
+	"Word Property"
+
+   ^ #(	16r0027.	"APOSTROPHE"
+		16r002E.	"FULL STOP"
+		16r2018.	"LEFT SINGLE QUOTATION MARK"
+		16r2019.	"RIGHT SINGLE QUOTATION MARK"
+		16r2024.	"ONE DOT LEADER"
+		16rFE52.	"SMALL FULL STOP"
+		16rFF07.	"FULLWIDTH APOSTROPHE"
+		16rFF0E.	"FULLWIDTH FULL STOP"
+	) includes: codePoint
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 13:28'!
+hasTagWordNewline
+	"Word Property.  Nota Bene: Not  CR | LF"
+
+   ^ #( 16r000B.  "Control-B"
+	    16r000C.  "Control-C"
+	    16r0085 . "Control-85"
+	    16r2028.  "Line Separator"
+	    16r2029 . "Parageaph Separator"
+	) includes: codePoint
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 17:40'!
+hasTagWordNumeric
+	"Word Property"
+
+	 (16r066B = codePoint) ifTrue: [ ^true ].  "ARABIC DECIMAL SEPARATOR"
+	^ ((self generalCategoryCode bitAnd: NumberBit) = NumberBit) 
+! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/20/2013 10:21'!
+hasTagWordRegionlIndicator
+	"Word Property"
+
+	^ self isRegionalIndicator
+! !
+
+!UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:25'!
+hash
+	"Hash is reimplemented because = is implemented."
+
+	^codePoint ! !
+
+!UniChar methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:00'!
+icon
+
+	^self form! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 4/17/2013 17:34'!
+isAlphaNumeric
+	"Answer whether the receiver is a letter or a digit."
+
+	^self isLetter or: [self isNumberChar]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 18:58'!
+isCJKIdeograph
+
+	(codePoint between: 16r2E80 and: 16r303F) ifTrue: [ ^true ]. "CJK Ideographic"
+	(codePoint between:16r3300 and: 16rA4CF) ifTrue: [ ^true ]. "CJK Compatibility + Extensions A+"
+	(codePoint between: 16rF900 and: 16rFAFF) ifTrue: [ ^true ].
+	(codePoint between: 16rFE30 and: 16rFE4F) ifTrue: [ ^ true ].  "CJK Compatibility Forms"
+	(codePoint between:16r20000 and: 16r2A6DF) ifTrue: [ ^true ].  "CJK Unified Ideographs Extension B"
+	(codePoint between:16r2A700 and: 16r2B81F) ifTrue: [ ^true ]. "CJK Unified Ideographs Extension C +  D"
+	(codePoint between:16r2F800 and: 16r2FA1F) ifTrue: [ ^true ]. "CJK Compatibility Ideographs Supplement"
+	
+	^ false! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/28/2013 15:20'!
+isCR
+
+	^ codePoint = 16r000D! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 09:34'!
+isCasedLetter
+
+	^ (self generalCategoryCode  bitAnd: CasedLetterBit) = CasedLetterBit! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/19/2013 18:24'!
+isDigit
+
+	^ self isNumberChar! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/21/2013 17:20'!
+isFormattingMark
+
+	^ ((self generalCategoryCode) = Cf)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/19/2013 18:50'!
+isGenerallyValidInIdentifiers
+	"Answer if generally valid Smalltalk identifier"
+	
+	"Can c be part of an identifier? (unary or keyword selector, or variable name)
+	Warning: Does not account for the fact that some classes could redefine 
+	#allowUnderscoreSelectors"
+	^self isAlphaNumeric or: [ self  = $_ and: [ Preferences allowUnderscoreSelectors ]]! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:53'!
+isGenerallyValidStartOfInIdentifiers
+	"Can c be the first character of an identifier? (unary or keyword selector, or variable name)
+	Warning: Does not account for the fact that some classes could redefine 
+	#allowUnderscoreSelectors"
+	^self isLetter or: [ self  = $_ and: [ Preferences allowUnderscoreSelectors ]]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/21/2013 09:35'!
+isHangulJamo
+
+	^ self hasTagInLVT ! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/28/2013 15:21'!
+isLF
+
+	^ codePoint = 16r000A! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
+isLetter
+
+	^ (((self generalCategoryCode) bitAnd: LetterBit) = LetterBit)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/28/2013 16:45'!
+isLineSeparator
+	"Answer true if Unicode Line Separator OR Smalltalk Line Separator"
+	"Distinguish: isSeparator"
+	
+	^ (  "Unicode:  NextLine, LineSeparator, ParagraphSeparator"
+ 		#( 16r0085 16r2028 16r2029 ) includes: codePoint)
+		"Smalltalk:  LineFeed CarriageReturn FormFeed"
+		 	or: [(self codePoint < 16rFF) and: [self asCharacter isLineSeparator]] ! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:49'!
+isLowercase
+
+	^ self hasTagLowercase! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
+isMark
+
+	^ (((self generalCategoryCode) bitAnd: MarkBit) = MarkBit)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
+isNumberChar
+
+	^ (((self generalCategoryCode) bitAnd: NumberBit) = NumberBit)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
+isOtherControl
+
+	^ (((self generalCategoryCode) bitAnd: ControlBit) = ControlBit)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:09'!
+isPunctuation
+
+	^ (((self generalCategoryCode) bitAnd: PunctuationBit) = PunctuationBit)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/20/2013 10:16'!
+isRegionalIndicator
+
+	^ (codePoint between: 16r1F1E6 and: 16r1F1FF)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/28/2013 13:43'!
+isSeparator
+	"Answer true if Unicode Separator OR Smalltalk Separator"
+
+	^ (((self generalCategoryCode) bitAnd: SeparatorBit) = SeparatorBit)
+		"LF, FF, Space, Tab, CR"
+		or: [codePoint = 16r0085] "NextLine"
+		or:  [(self codePoint < 16rFF) and: [self asCharacter isSeparator]]
+		
+" Separator = Zl + Zp + Zs:
+
+0020;SPACE;Zs;0;WS;;;;;N;;;;;
+00A0;NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;NON-BREAKING SPACE;;;;
+1680;OGHAM SPACE MARK;Zs;0;WS;;;;;N;;;;;
+180E;MONGOLIAN VOWEL SEPARATOR;Zs;0;WS;;;;;N;;;;;
+2000;EN QUAD;Zs;0;WS;2002;;;;N;;;;;
+2001;EM QUAD;Zs;0;WS;2003;;;;N;;;;;
+2002;EN SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2003;EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2004;THREE-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2005;FOUR-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2006;SIX-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2007;FIGURE SPACE;Zs;0;WS;<noBreak> 0020;;;;N;;;;;
+2008;PUNCTUATION SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+2009;THIN SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+200A;HAIR SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+202F;NARROW NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;;;;;
+205F;MEDIUM MATHEMATICAL SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
+
+3000;IDEOGRAPHIC SPACE;Zs;0;WS;<wide> 0020;;;;N;;;;;
+
+2028;LINE SEPARATOR;Zl;0;WS;;;;;N;;;;;
+
+2029;PARAGRAPH SEPARATOR;Zp;0;B;;;;;N;;;;;
+
+***Nota Bene***=== 
+**NOT** Classed as Separators by Unicode General Property:
+
+0009;<control>;Cc;0;S;;;;;N;CHARACTER TABULATION (HT);;;;
+000A;<control>;Cc;0;B;;;;;N;LINE FEED (LF);;;;
+000B;<control>;Cc;0;S;;;;;N;LINE TABULATION (VT);;;;
+000C;<control>;Cc;0;WS;;;;;N;FORM FEED (FF);;;;
+000D;<control>;Cc;0;B;;;;;N;CARRIAGE RETURN (CR);;;;
+
+0085;<control>;Cc;0;B;;;;;N;NEXT LINE (NEL);;;;
+==============================
+
+"! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/18/2013 16:30'!
+isSpace
+
+	^ self hasTagSpaceSeparator ! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:56'!
+isSpecial
+	"Answer whether the receiver is one of the Smalltalk special characters"
+	
+	"Nota Bene: This leaves out a lot of Unicode!!!!"
+
+	^ SmalltalkSpecialChars includes: self! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/17/2013 19:10'!
+isSymbolGyph
+
+	"We can't use #isSymbol without confusion with Smalltalk Symbols"
+	^ (((self generalCategoryCode) bitAnd: SymbolBit) = SymbolBit)! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/7/2013 19:48'!
+isUppercase
+
+	^ self hasTagUppercase ! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:57'!
+isVowel
+	"Answer whether the receiver is one of the vowels, AEIOU, in upper or 
+	lower case, and with various diacritical marks."
+
+	^Character vowels asUniString includes: self! !
+
+!UniChar methodsFor: 'accessing' stamp: 'KenD 4/17/2013 16:27'!
+iso8859s15Code
+"Not really..."
+	^codePoint < 256 ifTrue: [ codePoint ] ifFalse: [ nil ] "@@FIXME: Bogus!!!!@@"! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:52'!
+lineBreakCategory
+
+	"Answer name of category code"
+	| indexCode |
+	indexCode :=  self lineBreakCategoryCode.
+	(indexCode isZero)
+	ifTrue: [ ^ #Unknown ]
+	ifFalse: [ ^ LineBreakProperties at: indexCode ]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/13/2013 13:31'!
+lineBreakCategoryCode
+
+	(self isCJKIdeograph)
+	ifTrue: [ ^ ID ]
+	ifFalse: [ ^ ((GeneralCategory at: codePoint ifAbsent: [ 0 ]) bitAnd: 16r00FF0000) bitShift: -16 ]! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 3/9/2013 16:11'!
+lineBreakTableAt: row at: col
+	"Answer the character specified"
+
+	"See comments in UniChar class>>initializeLineBreakTable"
+	
+	^ (LineBreakTable at: row) at: col! !
+
+!UniChar methodsFor: 'private' stamp: 'KenD 4/21/2013 11:52'!
+nextLVTStateFromState: aState
+	"aState is one of L V T LV LVT or zero (=> exit). 
+	Answer next state based on my lineBreakCategoryCode"
+	
+	"Note table 1c in  Unicode Annex #29: Unicode Text Segmentation
+	and UniChar class>>initializeHangulJamoLVT"
+	| index |
+	(aState between: 1 and: 5) ifFalse: [ ^ 0 ]. "zero" 
+	index := LVTStateMap at: (self lineBreakCategoryCode).
+	(index isZero)
+		ifTrue: [ ^ 0 ] "zero"
+		ifFalse: [ ^ (LVTStateVec at: aState) at: index ] "Next State"! !
+
+!UniChar methodsFor: 'printing' stamp: 'KenD 4/7/2013 09:56'!
+printOn: aStream
+	"Display for humans"
+
+	(codePoint < 16rFF) "Fits in a byte?"
+	ifTrue: [
+		aStream nextPut: $$.
+		aStream nextPut: (Character value: codePoint)
+	]
+	ifFalse: [ "Do what Cuis does as with String>>fromUtf8: "
+		aStream nextPutAll: '&#'.
+		codePoint printOn: aStream base: 10.
+		aStream nextPut: $; 
+	]! !
+
+!UniChar methodsFor: 'private' stamp: 'KenD 2/17/2013 09:00'!
+privateSetCodePoint: aCodePoint
+
+	codePoint := aCodePoint ! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 09:40'!
+rangeInfo
+	"Answer something about me: #( Category BlockName )"
+
+(codePoint  between: 16r0000 and: 16r007F) ifTrue: [ ^ #( 'Latin 1' 'Basic Latin' )].
+(codePoint  between: 16r0080 and: 16r00FF) ifTrue: [ ^ #( 'Latin 1' 'Latin-1 Supplement' )].
+
+(codePoint between: 16r0100 and: 16r017F) ifTrue: [ ^ #( 'Latin Extended 1' 'Latin Extended-A' )].
+(codePoint between: 16r0180 and: 16r024F) ifTrue: [ ^ #( 'Latin Extended 1' 'Latin Extended-B' )].
+(codePoint between: 16r0250 and: 16r02AF) ifTrue: [ ^ #( 'Latin Extended 1' 'IPA Extensions' )].
+
+(codePoint between: 16r02B0 and: 16r02FF) ifTrue: [ ^ #( 'Modifiers' 'Spacing Modifier Letters' )].
+(codePoint between: 16r0300 and: 16r036F) ifTrue: [ ^ #( 'Modifiers' 'Combining Diacritical Marks' )].
+
+(codePoint between: 16r0370 and: 16r03FF) ifTrue: [ ^ #( 'European Alphabetic 1' 'Greek and Coptic' )].
+(codePoint between: 16r0400 and: 16r04FF) ifTrue: [ ^ #( 'European Alphabetic 1' 'Cyrillic' )].
+(codePoint between: 16r0500 and: 16r052F) ifTrue: [ ^ #( 'European Alphabetic 1' 'Cyrillic Supplementary' )].
+(codePoint between: 16r0530 and: 16r058F) ifTrue: [ ^ #( 'European Alphabetic 1' 'Armenian' )].
+
+ ^ self rangeInfo2 "too many literals for 1 method"! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 09:41'!
+rangeInfo2
+	"Answer something about me"
+
+(codePoint between: 16r0590 and: 16r05FF) ifTrue: [ ^ #( 'Middle Eastern' 'Hebrew' )].
+(codePoint between: 16r0600 and: 16r06FF) ifTrue: [ ^ #( 'Middle Eastern' 'Arabic' )].
+(codePoint between: 16r0700 and: 16r074F) ifTrue: [ ^ #( 'Middle Eastern' 'Syriac' )].
+(codePoint between: 16r0780 and: 16r07BF) ifTrue: [ ^ #( 'Middle Eastern' 'Thaana' )].
+
+(codePoint between: 16r0900 and: 16r097F) ifTrue: [ ^ #( 'South Asian 1' 'Devanagari' )].
+(codePoint between: 16r0980 and: 16r09FF) ifTrue: [ ^ #( 'South Asian 1' 'Bengali' )].
+(codePoint between: 16r0A00 and: 16r0A7F) ifTrue: [ ^ #( 'South Asian 1' 'Gurmukhi' )].
+(codePoint between: 16r0A80 and: 16r0AFF) ifTrue: [ ^ #( 'South Asian 1' 'Gujarati' )].
+(codePoint between: 16r0B00 and: 16r0B7F) ifTrue: [ ^ #( 'South Asian 1' 'Oriya' )].
+(codePoint between: 16r0B80 and: 16r0BFF) ifTrue: [ ^ #( 'South Asian 1' 'Tamil' )].
+(codePoint between: 16r0C00 and: 16r0C7F) ifTrue: [ ^ #( 'South Asian 1' 'Telugu' )].
+(codePoint between: 16r0C80 and: 16r0CFF) ifTrue: [ ^ #( 'South Asian 1' 'Kannada' )].
+(codePoint between: 16r0D00 and: 16r0D7F) ifTrue: [ ^ #( 'South Asian 1' 'Malayalam' )].
+(codePoint between: 16r0D80 and: 16r0DFF) ifTrue: [ ^ #( 'South Asian 1' 'Sinhala' )].
+
+(codePoint between: 16r0E00 and: 16r0E7F) ifTrue: [ ^ #( 'Southeastern 1' 'Thai' )].
+(codePoint between: 16r0E80 and: 16r0EFF) ifTrue: [ ^ #( 'Southeastern 1' 'Lao' )].
+
+(codePoint between: 16r0F00 and: 16r0FFF) ifTrue: [ ^ #( 'South Asian 1' 'Tibetan' )].
+
+(codePoint between: 16r1000 and: 16r109F) ifTrue: [ ^ #( 'Southeastern 1' 'Myanmar' )].
+
+(codePoint between: 16r10A0 and: 16r10FF) ifTrue: [ ^ #( 'European Alphabetic 2' 'Georgian' )].
+
+(codePoint between: 16r1100 and: 16r11FF) ifTrue: [ ^ #( 'Korean' 'Hangul Jamo' )].
+
+(codePoint between: 16r1200 and: 16r137F) ifTrue: [ ^ #( 'Additional 1' 'Ethiopic' )].
+(codePoint between: 16r13A0 and: 16r13FF) ifTrue: [ ^ #( 'Additional 1' 'Cherokee' )].
+(codePoint between: 16r1400 and: 16r167F) ifTrue: [ ^ #( 'Additional 1' 'Unified Canadian Aboriginal Syllabics' )].
+
+(codePoint between: 16r1680 and: 16r169F) ifTrue: [ ^ #( 'European Alphabetic 3' 'Ogham' )].
+(codePoint between: 16r16A0 and: 16r16FF) ifTrue: [ ^ #( 'European Alphabetic 3' 'Runic' )].
+
+(codePoint between: 16r1700 and: 16r171F) ifTrue: [ ^ #( 'Southeastern 2' 'Tagalog' )].
+(codePoint between: 16r1720 and: 16r173F) ifTrue: [ ^ #( 'Southeastern 2' 'Hanunoo' )].
+(codePoint between: 16r1740 and: 16r175F) ifTrue: [ ^ #( 'Southeastern 2' 'Buhid' )].
+(codePoint between: 16r1760 and: 16r177F) ifTrue: [ ^ #( 'Southeastern 2' 'Tagbanwa' )].
+(codePoint between: 16r1780 and: 16r17FF) ifTrue: [ ^ #( 'Southeastern 2' 'Khmer' )].
+
+(codePoint between: 16r1800 and: 16r18AF) ifTrue: [ ^ #( 'Additional 2' 'Mongolian' )].
+
+(codePoint between: 16r1E00 and: 16r1EFF) ifTrue: [ ^ #( 'European Alphabetic 4' 'Latin Extended Additional' )].
+(codePoint between: 16r1F00 and: 16r1FFF) ifTrue: [ ^ #( 'European Alphabetic 4' 'Greek Extended' )].
+
+(codePoint between: 16r2000 and: 16r206F) ifTrue: [ ^ #( 'Symbols 2' 'General Punctuation' )].
+(codePoint between: 16r2070 and: 16r209F) ifTrue: [ ^ #( 'Symbols 2' 'Superscripts and Subscripts' )].
+(codePoint between: 16r20A0 and: 16r20CF) ifTrue: [ ^ #( 'Symbols 2' 'Currency Symbols' )].
+(codePoint between: 16r20D0 and: 16r20FF) ifTrue: [ ^ #( 'Symbols 2' 'Combining Diacritical Marks for Symbols' )].
+(codePoint between: 16r2100 and: 16r214F) ifTrue: [ ^ #( 'Symbols 2' 'Letterlike Symbols' )].
+(codePoint between: 16r2150 and: 16r218F) ifTrue: [ ^ #( 'Symbols 2' 'Number Forms' )].
+(codePoint between: 16r2190 and: 16r21FF) ifTrue: [ ^ #( 'Symbols 2' 'Arrows' )].
+(codePoint between: 16r2200 and: 16r22FF) ifTrue: [ ^ #( 'Symbols 2' 'Mathematical Operators' )].
+(codePoint between: 16r2300 and: 16r23FF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Technical' )].
+(codePoint between: 16r2400 and: 16r243F) ifTrue: [ ^ #( 'Symbols 2' 'Control Pictures' )].
+(codePoint between: 16r2440 and: 16r245F) ifTrue: [ ^ #( 'Symbols 2' 'Optical Character Recognition' )].
+(codePoint between: 16r2460 and: 16r24FF) ifTrue: [ ^ #( 'Symbols 2' 'Enclosed Alphanumerics' )].
+(codePoint between: 16r2500 and: 16r257F) ifTrue: [ ^ #( 'Symbols 2' 'Box Drawing' )].
+(codePoint between: 16r2580 and: 16r259F) ifTrue: [ ^ #( 'Symbols 2' 'Block Elements' )].
+(codePoint between: 16r25A0 and: 16r25FF) ifTrue: [ ^ #( 'Symbols 2' 'Geometric Shapes' )].
+(codePoint between: 16r2600 and: 16r26FF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Symbols' )].
+(codePoint between: 16r2700 and: 16r27BF) ifTrue: [ ^ #( 'Symbols 2' 'Dingbats' )].
+(codePoint between: 16r27C0 and: 16r27EF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Mathematical Symbols-A' )].
+(codePoint between: 16r27F0 and: 16r27FF) ifTrue: [ ^ #( 'Symbols 2' 'Supplemental Arrows-A' )].
+(codePoint between: 16r2800 and: 16r28FF) ifTrue: [ ^ #( 'Symbols 2' 'Braille Patterns' )].
+(codePoint between: 16r2900 and: 16r297F) ifTrue: [ ^ #( 'Symbols 2' 'Supplemental Arrows-B' )].
+(codePoint between: 16r2980 and: 16r29FF) ifTrue: [ ^ #( 'Symbols 2' 'Miscellaneous Mathematical Symbols-B' )].
+(codePoint between: 16r2A00 and: 16r2AFF) ifTrue: [ ^ #( 'Symbols 2' 'Supplemental Mathematical Operators' )].
+
+(codePoint between: 16r2E80 and: 16r2EFF) ifTrue: [ ^ #( 'CJK' 'CJK Radicals Supplement' )].
+(codePoint between: 16r2F00 and: 16r2FDF) ifTrue: [ ^ #( 'CJK' 'Kangxi Radicals' )].
+(codePoint between: 16r2FF0 and: 16r2FFF) ifTrue: [ ^ #( 'CJK' 'Ideographic Description Characters' )].
+(codePoint between: 16r3000 and: 16r303F) ifTrue: [ ^ #( 'CJK' 'CJK Symbols and Punctuation' )].
+(codePoint between: 16r3040 and: 16r309F) ifTrue: [ ^ #( 'CJK' 'Hiragana' )].
+(codePoint between: 16r30A0 and: 16r30FF) ifTrue: [ ^ #( 'CJK' 'Katakana' )].
+(codePoint between: 16r3100 and: 16r312F) ifTrue: [ ^ #( 'CJK' 'Bopomofo' )].
+(codePoint between: 16r3130 and: 16r318F) ifTrue: [ ^ #( 'CJK' 'Hangul Compatibility Jamo' )].
+(codePoint between: 16r3190 and: 16r319F) ifTrue: [ ^ #( 'CJK' 'Kanbun' )].
+(codePoint between: 16r31A0 and: 16r31BF) ifTrue: [ ^ #( 'CJK' 'Bopomofo Extended' )].
+(codePoint between: 16r31F0 and: 16r31FF) ifTrue: [ ^ #( 'CJK' 'Katakana Phonetic Extensions' )].
+(codePoint between: 16r3200 and: 16r32FF) ifTrue: [ ^ #( 'CJK' 'Enclosed CJK Letters and Months' )].
+(codePoint between: 16r3300 and: 16r33FF) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility' )].
+(codePoint between: 16r3400 and: 16r4DBF) ifTrue: [ ^ #( 'CJK' 'CJK Unified Ideographs Extension A' )].
+(codePoint between: 16r4E00 and: 16r9FFF) ifTrue: [ ^ #( 'CJK' 'CJK Unified Ideographs' )].
+(codePoint between: 16rA000 and: 16rA48F) ifTrue: [ ^ #( 'CJK' 'Yi Syllables' )].
+(codePoint between: 16rA490 and: 16rA4CF) ifTrue: [ ^ #( 'CJK' 'Yi Radicals' )].
+
+^self rangeInfo3 "too many literals for 1 method"! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 4/16/2013 09:41'!
+rangeInfo3
+	"Answer something about me"
+
+(codePoint between: 16rAC00 and: 16rD7AF) ifTrue: [ ^ #( 'Korean' 'Hangul Syllables' )].
+
+(codePoint between: 16rD800 and: 16rDB7F) ifTrue: [ ^ #( 'Special' 'High Surrogates' )].
+(codePoint between: 16rDB80 and: 16rDBFF) ifTrue: [ ^ #( 'Special' 'High Private Use Surrogates' )].
+(codePoint between: 16rDC00 and: 16rDFFF) ifTrue: [ ^ #( 'Special' 'Low Surrogates' )].
+(codePoint between: 16rE000 and: 16rF8FF) ifTrue: [ ^ #( 'Special' 'Private Use Area' )].
+
+(codePoint between: 16rF900 and: 16rFAFF) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility Ideographs' )].
+
+(codePoint between: 16rFB00 and: 16rFB4F) ifTrue: [ ^ #( 'Middle Eastern 2' 'Alphabetic Presentation Forms' )].
+(codePoint between: 16rFB50 and: 16rFDFF) ifTrue: [ ^ #( 'Middle Eastern 2' 'Arabic Presentation Forms-A' )].
+
+(codePoint between: 16rFE00 and: 16rFE0F) ifTrue: [ ^ #( 'Special' 'Variation Selectors' )].
+(codePoint between: 16rFE20 and: 16rFE2F) ifTrue: [ ^ #( 'Special' 'Combining Half Marks' )].
+
+(codePoint between: 16rFE30 and: 16rFE4F) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility Forms' )].
+
+(codePoint between: 16rFE50 and: 16rFE6F) ifTrue: [ ^ #( 'Symbol 3' 'Small Form Variants' )].
+
+(codePoint between: 16rFE70 and: 16rFEFF) ifTrue: [ ^ #( 'Middle Eastern 3' 'Arabic Presentation Forms-B' )].
+
+(codePoint between: 16rFF00 and: 16rFFEF) ifTrue: [ ^ #( 'Specials' 'Halfwidth and Fullwidth Forms' )].
+(codePoint between: 16rFFF0 and: 16rFFFF) ifTrue: [ ^ #( 'Specials' 'Specials' )].
+
+(codePoint between: 16r10300 and: 16r1032F) ifTrue: [ ^ #( 'European' 'Old Italic' )].
+(codePoint between: 16r10330 and: 16r1034F) ifTrue: [ ^ #( 'European' 'Gothic' )].
+(codePoint between: 16r10400 and: 16r1044F) ifTrue: [ ^ #( 'European' 'Deseret' )].
+
+(codePoint between: 16r1D000 and: 16r1D0FF) ifTrue: [ ^ #( 'Symbols' 'Byzantine Musical Symbols' )].
+(codePoint between: 16r1D100 and: 16r1D1FF) ifTrue: [ ^ #( 'Symbols' 'Musical Symbols' )].
+(codePoint between: 16r1D400 and: 16r1D7FF) ifTrue: [ ^ #( 'Symbols' 'Mathematical Alphanumeric Symbols' )].
+
+(codePoint between: 16r20000 and: 16r2A6DF) ifTrue: [ ^ #( 'CJK' 'CJK Unified Ideographs Extension B' )].
+(codePoint between: 16r2F800 and: 16r2FA1F) ifTrue: [ ^ #( 'CJK' 'CJK Compatibility Ideographs Supplement' )].
+
+(codePoint between: 16rE0000 and: 16rE007F) ifTrue: [ ^ #( 'Special' 'Tags' )].
+(codePoint between: 16rF0000 and: 16rFFFFF) ifTrue: [ ^ #( 'Special' 'Supplementary Private Use Area-A' )].
+(codePoint between: 16r100000 and: 16r10FFFF) ifTrue: [ ^ #( 'Special' 'Supplementary Private Use Area-B' )].
+
+"Default: who knows, who cares"
+^ #( 'Unassigned' 'Unknown' )
+! !
+
+!UniChar methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:33'!
+storeOn: aStream
+	"Character literals are preceded by '$'."
+
+	"store to be read back by computer"
+	(codePoint <= 16rFF)
+	ifTrue: [ aStream nextPut: $$; nextPut: codePoint asCharacter] "Character literal"
+	ifFalse: [aStream nextPutAll: '(UniChar fromCodePoint: '.
+			aStream nextPutAll: codePoint hex.
+			aStream nextPut: $). ]! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/9/2013 10:31'!
+toLower
+
+	^UniChar value: (ToLower at: self codePoint ifAbsent: [ ^self ])! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 3/9/2013 10:32'!
+toUpper
+
+	^UniChar value: (ToUpper at: self codePoint ifAbsent: [ ^self ])! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:58'!
+tokenish
+	"Answer whether the receiver is a valid token-character--letter, digit, or 
+	colon."
+
+	^self isGenerallyValidInIdentifiers or: [self = $:]! !
+
+!UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 17:18'!
+unicodeCodePoint
+
+	^self codePoint! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:23'!
+AI
+	^AL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+AL
+	^AL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:25'!
+B2
+	^B2! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+BA
+	^BA! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+BB
+	^BB! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+BK
+	^BK! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:10'!
+CB
+	^CB! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:26'!
+CJ
+	^CJ! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:05'!
+CL
+	^CL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+CM
+	^CM! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+CP
+	^CP! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+CR
+	^CR! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Cc
+	^Cc! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Cf
+	^Cf! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Cn
+	^Cn! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Co
+	^Co! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Cs
+	^Cs! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+EX
+	^EX! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+GL
+	^GL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+H2
+	^H2! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+H3
+	^H3! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+HL
+	^HL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+HY
+	^HY! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+ID
+	^ID! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+IN
+	^IN! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+IS
+	^IS! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+JL
+	^JL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+JT
+	^JT! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+JV
+	^JV! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+LF
+	^LF! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Ll
+	^Ll! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Lm
+	^Lm! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:00'!
+Lo
+	^Lo! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
+Lt
+	^Lt! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
+Lu
+	^Lu! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
+Mc
+	^Mc! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
+Me
+	^Me! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:01'!
+Mn
+	^Mn! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:10'!
+NL
+	^NL! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+NS
+	^NS! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+NU
+	^NU! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
+Nd
+	^Nd! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
+Nl
+	^Nl! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
+No
+	^No! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:05'!
+OP
+	^OP! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+PO
+	^PO! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:07'!
+PR
+	^PR! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
+Pc
+	^Pc! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:55'!
+Pd
+	^Pd! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Pe
+	^Pe! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Pf
+	^Pf! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Pi
+	^Pi! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Po
+	^Po! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Ps
+	^Ps! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+QU
+	^QU! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+RI
+	^RI! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:24'!
+SA
+	^SA! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:09'!
+SG
+	^SG! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:10'!
+SP
+	^SP! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:06'!
+SY
+	^SY! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Sc
+	^Sc! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Sk
+	^Sk! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+Sm
+	^Sm! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:56'!
+So
+	^So! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+WJ
+	^WJ! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:05'!
+XX
+	^XX! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/9/2013 15:08'!
+ZW
+	^ZW! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:57'!
+Zl
+	^Zl! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:57'!
+Zp
+	^Zp! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/7/2013 17:57'!
+Zs
+	^Zs! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:36'!
+arrowDown
+
+	^ (31 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
+arrowLeft
+
+	^ (28 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
+arrowRight
+
+	^ (29 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
+arrowUp
+
+	^ (30 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:37'!
+backspace
+	"Answer the Character representing a backspace."
+
+	^ (8 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:38'!
+crCharacter
+	"Answer the Character representing a carriage return."
+
+	^ (13 asUniChar)! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 4/17/2013 15:27'!
+defaultBreakDisplayChar
+	"Answer a character used to display (char|word|line) breaks in test code"
+	^DefaultBreakChar ! !
+
+!UniChar class methodsFor: 'as yet unclassified' stamp: 'KenD 4/7/2013 09:30'!
+defaultFontClass
+	^UniForms! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:38'!
+delete
+
+	^ (127 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:38'!
+end
+
+	^ (4 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:39'!
+enter
+	"Answer the Character representing enter."
+
+	^ (3 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:39'!
+escape
+	"Answer the ASCII ESC character"
+
+	^ (27 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:46'!
+euro
+	"The Euro currency sign, that E with two dashes.
+	Note that this differs from class Character, as
+	Cuis uses ISO Latin 9 (ISO 8859-15) character encoding."
+
+	^ (16r20AC asUniChar)! !
+
+!UniChar class methodsFor: 'instance creation' stamp: 'KenD 4/15/2013 20:55'!
+fromCodePoint: aCodePoint
+	"Answer a new Unicode character to represent aCodePoint"
+	
+	^ (self new initialize; privateSetCodePoint: aCodePoint; yourself)
+! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:39'!
+home
+
+	^ (1 asUniChar)! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/7/2013 08:22'!
+initZeroCodePoints
+	"Script digit ranges starting at zero"
+
+	ZeroCodePoints := #(
+       16r0030                "DIGIT ZERO"
+       16r0660                "ARABIC-INDIC DIGIT ZERO"
+       16r06F0                "EXTENDED ARABIC-INDIC DIGIT ZERO"
+       16r07C0                "NKO DIGIT ZERO"
+       16r0966                "DEVANAGARI DIGIT ZERO"
+       16r09E6                "BENGALI DIGIT ZERO"
+       16r0A66                "GURMUKHI DIGIT ZERO"
+       16r0AE6                "GUJARATI DIGIT ZERO"
+       16r0B66                "ORIYA DIGIT ZERO"
+       16r0BE6                "TAMIL DIGIT ZERO"
+       16r0C66                "TELUGU DIGIT ZERO"
+       16r0CE6                "KANNADA DIGIT ZERO"
+       16r0D66                "MALAYALAM DIGIT ZERO"
+       16r0E50                "THAI DIGIT ZERO"
+       16r0ED0                "LAO DIGIT ZERO"
+       16r0F20                "TIBETAN DIGIT ZERO"
+       16r1040                "MYANMAR DIGIT ZERO"
+       16r1090                "MYANMAR SHAN DIGIT ZERO"
+       16r17E0                "KHMER DIGIT ZERO"
+       16r1810                "MONGOLIAN DIGIT ZERO"
+       16r1946                "LIMBU DIGIT ZERO"
+       16r19D0                "NEW TAI LUE DIGIT ZERO"
+       16r1A80                "TAI THAM HORA DIGIT ZERO"
+       16r1A90                "TAI THAM THAM DIGIT ZERO"
+       16r1B50                "BALINESE DIGIT ZERO"
+       16r1BB0                "SUNDANESE DIGIT ZERO"
+       16r1C40                "LEPCHA DIGIT ZERO"
+       16r1C50                "OL CHIKI DIGIT ZERO"
+       16rA620                "VAI DIGIT ZERO"
+       16rA8D0                "SAURASHTRA DIGIT ZERO"
+       16rA900                "KAYAH LI DIGIT ZERO"
+       16rA9D0                "JAVANESE DIGIT ZERO"
+       16rAA50                "CHAM DIGIT ZERO"
+       16rABF0                "MEETEI MAYEK DIGIT ZERO"
+       16rFF10                "FULLWIDTH DIGIT ZERO"
+       16r104A0               "OSMANYA DIGIT ZERO"
+       16r11066               "BRAHMI DIGIT ZERO"
+       16r1D7CE               "MATHEMATICAL BOLD DIGIT ZERO"
+       16r1D7D8               "MATHEMATICAL DOUBLE-STRUCK DIGIT ZERO"
+       16r1D7E2               "MATHEMATICAL SANS-SERIF DIGIT ZERO"
+       16r1D7EC               "MATHEMATICAL SANS-SERIF BOLD DIGIT ZERO"
+       16r1D7F6               "MATHEMATICAL MONOSPACE DIGIT ZERO"
+  ).
+! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/21/2013 10:56'!
+initialize
+"
+	UniChar initialize.
+"
+	SmalltalkSpecialChars := '+-/\*~<>=@,%|&?!!' asUniString.
+	DefaultBreakChar := 16r23CF asUniChar. "Use EJECT char to show (char|word|line) break"
+	self initZeroCodePoints.
+	self initializeGeneralPropertyEnums.
+	self initializeGeneralCharacterProperties.
+	self initializeCaseMappings. 
+	self initializeLineBreakProperties. "Must follow initializeGeneralCharacterProperties"
+	self initializeLineBreakTable.
+	self initializeHangulJamoLVT.
+	
+	
+	! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/9/2013 09:41'!
+initializeCaseMappings
+	"UniChar initializeCaseMappings"
+ 	
+	 | slash |
+  	ToCasefold 	:= IdentityDictionary new.
+	ToUpper 		:= IdentityDictionary new.
+	ToLower 		:= IdentityDictionary new.
+	
+  	slash := FileDirectory slash.
+	
+	self parseCaseMappingFrom: (FileStream concreteStream readOnlyFileNamed:
+		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'CaseFolding.txt')..
+	
+"
+@@FIXME: download using ProgressBarMorph
+
+	UIManager default informUserDuring: [:bar|
+		| stream |
+		bar value: 'Downloading Unicode data'.
+		stream := HTTPClient httpGet: 'http://www.unicode.org/Public/UNIDATA/CaseFolding.txt'.
+		(stream isKindOf: RWBinaryOrTextStream) ifFalse:[^self error: 'Download failed'].
+		stream reset.
+		bar value: 'Updating Case Mappings'.
+		self parseCaseMappingFrom: stream.
+	]
+".! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/7/2013 16:37'!
+initializeGeneralCharacterProperties
+
+ 	 | slash |
+    	slash := FileDirectory slash.
+	
+	self parseGeneralPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
+		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'UnicodeData.txt')..
+		
+	"@@FIXME: Download from  http://unicode.org/Public/UNIDATA/UnicodeData.txt "! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/16/2013 19:01'!
+initializeGeneralPropertyEnums
+
+	"16 Bits for general properties.  Upper 8 is Category"
+	CasedLetterBit 	:= 1<<15.
+	LetterBit 			:= 1<<14.
+	MarkBit 			:= 1<<13.
+	NumberBit 		:= 1<<12.
+	PunctuationBit 	:= 1<<11.
+	SymbolBit 			:= 1<<10 .
+	SeparatorBit 		:= 1<<09.
+	ControlBit 			:= 1<<08.
+	
+	"Lower 8 bits have value"
+
+"	CasedLetter := Lu + Ll +  Lt.
+	Letter 		:= Lu + Ll + Lt + Lm + Lo.
+	Mark 		:= Mn + Mc + Me.
+	Number 	:= Nd + Nl + No.
+	Punctuation 	:= Pc + Pd + Ps + Pe + Pi + Pf + Po.
+	Symbol 		:= Sm + Sc + Sk + So .
+	Separator 	:= Zs + Zl + Zp.
+	Control 		:= Cc + Cf + Cs + Co + Cn.
+"
+	Cn 	:= ControlBit.
+ 	Cc 	:= ControlBit + 1.
+ 	Cf 	:= ControlBit + 2.
+ 	Co 	:= ControlBit + 3.
+ 	Cs 	:= ControlBit + 4.
+ 	Ll 		:= CasedLetterBit + LetterBit + 1.
+ 	Lm 	:= LetterBit + 2.
+ 	Lo 	:= LetterBit + 3.
+ 	Lt 		:= CasedLetterBit + LetterBit + 4.
+ 	Lu 	:= CasedLetterBit + LetterBit + 5.
+ 	Mc 	:= MarkBit + 1.
+ 	Me 	:= MarkBit + 2.
+ 	Mn 	:= MarkBit + 3.
+ 	Nd 	:= NumberBit + 1.
+ 	Nl 		:= NumberBit + 2.
+ 	No 	:= NumberBit + 3.
+ 	Pc 	:= PunctuationBit + 1.
+ 	Pd 	:= PunctuationBit + 2.
+ 	Pe 	:= PunctuationBit + 3.
+ 	Pf 		:= PunctuationBit + 4.
+ 	Pi 		:= PunctuationBit + 5.
+ 	Po 	:= PunctuationBit + 6.
+ 	Ps 	:= PunctuationBit + 7.
+ 	Sc 	:= SymbolBit + 1.
+ 	Sk 	:= SymbolBit + 2.
+ 	Sm 	:= SymbolBit + 3.
+ 	So 	:= SymbolBit + 4.
+ 	Zl 		:= SeparatorBit + 1.
+ 	Zp 	:= SeparatorBit + 2.
+ 	Zs 	:= SeparatorBit + 3.
+
+	
+	PropertyNames := Dictionary new: 30.
+	PropertyNames at: Cn 	put: #Unassigned.
+	PropertyNames at: Cc 	put: #Control.
+ 	PropertyNames at: Cf 	put: #Format.
+ 	PropertyNames at: Co 	put: #PrivateUse.
+ 	PropertyNames at: Cs 	put: #Surrogate.
+ 	PropertyNames at: Ll 	put: #LowercaseLetter .
+ 	PropertyNames at: Lm 	put: #ModifierLetter.
+ 	PropertyNames at: Lo 	put: #OtherLetter.
+ 	PropertyNames at: Lt 	put: #TitlecaseLetter..
+ 	PropertyNames at: Lu 	put: #UppercaseLetter .
+ 	PropertyNames at: Mc 	put: #SpacingMark..
+ 	PropertyNames at: Me 	put: #EnclosingMark.
+ 	PropertyNames at: Mn 	put: #NonspacingMark.
+ 	PropertyNames at: Nd 	put: #DecimalNumber.
+ 	PropertyNames at: Nl 	put: #LetterNumber.
+ 	PropertyNames at: No 	put: #OtherNumber.
+ 	PropertyNames at: Pc 	put: #ConnectorPunctuation.
+ 	PropertyNames at: Pd 	put: #DashPunctuation.
+ 	PropertyNames at: Pe 	put: #ClosePunctuation.
+ 	PropertyNames at: Pf 	put: #FinalPunctuation.
+ 	PropertyNames at: Pi 	put: #InitialPunctuation.
+ 	PropertyNames at: Po 	put: #OtherPunctuation.
+ 	PropertyNames at: Ps 	put: #OpenPunctuation.
+ 	PropertyNames at: Sc 	put: #CurrencySymbol.
+ 	PropertyNames at: Sk 	put: #ModifierSymbol.
+ 	PropertyNames at: Sm 	put: #MathSymbol.
+ 	PropertyNames at: So 	put: #OtherSymbol.
+ 	PropertyNames at: Zl 	put: #LineSeparator.
+ 	PropertyNames at: Zp 	put: #ParagraphSeparator.
+ 	PropertyNames at: Zs 	put: #SpaceSeparator.
+	! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/21/2013 11:51'!
+initializeHangulJamoLVT
+	"Used for UniString  Grapheme cluster scanning.'
+	See UniChar>>nextLVTStateFromState:"
+	
+	"Note table 1c in  Unicode Annex #29: Unicode Text Segmentation"
+
+	"Indices into Hangul Jamo Syllable LVT state table"
+	L		:= 1.
+	V	 	:= 2.
+	LV		:= 3.
+	LVT	:= 4.
+	T 		:= 5.
+	"State x Input -> NextState"
+	LVTStateVec := Array new: 5.
+	LVTStateVec at: L		put: {L. V. LV. LVT. T.}. "equals START"
+	LVTStateVec at: V		put: {0. V.  0.    0.   T.}.
+	LVTStateVec at: LV		put: {0. V.  0.    0.   T.}.
+	LVTStateVec at: LVT	put: {0. 0.   0.    0.   T.}.
+	LVTStateVec at: T		put: {0. 0.   0.    0.   T.}.
+	" 0 ->Out == EXIT "
+
+	LVTStateMap := Array new: (LineBreakProperties size) withAll: 0.
+	LVTStateMap at: H2 put: LV.	
+	LVTStateMap at: H3 put: LVT.
+	LVTStateMap at: JL put: L.
+	LVTStateMap at: JV put: V.
+	LVTStateMap at: JT put: T.
+! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/17/2013 15:21'!
+initializeLineBreakProperties
+"
+	UniChar initializeLineBreakProperties.
+"
+	"Values in byte 16r00FF0000"
+	| slash |
+	LineBreakProperties := Array new: 40.
+	LineBreakTypeNames := #( BreakAfter DontbreakAfter 
+									BreakBefore DontbreakBefore
+									BreakForPair DontbreakForPair  ).
+	AL := 1.
+	LineBreakProperties at: AL put: #Alphabetic . "DontbreakForPair"
+	B2 := 2.
+	LineBreakProperties at: B2 put: #BeforeAndAfter . "BreakBefore | DontbreakForPair | BreakAfter"
+	BA := 3.
+	LineBreakProperties at: BA put: #BreakAfter . "BreakAfter"
+	BB := 4.
+	LineBreakProperties at: BB put: #BreakBefore . "BreakBefore"
+	BK := 5.
+	LineBreakProperties at: BK put: #MandatoryBreak . "BreakAfter"
+	CB := 6.
+	LineBreakProperties at: CB put: #ContingentBreak . "BreakBefore | BreakAfter"
+	CL := 7.
+	LineBreakProperties at: CL put: #ClosePunctuation . "DontbreakBefore"
+	CP := 8.
+	LineBreakProperties at: CP put: #CloseParenthesis . "DontbreakBefore"
+	CM := 9.
+	LineBreakProperties at: CM put: #CombiningMark . "DontbreakBefore"
+	CR := 10.
+	LineBreakProperties at: CR put: #CarrageReturn . "Always Break unless followed by LF"
+	EX := 11.
+	LineBreakProperties at: EX put: #ExclamationInterrogation . "DontbreakBefore"
+	GL := 12.
+	LineBreakProperties at: GL put: #Glue . "DontbreakBefore | DontbreakAfter"
+	H2 := 13.
+	LineBreakProperties at: H2 put: #HangulLV . "BreakBefore | BreakAfter"
+	H3 := 14.
+	LineBreakProperties at: H3 put: #HangulLVT . "BreakBefore | BreakAfter"
+	HL := 15.
+	LineBreakProperties at: HL put: #HebrewLetter . "DontbreakBefore"
+	HY := 16.
+	LineBreakProperties at: HY put: #Hyphen . "DontbreakBefore"
+	ID := 17.
+	LineBreakProperties at: ID put: #Ideographic . "BreakBefore | BreakAfter"
+	IN := 18.
+	LineBreakProperties at: IN put: #InseparableCharacters . "DontbreakForPair"
+	IS := 19.
+	LineBreakProperties at: IS put: #InfixNumericSeparator . "DontbreakBefore"
+	JL := 20.
+	LineBreakProperties at: JL put: #HangulLJamo . "BreakBefore"
+	JT := 21.
+	LineBreakProperties at: JT put: #HangulTJamo . "BreakAfter"
+	JV := 22.
+	LineBreakProperties at: JV put: #HangulVJamo . "DontbreakBefore | DontbreakAfter"
+	LF := 23.
+	LineBreakProperties at: LF put: #LineFeed . "Always Break unless followed by CR"
+	NL := 24.
+	LineBreakProperties at: NL put: #NextLine . "BreakAfter"
+	NS := 25.
+	LineBreakProperties at: NS put: #NonStarters . "DontbreakBefore"
+	NU := 26.
+	LineBreakProperties at: NU put: #Numeric . "DontbreakForPair"
+	OP := 27.
+	LineBreakProperties at: OP put: #OpenPunctuation . "DontbreakAfter"
+	PO := 28.
+	LineBreakProperties at: PO put: #PostfixNumeric . "DontbreakBefore"
+	PR := 29.
+	LineBreakProperties at: PR put: #PrefixNumeric . "DontbreakAfter"
+	QU := 30.
+	LineBreakProperties at: QU put: #Quotation . "DontbreakBefore | DontbreakAfter"
+	SP := 31.
+	LineBreakProperties at: SP put: #Space . "BreakAfter"
+	SY := 32.
+	LineBreakProperties at: SY put: #Symbols . "BreakAfter"
+	WJ := 33.
+	LineBreakProperties at: WJ put: #WordJoiner . "DontbreakBefore | DontbreakAfter"
+	ZW := 34.
+	LineBreakProperties at: ZW put: #ZeroWidthSpace . "BreakAfter"
+	RI := 35.
+	LineBreakProperties at: RI put: #RegionalIndicator . "BreakBefore | DontbreakForPair | BreakAfter"
+	AI := 36.
+	LineBreakProperties at: AI put: #AlphaOrIdeograph . "Ambiguous; treated the same"
+	XX := 37.
+	LineBreakProperties at: XX put: #Unassigned . "Who knows? Who cares?"
+	SA := 38.
+	LineBreakProperties at: SA put: #SoutheastAsian . "Complex Context Dependent"
+	CJ := 39.
+	LineBreakProperties at: CJ put: #ConditionalJapaneseStarted .
+
+	SG := 40.
+	LineBreakProperties at: SG put: #Surrogate . "DontbreakForPair"
+
+  	slash := FileDirectory slash.
+	
+	self parseLineBreakPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
+		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'LineBreak.txt')..
+! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/29/2013 16:56'!
+initializeLineBreakTable
+	"From  Unicode Standard Annex #14: Unicode Line Breaking Algorithm"
+
+	LineBreakNames := IdentityDictionary new: 2.
+	LineBreakNames at: $x put: #BreakProhibited.
+	LineBreakNames at: $0 put: #BreakAllowed.
+
+	LineBreakTable := Array new: 40.
+	LineBreakTable at: AL put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: B2 put: '0××0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: BA put: '00×0×0×××××0000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: BB put: '×××××0×××××××××××××××××××××××××××××××××x'.
+	LineBreakTable at: BK put: '000000000000000000000000000000000000000x'.
+	LineBreakTable at: CB put: '0000×0××××××000000×000××00000×××××00000x'.
+	LineBreakTable at: CL put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: CP put: '×0×0×0××××××00××00×000××××000×××××0××××x'.
+	LineBreakTable at: CM put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: CR put: '0000000000000000000000×0000000000000000x'.
+	LineBreakTable at: EX put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: GL put: '×××××××××××××××××××××××××××××××××××××××x'.
+	LineBreakTable at: H2 put: '00×0×0××××××000×0××0×××××00×0×××××0000×x'.
+	LineBreakTable at: H3 put: '00×0×0××××××000×0××0×0×××00×0×××××0000×x'.
+	LineBreakTable at: HL put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: HY put: '00×0×0×××××0000×00×000××××000×××××0000×x'.
+	LineBreakTable at: ID put: '00×0×0××××××000×0××000×××00×0×××××0000×x'.
+	LineBreakTable at: IN put: '00×0×0××××××000×0××000×××0000×××××0000×x'.
+	LineBreakTable at: IS put: '×0×0×0××××××00××00×000×××0000×××××0××××x'.
+	LineBreakTable at: JL put: '00×0×0××××××××0×0×××0××××00×0×××××0000×x'.
+	LineBreakTable at: JT put: '00×0×0××××××000×0××0×0×××00×0×××××0000×x'.
+	LineBreakTable at: JV put: '00×0×0××××××000×0××0×××××00×0×××××0000×x'.
+	LineBreakTable at: LF put: '000000000000000000000000000000000000000x'.
+	LineBreakTable at: NL put: '000000000000000000000000000000000000000x'.
+	LineBreakTable at: NS put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: NU put: '×0×0×0××××××00××0××000××××××××××××0××××x'.
+	LineBreakTable at: OP put: '×××××××××××××××××××××××××××××××××××××××x'.
+	LineBreakTable at: PO put: '×0×0×0××××××00××00×000××××000×××××0××××x'.
+	LineBreakTable at: PR put: '×0×0×0×××××××××××0××××××××000×××××0××××x'.
+	LineBreakTable at: QU put: '×××××××××××××××××××××××××××××××××××××××x'.
+	LineBreakTable at: SP put: '0000×0××0××0000000×000××000000××××00000x'.
+	LineBreakTable at: SY put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: WJ put: '×××××××××××××××××××××××××××××××××××××××x'.
+	LineBreakTable at: ZW put: '0000×0000×000000000000××000000×00×00000x'.
+	LineBreakTable at: RI put: '00×0×0××××××000×00×000×××0000××××××000×x'.
+	LineBreakTable at: AI put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: XX put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: SA put: '×0×0×0××××××00××0××000×××××00×××××0××××x'.
+	LineBreakTable at: CJ put: '00×0×0××××××000×00×000×××0000×××××0000×x'.
+	LineBreakTable at: SG put: '×××××××××××××××××××××××××××××××××××××××'.
+! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
+insert
+
+	^ (5 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 4/17/2013 15:17'!
+isCharBreakBetween: leftChar and:  rightChar
+	"Answer true if a Character break is allowed between the two characters.
+	
+	This is required because Combining Marks and other codePoints 
+	must be combined into a single display character."
+
+	^ ((LineBreakTable at: (leftChar lineBreakCategoryCode)) "@@FIXME: Bogus!!!!@@"
+						   at: (rightChar lineBreakCategoryCode)) = $0! !
+
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 4/17/2013 15:12'!
+isLineBreakBetween: leftChar and:  rightChar
+	"Answer true if a line break is allowed between the two characters."
+
+	"See comments in UniChar class>>initializeLineBreakTable"
+	^ ((LineBreakTable at: (leftChar lineBreakCategoryCode))
+						   at: (rightChar lineBreakCategoryCode)) = $0! !
+
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 4/17/2013 16:10'!
+isWordBreakBetween: leftChar and:  rightChar
+	"Answer true if a Word break is allowed between the two characters."
+
+	"See Unicode Anned 29: Unicode Text Segmenation"
+
+	"@@FIXME: brute force@@"
+	| leftGenProp rightGenProp leftLineProp rightLineProp |
+	leftGenProp := leftChar generalCategoryCode.
+	rightGenProp := rightChar generalCategoryCode.
+	leftLineProp := leftChar lineBreakCategory.
+	rightLineProp := rightChar lineBreakCategory.
+	
+	! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
+lfCharacter
+	"Answer the Character representing a linefeed."
+
+	^ (10 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 3/24/2013 15:37'!
+lineBreakNameAt: anIndex
+
+	^ LineBreakNames at: anIndex! !
+
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 3/24/2013 21:38'!
+lineBreakPropNameAt: lineBreakPropertyCode
+
+	(lineBreakPropertyCode isZero)
+	ifTrue: [ ^ #Unknown ]
+	ifFalse: [ ^ LineBreakProperties at: lineBreakPropertyCode ]! !
+
+!UniChar class methodsFor: 'accessing' stamp: 'KenD 3/24/2013 21:32'!
+lineBreakTableAt: row at: col
+	"Answer the character specified"
+
+	"See comments in UniChar class>>initializeLineBreakTable"
+	
+	^ (LineBreakTable at: row) at: col! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 3/27/2013 21:18'!
+lineSeparator
+	"Answer Unicode LS"
+
+	^ (2028 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:40'!
+nbsp
+	"non-breakable space."
+
+	^ (202 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:41'!
+newLineCharacter
+	"Answer the Character representing a newLine, that is, a linefeed.
+	This should be the only method in the system that knows about this detail.
+	Everybody else should eventually ask us."
+
+	^ self lfCharacter! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:41'!
+newPage
+	"Answer the Character representing a form feed."
+
+	^ (12 asUniChar)! !
+
+!UniChar class methodsFor: 'streams' stamp: 'KenD 4/5/2013 16:41'!
+nextUniCharFromUtf8: anUtf8Stream
+	"anUtf8Stream can be over a ByteArray
+	Answer nil if conversion not possible, because of invalid UTF-8.
+	Also answer nil for codePoint U+FEFF (BOM, unneededly added by Win clipboard)"
+
+	| byte1 byte2 byte3 byte4 codePoint |
+	byte1 := anUtf8Stream next asInteger.
+	byte1 < 128 ifTrue: [ ^ byte1 asUniChar ]. "single byte"
+	
+	"At least 2 bytes"
+	byte2 := anUtf8Stream next asInteger.
+	(byte2 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
+	
+	(byte1 bitAnd: 16rE0) = 192 ifTrue: [ "two bytes"
+		codePoint :=  (((byte1 bitAnd: 31) bitShift: 6) 
+					 + (byte2 bitAnd: 63)).
+		^ codePoint asUniChar
+	].
+	
+	"At least 3 bytes"
+	byte3 := anUtf8Stream next asInteger.
+	(byte3 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
+	
+	(byte1 bitAnd: 16rF0) = 224 ifTrue: [ "three bytes"
+		codePoint :=  ((byte1 bitAnd: 15) bitShift: 12) 
+					+ ((byte2 bitAnd: 63) bitShift: 6) 
+					+ (byte3 bitAnd: 63).
+		^ codePoint asUniChar
+	].
+
+	"4 bytes"
+	byte4 := anUtf8Stream next asInteger.
+	(byte4 bitAnd: 16rC0) = 16r80 ifFalse: [^nil]. "invalid UTF-8"
+	
+	(byte1 bitAnd: 16rF8) = 240 ifTrue: [  "four bytes"
+		codePoint :=  ((byte1 bitAnd: 16r7) bitShift: 18) 
+					+ ((byte2 bitAnd: 63)   bitShift: 12) 
+					+ ((byte3 bitAnd: 63)   bitShift:   6) 
+					+ (byte4 bitAnd: 63).
+		^ codePoint asUniChar
+	].
+
+	^nil! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:41'!
+null
+	"Answer the null Character."
+
+	^ (0 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
+pageDown
+
+	^ (12 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
+pageUp
+
+	^ (11 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 3/27/2013 21:18'!
+paragraphSeparator
+	"Answer Unicode PS"
+
+	^ (2029 asUniChar)! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/9/2013 10:27'!
+parseCaseMappingFrom: stream
+	"Parse the Unicode casing mappings from the given stream.
+	Handle only the simple mappings"
+	"
+		UniChar initializeCaseMappings.
+	"
+	|  toNumber |
+	toNumber := [:quad | ('16r', quad) asNumber].
+	
+	ToCasefold 	:= IdentityDictionary new: 2048.
+	ToUpper 		:= IdentityDictionary new: 2048.
+	ToLower 		:= IdentityDictionary new: 2048.
+
+	[stream atEnd] whileFalse:[
+		| fields line srcCode dstCode |
+		line := stream nextLine copyUpTo: $#.
+		fields := line withBlanksTrimmed findTokens: $;.
+		(fields size > 2 and: [#('C' 'S') includes: (fields at: 2) withBlanksTrimmed]) ifTrue:[
+			srcCode := toNumber value:(fields at: 1) withBlanksTrimmed.
+			dstCode := toNumber value: (fields at: 3) withBlanksTrimmed..
+			ToCasefold at: srcCode put: dstCode.
+		].
+	].
+
+	ToCasefold keysAndValuesDo:
+		[:k :v |
+		((self value: k) isUppercase)
+			ifTrue:
+				["In most cases, uppercase letter are folded to lower case"
+				ToUpper at: v put: k.
+				ToLower at: k put: v].
+		((self value: k) isLowercase)
+			ifTrue:
+				["In a few cases, two lower case letters are folded to the same lower case.
+				We must find an upper case letter folded to the same letter"
+				| up |
+				up := ToCasefold keys detect: [:e | ((self value: e) isUppercase) 
+													and: [(ToCasefold at: e) = v]] ifNone: [nil].
+				up ifNotNil: [ToUpper at: k put: up]]].
+! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/13/2013 15:31'!
+parseGeneralPropertiesFrom: aStream
+
+	|  toNumber |
+	toNumber := [:quad | ('16r', quad) asNumber].
+
+	GeneralCategory := IdentityDictionary new: 24430..
+	
+	[aStream atEnd] whileFalse:[
+		| fields line codePoint generalCategory  |
+		line := aStream nextLine.
+		fields := line withBlanksTrimmed findTokens: $;.
+		(fields size > 3) ifTrue: [.
+			codePoint := toNumber value: (fields at: 1).
+			(codePoint asUniChar isCJKIdeograph) ifFalse: [ "add it"
+				generalCategory := self perform: ((fields at: 3) asSymbol).
+				GeneralCategory at: codePoint put: generalCategory
+			]
+		]
+	].
+! !
+
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/13/2013 15:28'!
+parseLineBreakPropertiesFrom: aStream
+
+	|  toNumber  |
+	toNumber := [:quad | ('16r', quad) asNumber].
+
+	"GeneralCategory initialized before this is invoked"
+	
+	[aStream atEnd] whileFalse:[
+		| fields line codePoint  lbCategory otherInfo |
+		line := aStream nextLine copyUpTo: $#.
+		fields := line withBlanksTrimmed findTokens: $; .
+		(fields size > 1) ifTrue: [.
+			codePoint := toNumber value: (fields at: 1).
+			(codePoint asUniChar isCJKIdeograph) ifFalse: [ "add it"
+				lbCategory := self perform: ((fields at: 2) asSymbol).
+				(lbCategory isZero) ifFalse: [
+					otherInfo := GeneralCategory at: codePoint ifAbsent: [ Cn ].
+					GeneralCategory at: codePoint put: (otherInfo + (lbCategory bitShift: 16)).
+				]
+			]
+		].
+	].
+! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/11/2013 17:30'!
+propNamesForCode: propCode
+	
+	| lineBreakProp lineBreakPropName generalPropName |
+	generalPropName := PropertyNames at: (propCode bitAnd: 16r00FFFF).
+	lineBreakProp := ((propCode bitAnd: 16r00FF0000) bitShift: -16).
+	(lineBreakProp isZero) 
+	ifTrue: [ lineBreakPropName := #Unknown]
+	ifFalse: [ lineBreakPropName := LineBreakProperties at: lineBreakProp].
+
+	^ { generalPropName.  lineBreakPropName }! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 3/13/2013 13:32'!
+propStats
+"
+	UniChar propStats.
+"
+
+	| propCountsDict "countsDict" valueCounterProc |
+	
+	valueCounterProc :=
+		[ :dict | | countDict |
+			countDict := IdentityDictionary new.
+			dict valuesDo: [ :val |
+				countDict at: val
+						   put: (1 + (countDict at: val ifAbsent: [0]))
+		].
+		countDict
+	].
+
+	"Count shared codePoints"
+	propCountsDict := valueCounterProc value: GeneralCategory.
+	
+	Transcript newLine .
+	propCountsDict keysAndValuesDo: [ :key :count |
+		(count > 900)
+		ifTrue: [
+				Transcript newLine.
+				Transcript show: 'Count: ', 
+								count asString , 
+								' PropCode: ', 
+								key hex,
+								'  ', 
+								((UniChar propNamesForCode: key) asString).
+		]
+	].
+	Transcript newLine .
+
+	"Count number of times a codepoint is shared with the same count"
+"
+	countsDict := valueCounterProc value: propCountsDict.
+	
+	^ { propCountsDict. countsDict. }
+"
+	^ propCountsDict 
+			! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
+space
+	"Answer the Character representing a space."
+
+	^ (32 asUniChar)! !
+
+!UniChar class methodsFor: 'accessing untypeable chars' stamp: 'KenD 2/18/2013 20:42'!
+tab
+	"Answer the Character representing a tab."
+
+	^ (9 asUniChar)! !
+
+!UniChar class methodsFor: 'instance creation' stamp: 'KenD 3/11/2013 09:49'!
+value: aCodePoint
+
+	^self fromCodePoint: aCodePoint asNumber! !
+
+!UniChar class methodsFor: 'private' stamp: 'KenD 2/24/2013 09:36'!
+zeroCodePoints
+	
+	^ZeroCodePoints! !
+
 !UniStringWrapper methodsFor: 'conversion' stamp: 'KenD 3/18/2013 15:21'!
 asUniString
 
@@ -6378,248 +6632,9 @@ new: aSize
 with: aString
 
 	^ self basicNew with: (aString asUniString)! !
-
-!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 4/13/2013 19:09'!
-save: aKeyboardEvent
-	"Submit the current text.  Equivalent to 'accept' "
-
-	self acceptContents.
-	^ true! !
-
-!UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 4/13/2013 19:08'!
-cmdShortcutsSpec
-	"
-	Editor initialize
-	"
-	"arranged in QWERTY keyboard order"
-	^#(
-		#(		$0 	changeEmphasis:			'Normal')
-		#(		$1 	changeEmphasis:			'Bold')
-		#(		$2 	changeEmphasis:			'Italic')
-		#(		$3 	changeEmphasis:			'Underline')
-		#(		$4 	changeEmphasis:			'Strikeout')
-		#(		$5 	changeEmphasis:			'Negative kern (letters 1 pixel closer)')
-		#(		$6 	changeEmphasis:			'Positive kern (letters 1 pixel larger spread)')
-		#(		$8	#offerColorMenu:			'Change color')
-
-		#(		$k	#offerFontMenu:			'Set font')
-		
-		#(		$s	#save:							'Save (i.e. accept)')
-
-		#(		$u	#align:						'Toggle alignment')
-	)! !
-
-!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:39'!
-fromFile: aFileNameString
-"
-	UniTextEditor fromFile: 'utf8sampler.txt'.
-"
-	| textModel |
-	textModel := UniTextModel fromFile: aFileNameString.
-
-	textModel isNil ifFalse: [
-		SystemWindow 
-			editText: textModel
-			label: 'Text Editor (''',  (textModel fileName) ,  ''')'
-			wrap: true.
-	]
-	! !
-
-!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:28'!
-fromUser
-"
-	UniTextEditor fromUser.
-"
-	UniTextModel fromUser! !
-
-!UniTextEditor class methodsFor: 'class initialization' stamp: 'KenD 4/14/2013 18:05'!
-initialize
-
-"
-	UniTextEditor initialize.
-"
-	super initialize! !
-
-!UniTextModel methodsFor: 'commands' stamp: 'KenD 4/14/2013 19:59'!
-acceptContentsFrom: aTextModelMorph
-	"The user has typed Cmd+s -> Accept.
-	Update backing file (query if needed).
-	Answer true if OK, else false."
-	
-	(fileName isNil)
-	ifTrue: [ ^(self saveToNewFileNotifying: aTextModelMorph) isNil not ]
-	ifFalse: [ ^(self saveToOldFileNotifying: aTextModelMorph) isNil not ]! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/19/2013 08:56'!
-actualContents: aTextOrString
-	"Reset contents"
-
-	(actualContents class = UniLazyString)
-		ifTrue: [ actualContents fileCleanup ]. "Remove old tmp file"
-	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
-	undoRedoCommands resetToStart.
-	self changed: #actualContents! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/8/2013 19:14'!
-basicActualContents: aTextOrString
-	"Do not throw events... Not nice... Use with care... Clean some day..."
-	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
-	undoRedoCommands resetToStart.! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 19:17'!
-editorClass
-
-	^UniTextEditor! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:57'!
-fileName
-
-	^ fileName! !
-
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 5/7/2013 14:55'!
-fromFile: aFileName
-	"Open the file aFileName if possible and read the file into actualContents.
-	Answer self if successful else nil."
-	
-	| aFile fullPath |
-	(aFileName isEmpty) ifFalse: [
-		fullPath := (FileDirectory default  fullPathFor:  aFileName).
-		aFile := UniFileStream readOnlyFileNamed: fullPath.
-		((aFile isNil) or: [ aFile isDirectory ]) ifFalse: [
-			"Found a non-directory file; assume reable UTF-8"
-			fileName := aFileName.
-			timeStamp := aFile directoryEntry modificationDateAndTime.
-			aFile close.
-			actualContents := (UniLazyString onFileNamed: aFileName) asText.
-			^self
-		]
-	].
-	"Not a readable file"
-	^nil
-
-			! !
-
-!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/14/2013 14:55'!
-initialize
-	"Initialize the state of the receiver with its default contents."
-
-	actualContents _ UniString emptyString asText.
-	timeStamp := 0.
-	self flushUndoRedoCommands! !
-
-!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 19:14'!
-openLabel: aString 
-	"Create a standard system view of the model, me, and open it."
-	
-	SystemWindow editText: self label: aString asUniString wrap: true! !
-
-!UniTextModel methodsFor: 'misc' stamp: 'KenD 4/19/2013 16:05'!
-refetch
-	"Answer true if actualContents was actually fetched."
-	
-	(actualContents class = UniLazyString) ifTrue: [
-		 "Remove old tmp file"
-		actualContents fileCleanup. 
-	].
-	(self fileName) ifNotNil: [ | dirEntry  |	
-		"(Re)read contents"
-		actualContents := (UniLazyString onFileNamed: fileName) asText.
-		"Reset timeStamp"
-		dirEntry :=  (FileDirectory on: fileName) directoryEntry.
-		timeStamp := dirEntry modificationDateAndTime.
-	].
-
-	self changed: #refetched.
-		
-	^true! !
-
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 20:35'!
-saveToNewFileNotifying: aTextModelMorph
-	"Answer true if OK, else nil"
-
-	| dialogResult |	
-	dialogResult := (StandardFileMenu new) 
-   					newFileFrom: (FileDirectory default)
-					withPattern: '*' ; 
-					startUpWithCaption: 'Type new file name for save'.
-	
-	(dialogResult isNil)
-	ifTrue: [ ^nil ]
-	ifFalse: [ | uniFileStream  |
-		fileName := (dialogResult directory) fullPathFor: (dialogResult name).
-		uniFileStream := UniFileStream newFileNamed: fileName.
-		uniFileStream nextPutAll: self actualContents asUniString; close.
-		timeStamp := (FileDirectory on: fileName) directoryEntry modificationDateAndTime.
-		"@@@FIXME Notify aTextModelMorph"
-		^true
-	]! !
-
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 20:35'!
-saveToOldFileNotifying: aTextModelMorph
-	"Answer true if OK, else nil"
-
-	| dirEntry uniFileStream  |	
-	dirEntry :=  (FileDirectory on: fileName) directoryEntry.
-	(timeStamp = dirEntry  modificationDateAndTime) 
-	ifFalse: [
-		(self confirm: 
-'Caution!! Contents were saved
-elsewhere since you started
-editing them here.  Accept anyway?' ) 
-		ifFalse: [ aTextModelMorph flash. ^nil ]
-	].
-					
-	uniFileStream := UniFileStream newFileNamed: fileName.
-	uniFileStream nextPutAll: self actualContents asUniString; close.
-	timeStamp := (FileDirectory on: fileName) directoryEntry modificationDateAndTime.
-	"@@@FIXME Notify aTextModelMorph"
-	^true
-! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:56'!
-timeStamp
-
-	^ timeStamp! !
-
-!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/14/2013 15:38'!
-fromFile: aFileName
-	"Answer an instance of me if aFileName denotes a readable text file, else nil"
-
-	^self new initialize fromFile: aFileName! !
-
-!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:32'!
-fromUser
-	"Put up a StandardFileMenu and let the user choose a file to read into me."
-	"Answer an instance of me or nil"
-"
-	UniTextModel fromUser.
-"		
-	| dialogResult slash textModel |
-	dialogResult := (StandardFileMenu new)
-						oldFileFrom: (FileDirectory default) ;
-	 					startUpWithCaption: 'Select a UTF-8 Unicode text file'.
-	
-	((dialogResult isNil) or: [dialogResult isDirectory]) ifTrue: [ ^nil ].
-
-	slash := FileDirectory slash.
-
-	textModel := self new initialize 
-		fromFile: ( (dialogResult directory fullName) , slash , (dialogResult name) ).
-		
-	SystemWindow 
-		editText: textModel
-			label: 'Unicode Text(''',  (dialogResult name) ,  ''')'
-			wrap: true.
-	
-	^ textModel! !
-
-!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 19:11'!
-openLabel: aString
-
-	self new openLabel: aString asUniString! !
-UniChar initialize!
 UniForms initialize!
+UniString initialize!
 UniLazyString initialize!
 UniSplice initialize!
-UniString initialize!
 UniTextEditor initialize!
+UniChar initialize!
