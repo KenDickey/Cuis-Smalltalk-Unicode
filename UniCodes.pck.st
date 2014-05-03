@@ -1,7 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #1803] on 16 September 2013 at 8:33:29.326012 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #1978] on 2 May 2014 at 8:49:33.41663 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 5!
+!provides: 'UniCodes' 1 7!
 !requires: 'Compression' 1 nil nil!
 !requires: 'Cuis-Base' 42 1788 nil!
 !classDefinition: #UniForms category: #UniCodes!
@@ -307,6 +307,11 @@ asUniString
 
 	^UniString fromString: self! !
 
+!String methodsFor: '*unicodes' stamp: 'KenD 5/2/2014 20:14'!
+defaultFontClass
+
+	^ StrikeFont ! !
+
 !Symbol methodsFor: '*unicodes' stamp: 'KenD 3/20/2013 22:16'!
 asUniString
 
@@ -483,6 +488,16 @@ familyName
 height
 
 	^16! !
+
+!UniForms methodsFor: 'testing' stamp: 'KenD 5/2/2014 20:18'!
+isBaseFont
+
+	^ true! !
+
+!UniForms methodsFor: 'testing' stamp: 'KenD 4/30/2014 16:40'!
+isBold
+
+	^ false "NYI"! !
 
 !UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 16:47'!
 name
@@ -997,6 +1012,12 @@ editing them here.  Accept anyway?' )
 	"@@@FIXME Notify aTextModelMorph"
 	^true
 ! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/30/2014 16:59'!
+scrollDeltaHeight
+	"Return the increment in pixels which this pane should be scrolled."
+
+	^ UniForms height! !
 
 !UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:56'!
 timeStamp
@@ -4198,7 +4219,7 @@ save: aKeyboardEvent
 	self acceptContents.
 	^ true! !
 
-!UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 4/13/2013 19:08'!
+!UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 4/30/2014 14:53'!
 cmdShortcutsSpec
 	"
 	Editor initialize
@@ -4210,9 +4231,9 @@ cmdShortcutsSpec
 		#(		$2 	changeEmphasis:			'Italic')
 		#(		$3 	changeEmphasis:			'Underline')
 		#(		$4 	changeEmphasis:			'Strikeout')
-		#(		$5 	changeEmphasis:			'Negative kern (letters 1 pixel closer)')
+"		#(		$5 	changeEmphasis:			'Negative kern (letters 1 pixel closer)')
 		#(		$6 	changeEmphasis:			'Positive kern (letters 1 pixel larger spread)')
-		#(		$8	#offerColorMenu:			'Change color')
+"		#(		$8	#offerColorMenu:			'Change color')
 
 		#(		$k	#offerFontMenu:			'Set font')
 		
