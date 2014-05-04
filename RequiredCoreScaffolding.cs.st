@@ -23,7 +23,7 @@ basicDisplayString: aString from: startIndex to: stopIndex at: aPoint strikeFont
 	sourceX ifNil: [sourceX _ 100].
 	width ifNil: [width _ 100].
 	(aString isKindOf: UniString)
-	ifTrue:  [ aString displayOn: self destForm from: startIndex to: stopIndex at: aPoint]
+	ifTrue:  [ (aString copyFrom: startIndex to: stopIndex) displayOnPort: self at: aPoint ]
 	ifFalse: [
 		self primDisplayString: aString from: startIndex to: stopIndex
 			map: font characterToGlyphMap xTable: font xTable
@@ -117,7 +117,7 @@ selection
 	]! !
 
 
-!FormCanvas methodsFor: 'drawing-text' stamp: 'KenD 5/2/2014 20:31'!
+!FormCanvas methodsFor: 'drawing-text' stamp: 'jmv 5/4/2014 09:19'!
 drawString: aString from: firstIndex to: lastIndex at: aPoint font: fontOrNil color: aColor
 
 	| p1 font insideColor |
@@ -126,7 +126,7 @@ drawString: aString from: firstIndex to: lastIndex at: aPoint font: fontOrNil co
 		^self ].
 	p1 _ currentTransformation intTransform: aPoint.
 	(aString isKindOf: UniString) ifTrue: [
-		^(aString copyFrom: firstIndex to: lastIndex) displayOn: form at: p1 ].
+		^(aString copyFrom: firstIndex to: lastIndex) displayOnPort: port at: p1 ].
 	port colorMap: nil.
 	font _ fontOrNil ifNil: [ AbstractFont default ].
 	insideColor _ shadowColor ifNil: [ aColor ].
@@ -137,4 +137,3 @@ drawString: aString from: firstIndex to: lastIndex at: aPoint font: fontOrNil co
 		at: p1
 		strikeFont: font
 		color: insideColor! !
-
