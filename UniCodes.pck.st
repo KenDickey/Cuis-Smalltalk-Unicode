@@ -1,7 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #1978] on 4 May 2014 at 8:58:52.448312 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #1978] on 4 May 2014 at 9:59:57.838907 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 8!
+!provides: 'UniCodes' 1 9!
 !requires: 'Compression' 1 nil nil!
 !requires: 'Cuis-Base' 42 1788 nil!
 !classDefinition: #UniForms category: #UniCodes!
