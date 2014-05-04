@@ -1,7 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #1978] on 2 May 2014 at 8:49:33.41663 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #1978] on 4 May 2014 at 8:58:52.448312 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 7!
+!provides: 'UniCodes' 1 8!
 !requires: 'Compression' 1 nil nil!
 !requires: 'Cuis-Base' 42 1788 nil!
 !classDefinition: #UniForms category: #UniCodes!
@@ -302,10 +302,12 @@ asUniString
 
 	^ UniString fromUtf8: self! !
 
-!String methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 20:45'!
+!String methodsFor: '*unicodes' stamp: 'jmv 5/4/2014 10:13'!
 asUniString
 
-	^UniString fromString: self! !
+	"^UniString fromString: self"
+	"Convert embedded NCRs to UTF-8, and then to UniString"
+	^(self asUtf8: true) asUniString! !
 
 !String methodsFor: '*unicodes' stamp: 'KenD 5/2/2014 20:14'!
 defaultFontClass
@@ -1777,27 +1779,7 @@ displayOn: aDisplayMedium
 
 	self displayOn: aDisplayMedium at: 0 @ 0! !
 
-!UniString methodsFor: 'displaying' stamp: 'KenD 4/7/2013 13:14'!
-displayOn: aDisplayMedium at: aPoint 
-	"Show a representation of the receiver as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
-
-	| grafPort delta |
-	grafPort := aDisplayMedium getCanvas grafPort.
-	delta := 0.
-	
-	1 to: self size do: [ :index |
-		| uniChar width |
-		uniChar := self at: index.
-		 width := (UniForms widthOf: uniChar).
-		(width isZero) ifFalse: [
-			grafPort copyForm: uniChar form to: ((aPoint x + delta) @ (aPoint y)) rule:  Form and.
-			delta := delta + width
-		]
-	]
-	
-	! !
-
-!UniString methodsFor: 'displaying' stamp: 'KenD 4/7/2013 13:14'!
+!UniString methodsFor: 'displaying' stamp: 'KenD 5/3/2014 18:20'!
 displayOn: aDisplayMedium from: start to: stop at: aPoint 
 	"Show a representation of the receiver as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
 
@@ -1811,6 +1793,25 @@ displayOn: aDisplayMedium from: start to: stop at: aPoint
 		 width := (UniForms widthOf: uniChar).
 		(width isZero) ifFalse: [
 			grafPort copyForm: uniChar form to: ((aPoint x + delta) @ (aPoint y)) rule:  Form and.
+			delta := delta + width
+		]
+	]
+	
+	! !
+
+!UniString methodsFor: 'displaying' stamp: 'jmv 5/4/2014 09:20'!
+displayOnPort: aGrafPort at: aPoint 
+	"Show a representation of the receiver as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
+
+	| delta |
+	delta := 0.
+	
+	1 to: self size do: [ :index |
+		| uniChar width |
+		uniChar := self at: index.
+		 width := (UniForms widthOf: uniChar).
+		(width isZero) ifFalse: [
+			aGrafPort copyForm: uniChar form to: ((aPoint x + delta) @ (aPoint y)) rule:  Form and.
 			delta := delta + width
 		]
 	]
