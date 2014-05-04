@@ -45,10 +45,10 @@ This means that the class UniChar does not inherit from Character and UniString 
 
 Import packages and required core scaffolding:
 ````Smalltalk
-    |slash|
-    slash := FileDirectory slash.
-    Feature require: #'UniCodesTests'.
-    ChangeSet install: (  '..', slash, 'Cuis-Smalltalk-Unicode', slash, 'RequiredCoreScaffolding.cs.st' ).
+ |slash|
+ slash := FileDirectory slash.
+ Feature require: #'UniCodesTests'.
+ ChangeSet install: ( '..', slash, 'Cuis-Smalltalk-Unicode', slash, 'RequiredCoreScaffolding.cs.st' ).
 ````
 
 Try things out.
