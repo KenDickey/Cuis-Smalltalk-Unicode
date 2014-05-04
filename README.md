@@ -47,13 +47,8 @@ Import packages and required core scaffolding:
 ````Smalltalk
     |slash|
     slash := FileDirectory slash.
-    prefix := ( '..', slash, 'Cuis-Smalltalk-Unicode', slash ).
-    #( 'UniCodes.pck.st' 'UniCodesTests.pck.st' ) do:
-    [ :fileName |
-      CodePackageFile installPackageStream:
-        ( FileStream concreteStream readOnlyFileNamed: (prefix , fileName) )
-    ].
-    ChangeSet install: ( prefix , 'RequiredCoreScaffolding.cs.st' ).
+    Feature require: #'UniCodesTests'.
+    ChangeSet install: (  '..', slash, 'Cuis-Smalltalk-Unicode', slash, 'RequiredCoreScaffolding.cs.st' ).
 ````
 
 Try things out.
