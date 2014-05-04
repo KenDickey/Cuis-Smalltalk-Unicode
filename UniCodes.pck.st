@@ -1,9 +1,9 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #1978] on 4 May 2014 at 9:59:57.838907 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #1978] on 5 May 2014 at 1:19:21.836911 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 9!
-!requires: 'Compression' 1 nil nil!
+!provides: 'UniCodes' 1 10!
 !requires: 'Cuis-Base' 42 1788 nil!
+!requires: 'Compression' 1 nil nil!
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
@@ -952,7 +952,7 @@ openLabel: aString
 	
 	SystemWindow editText: self label: aString asUniString wrap: true! !
 
-!UniTextModel methodsFor: 'misc' stamp: 'KenD 4/19/2013 16:05'!
+!UniTextModel methodsFor: 'misc' stamp: 'KenD 5/5/2014 01:18'!
 refetch
 	"Answer true if actualContents was actually fetched."
 	
@@ -964,7 +964,7 @@ refetch
 		"(Re)read contents"
 		actualContents := (UniLazyString onFileNamed: fileName) asText.
 		"Reset timeStamp"
-		dirEntry :=  (FileDirectory on: fileName) directoryEntry.
+		dirEntry :=  (FileDirectory lookInUsualPlaces: fileName) directoryEntry.
 		timeStamp := dirEntry modificationDateAndTime.
 	].
 
