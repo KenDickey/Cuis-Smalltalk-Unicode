@@ -1,9 +1,9 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #1978] on 5 May 2014 at 1:19:21.836911 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #1982] on 5 May 2014 at 10:02:42.773048 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 10!
-!requires: 'Cuis-Base' 42 1788 nil!
+!provides: 'UniCodes' 1 12!
 !requires: 'Compression' 1 nil nil!
+!requires: 'Cuis-Base' 42 1982 nil!
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
@@ -507,6 +507,20 @@ name
 	"Answer my font name"
 	^ 'GNU Unifont'! !
 
+!UniForms methodsFor: 'as yet unclassified' stamp: 'jmv 5/5/2014 22:42'!
+on: aGrafPort displayString: aString from: firstIndex to: lastIndex at: p color: color
+	"Show a representation of aString as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
+
+	| delta |
+	delta _ 0.
+	firstIndex to: lastIndex do: [ :index |
+		| uniChar width |
+		uniChar _ aString at: index.
+		width _ UniForms widthOf: uniChar.
+		width isZero ifFalse: [
+			aGrafPort copyForm: (UniForms formForCodePoint: uniChar unicodeCodePoint) to: ((p x + delta) @ (p y)) rule: Form and.
+			delta _ delta + width ]]! !
+
 !UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:12'!
 pointSize
 
@@ -581,13 +595,13 @@ defaultFormForMissingChar
 	"Answer a DIAGONAL CROSS for missing forms"
 	^ (FormsArray at: 16r2573)! !
 
-!UniForms class methodsFor: 'accessing' stamp: 'KenD 4/17/2013 14:28'!
+!UniForms class methodsFor: 'accessing' stamp: 'KenD 5/5/2014 21:23'!
 formForCodePoint: aCodePoint
 
 	"Answer a form for glyph/character at codePoint or nil"
 
 	| index form |
-	index := aCodePoint + 1. "Conver to zero based index"
+	index := aCodePoint + 1. "Convert to zero based index"
 	
 	(index < 1)
 	ifTrue: [DomainError signal: 'Unicode code point out of range ' , aCodePoint printString ].
@@ -845,11 +859,11 @@ readFormsArray: fileName
 	
 	! !
 
-!UniForms class methodsFor: 'accessing' stamp: 'KenD 8/18/2013 19:08'!
+!UniForms class methodsFor: 'accessing' stamp: 'KenD 5/5/2014 21:24'!
 sliceStart: codePoint size: arraySize
 	"Answer a slice of forms"
-" Dingbats
-	(UniForms sliceStart: 16r2701 size: 40) explore. 
+"
+	(UniForms sliceStart: 16r2701 size: 40) explore.   "" Dingbats ""
 "
 	| slice |
 	slice := Array new: arraySize.
@@ -1063,11 +1077,19 @@ openLabel: aString
 
 	self new openLabel: aString asUniString! !
 
-!UniFileList methodsFor: 'contents' stamp: 'KenD 4/19/2013 08:19'!
+!UniFileList methodsFor: 'contents' stamp: 'KenD 5/5/2014 21:58'!
 acceptedContents
+	| aStringOrText |
+	aStringOrText := self acceptedStringOrText.
+	(aStringOrText is: #Text)
+	ifTrue: [ ^ aStringOrText ].
 	^ Text
-		initialFont: UniForms default
-		stringOrText: self acceptedStringOrText! !
+		initialFont: (
+			(aStringOrText is: #UniString) 
+					ifTrue: [UniForms default] 
+					ifFalse: [Preferences standardCodeFont]
+		)
+		stringOrText: aStringOrText! !
 
 !UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 15:59'!
 acceptedStringOrText
@@ -1094,21 +1116,6 @@ acceptedStringOrText
 	brevityState == #needToGetBrief ifTrue: [ ^ self readContentsBrief: true ].  "default"
 
 	self halt: 'unknown state ' , brevityState printString! !
-
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/13/2013 15:49'!
-defaultContents
-	acceptedContentsCache := (list
-		ifNil: [ String emptyString ]
-		ifNotNil: [
-			(String streamContents:
-				[:s | s nextPutAll: 'NO FILE SELECTED'; newLine.
-				 s nextPutAll: '  -- Folder Summary --'; newLine.
-				 list do: [:item | s nextPutAll: item; newLine]] 
-			) 
-		]
-	).
-	brevityState _ #FileList.
-	^ acceptedContentsCache! !
 
 !UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/14/2013 19:22'!
 editorClass
@@ -1164,11 +1171,11 @@ meaningfully be saved at present.' format:{type}).
 	^ false  "failed"
 ! !
 
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/19/2013 08:35'!
+!UniFileList methodsFor: 'private' stamp: 'KenD 5/5/2014 20:57'!
 readContentsUnicode: brevity
 	"retrieve the contents from the external file unless it is too long.
 	  Don't create a file here.  Check if exists."
-	| uniFileStream"  uniString" |
+	| uniFileStream  "uniString"  |
 
 	uniFileStream := UniFileStream oldFileOrNoneNamed: self fullName. 
 	uniFileStream ifNil: [^ 'For some reason, this file cannot be read']
@@ -1177,9 +1184,11 @@ readContentsUnicode: brevity
 	brevityState := #fullUnicode.
 	uniFileStream close. 
 	acceptedContentsCache := uniString.
-"	
+"
 	brevityState := #fullUnicode.
 	
+"	 ^ acceptedContentsCache "
+
 	(acceptedContentsCache class = UniLazyString)
 		ifTrue: [ acceptedContentsCache fileCleanup ]. "Remove old tmp file"
 		
@@ -1779,45 +1788,6 @@ displayOn: aDisplayMedium
 
 	self displayOn: aDisplayMedium at: 0 @ 0! !
 
-!UniString methodsFor: 'displaying' stamp: 'KenD 5/3/2014 18:20'!
-displayOn: aDisplayMedium from: start to: stop at: aPoint 
-	"Show a representation of the receiver as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
-
-	| grafPort delta |
-	grafPort := aDisplayMedium getCanvas grafPort.
-	delta := 0.
-	
-	start to: stop do: [ :index |
-		| uniChar width |
-		uniChar := self at: index.
-		 width := (UniForms widthOf: uniChar).
-		(width isZero) ifFalse: [
-			grafPort copyForm: uniChar form to: ((aPoint x + delta) @ (aPoint y)) rule:  Form and.
-			delta := delta + width
-		]
-	]
-	
-	! !
-
-!UniString methodsFor: 'displaying' stamp: 'jmv 5/4/2014 09:20'!
-displayOnPort: aGrafPort at: aPoint 
-	"Show a representation of the receiver as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
-
-	| delta |
-	delta := 0.
-	
-	1 to: self size do: [ :index |
-		| uniChar width |
-		uniChar := self at: index.
-		 width := (UniForms widthOf: uniChar).
-		(width isZero) ifFalse: [
-			aGrafPort copyForm: uniChar form to: ((aPoint x + delta) @ (aPoint y)) rule:  Form and.
-			delta := delta + width
-		]
-	]
-	
-	! !
-
 !UniString methodsFor: 'displaying' stamp: 'KenD 3/18/2013 17:11'!
 displayProgressAt: aPoint from: minVal to: maxVal during: workBlock
 	"Display this string as a caption over a progress bar while workBlock is evaluated.
@@ -2206,6 +2176,10 @@ initialIntegerOrNil
 '78 92' asUniString  initialIntegerOrNil
 "
 ! !
+
+!UniString methodsFor: 'testing' stamp: 'KenD 5/5/2014 21:56'!
+is: aSymbol
+	^ aSymbol == #UniString or: [ super is: aSymbol ]! !
 
 !UniString methodsFor: 'testing' stamp: 'KenD 3/18/2013 16:43'!
 isAllDigits
@@ -4280,12 +4254,13 @@ ascii
 	
 	DomainError signal: 'Unicode does not fit into ASCII; ASCII is a subset of Unicode'! !
 
-!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 16:56'!
+!UniFileStream methodsFor: 'access' stamp: 'KenD 5/5/2014 20:42'!
 contents
 	"Answer the file contrents as a UniString"
 	
 	"@@FIXME: answer a lazy file UniString @@"
 	| oldPos result |
+	self ensureOpen.
 	oldPos := self position.
 	self resetToStart.
 	result := self upToEnd.
@@ -4596,7 +4571,7 @@ asCharacter
 	ifTrue: [ ^ codePoint asCharacter ]
 	ifFalse: [ DomainError signal: 'Unicode code point out of range for ISO 8859-15' ]! !
 
-!UniChar methodsFor: 'converting' stamp: 'KenD 4/6/2013 16:31'!
+!UniChar methodsFor: 'converting' stamp: 'jmv 5/5/2014 22:41'!
 asCursor
 
 	"Answer my 16 x 16 form as a Cursor"
@@ -4605,7 +4580,7 @@ asCursor
 	16r2740 asUniChar asCursor beCursor.       ""  Flower 'dingbat'.  ""
 	16r2764 asUniChar asCursor beCursor.       ""  Heart 'dingbat'  ""
 "
-	^ CursorWithMask derivedFrom: self form! !
+	^ CursorWithMask derivedFrom: (UniForms formForCodePoint: codePoint)! !
 
 !UniChar methodsFor: 'converting' stamp: 'KenD 2/26/2013 15:32'!
 asInteger
@@ -4779,17 +4754,6 @@ digitValue
 	(codePoint < 16rFF)
 	ifTrue: [ ^ self asCharacter digitValue ]
 	ifFalse: [ ^ self codePoint uniDigit ]! !
-
-!UniChar methodsFor: 'accessing' stamp: 'KenD 4/17/2013 14:31'!
-form
-	"Answer a form if I am in plane zero, else the missing character form from UniForms"
-	
-	| aForm |
-	aForm := UniForms formForCodePoint: codePoint.
-	
-	(aForm isNil)
-	ifTrue: [ ^UniForms formForCodePoint: (UniForms formForMissingChar) ] 
-	ifFalse: [ ^aForm ]! !
 
 !UniChar methodsFor: 'properties' stamp: 'KenD 3/11/2013 09:52'!
 generalCategory
@@ -5042,10 +5006,14 @@ hash
 
 	^codePoint ! !
 
-!UniChar methodsFor: 'accessing' stamp: 'KenD 3/3/2013 14:00'!
+!UniChar methodsFor: 'accessing' stamp: 'jmv 5/5/2014 22:41'!
 icon
 
-	^self form! !
+	^UniForms formForCodePoint: codePoint! !
+
+!UniChar methodsFor: 'testing' stamp: 'KenD 5/5/2014 21:56'!
+is: aSymbol
+	^ aSymbol == #UniChar or: [ super is: aSymbol ]! !
 
 !UniChar methodsFor: 'testing' stamp: 'KenD 4/17/2013 17:34'!
 isAlphaNumeric
