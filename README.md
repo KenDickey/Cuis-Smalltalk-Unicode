@@ -13,7 +13,7 @@ Incomplete; Pre-Alpha; Not ready yet to see the light of day...
 - Simple edit of Unicode files with copy/cut and paste.
 - NO font support (uses simple 'forms' from GNU UniFont).
 - Currently, there is NO grapheme composition. Unicode code points are displayed, including 'combining marks'.
-- Tested with Cuis 4.2
+- Tested with Cuis 4.2 -- Due to system changes, requires version 1982 or newer
 
 
 ### Introduction/Overview
@@ -55,16 +55,16 @@ Try things out.
 
 Find a Unicode file in FileList (e.g. utf8sampler.txt). Select the file name. Right-click and select 'view as Unicode' from the menu.
 ````Smalltalk
-	FileListWindow openUniFileList.
+ FileListWindow openUniFileList.
 ````
 Open a text editor on a UniString [Unicode String].  Copy & paste.  Cmd-s to save.
 ````Smalltalk
-	'Some text' asUniString edit.
+ 'Some text' asUniString edit.
 ````
 Open a text editor on a file
 ````Smalltalk
-	UniTextEditor fromFile: 'utf8sampler.txt'.
-	UniTextEditor fromUser.  "Puts up a file dialog"
+ UniTextEditor fromFile: 'utf8sampler.txt'.
+ UniTextEditor fromUser.  "Puts up a file dialog"
 ````
 
 Bugs are expected, but please email report to  Ken [dot] Dickey [at] whidbey [dot] com
