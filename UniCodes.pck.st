@@ -1,7 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #1982] on 5 May 2014 at 10:02:42.773048 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #1982] on 7 May 2014 at 2:54:33.111797001 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 12!
+!provides: 'UniCodes' 1 13!
 !requires: 'Compression' 1 nil nil!
 !requires: 'Cuis-Base' 42 1982 nil!
 !classDefinition: #UniForms category: #UniCodes!
@@ -2770,6 +2770,15 @@ substrings
 	subStringStream isEmpty ifFalse: [
 		result add: subStringStream asUniString ].
 	^ result asArray! !
+
+!UniString methodsFor: 'converting' stamp: 'KenD 5/7/2014 02:54'!
+surroundedBySingleQuotes
+	"Answer the receiver with leading and trailing quotes.  "
+
+	| singleQuiteUniString |
+	singleQuiteUniString := $' asUniString.
+	
+	^ (singleQuiteUniString, self, singleQuiteUniString)! !
 
 !UniString methodsFor: 'enumerating' stamp: 'KenD 3/18/2013 21:56'!
 tabDelimitedFieldsDo: aBlock
