@@ -1,4 +1,11 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #1981] on 5 May 2014 at 11:02:41.264131 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #1982] on 7 May 2014 at 5:01:44.003216 pm'!
+
+!InnerTextMorph methodsFor: 'accessing' stamp: 'KenD 5/7/2014 16:39'!
+model
+	"Answer my TextModel"
+	
+	^ model 
+	! !
 
 !String class methodsFor: 'as yet unclassified' stamp: 'KenD 4/3/2013 14:59'!
 defaultFontClass
