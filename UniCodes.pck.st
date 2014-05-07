@@ -1,9 +1,9 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #1982] on 7 May 2014 at 2:54:33.111797001 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #1982] on 7 May 2014 at 5:17:50.328005 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 13!
-!requires: 'Compression' 1 nil nil!
+!provides: 'UniCodes' 1 16!
 !requires: 'Cuis-Base' 42 1982 nil!
+!requires: 'Compression' 1 nil nil!
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
@@ -3764,14 +3764,14 @@ Transcript log: 'UniLazyString>>fileCheck  closed? >> ',
 	((uniFileStream closed not) and: [uniFileStream atEnd])
 		 ifTrue: [ self fileCleanup ]! !
 
-!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 17:30'!
+!UniLazyString methodsFor: 'private' stamp: 'KenD 5/7/2014 17:17'!
 fileCleanup
 	"Close and remove tempFile"
 
-	 | fileName |
-	fileName := uniFileStream name.
+	 | theFileName |
+	theFileName := uniFileStream name.
 	uniFileStream close.
-	FileDirectory deleteFilePath: fileName.! !
+	FileDirectory deleteFilePath: theFileName.! !
 
 !UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 18:03'!
 finalize
@@ -3780,22 +3780,22 @@ finalize
 	self fileCleanup.
 	! !
 
-!UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 18:26'!
+!UniLazyString methodsFor: 'private' stamp: 'KenD 5/7/2014 17:17'!
 genTempFileName
 	"Answer the name of a file which is different than one that exists"
 	
 	"@@FIXME: Use /tmp on Unix, ??? on Windows"
 	
-	| dir looking rand fileName |
+	| dir looking rand theFileName |
 	
 	looking := true.
 	dir := FileDirectory default.
 	[looking] whileTrue: [
 		 rand := 777 atRandom: (Random new initialize).
- 		 fileName := 'tmp' , rand asString.
+ 		 theFileName := 'tmp' , rand asString.
  		 looking := dir fileExists: fileName.
 	].
-	^ fileName
+	^ theFileName
 ! !
 
 !UniLazyString methodsFor: 'initialize-release' stamp: 'KenD 4/18/2013 21:31'!
@@ -4195,6 +4195,22 @@ with:  aUniString with: anotherUniString
 	"Answer a new UniString"
 
 	^ self splice: aUniString with: anotherUniString ! !
+
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 5/7/2014 17:13'!
+paste
+	"Paste the text from the shared buffer over the current selection and 
+	redisplay if necessary."
+	
+	| currentContents clipString |
+	currentContents := morph model actualContents.
+	clipString := 
+		((currentContents is: #UniString)
+		 or: [(currentContents is: #Text) 
+			and: [ currentContents string is: #UniString]])
+		ifTrue: [	 self clipboardStringOrText asUniString ]
+		ifFalse: [ self clipboardStringOrText ].
+	
+	self replaceSelectionWith: clipString ! !
 
 !UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 4/13/2013 19:09'!
 save: aKeyboardEvent
