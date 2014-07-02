@@ -1,7 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2021] on 21 June 2014 at 2:59:56.136894 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2021] on 1 July 2014 at 8:03:27.592728 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 18!
+!provides: 'UniCodes' 1 19!
 !requires: 'Compression' 1 nil nil!
 !requires: 'Cuis-Base' 42 1982 nil!
 !classDefinition: #UniForms category: #UniCodes!
@@ -1757,6 +1757,39 @@ copyFrom: start to: stop
 
 	self subclassResponsibility ! !
 
+!UniString methodsFor: 'copying' stamp: 'KenD 7/1/2014 19:56'!
+copyReplaceAll: oldSubstring with: newSubstring asTokens: ifTokens
+	"Answer a copy of the receiver in which all occurrences of
+	oldSubstring have been replaced by newSubstring.
+	ifTokens (valid for Strings only) specifies that the characters
+	surrounding the recplacement must not be alphanumeric.
+		Bruce Simth,  must be incremented by 1 and not 
+	newSubstring if ifTokens is true.  See example below. "
+
+	| aString startSearch currentIndex endIndex |
+	aString _ self.
+	startSearch _ 1.
+	[(currentIndex _ aString indexOfSubCollection: oldSubstring startingAt: startSearch)
+			 > 0]
+		whileTrue: 
+		[endIndex _ currentIndex + oldSubstring size - 1.
+		(ifTokens not
+			or: [(currentIndex = 1
+					or: [(aString at: currentIndex-1) isGenerallyValidInIdentifiers not])
+				and: [endIndex = aString size
+					or: [(aString at: endIndex+1) isGenerallyValidInIdentifiers not]]])
+			ifTrue: [aString _ aString
+					copyReplaceFrom: currentIndex
+					to: endIndex
+					with: newSubstring.
+				startSearch _ currentIndex + newSubstring size]
+			ifFalse: [
+				ifTokens 
+					ifTrue: [startSearch _ currentIndex + 1]
+					ifFalse: [startSearch _ currentIndex + newSubstring size]]].
+	^ aString
+! !
+
 !UniString methodsFor: 'copying' stamp: 'KenD 3/30/2013 20:34'!
 copyReplaceFrom: start to: stop with: aStringOrUniString
 	"Answer a copy of the receiver satisfying the following conditions: If 
@@ -1767,13 +1800,13 @@ copyReplaceFrom: start to: stop with: aStringOrUniString
 
 	^((self copyFrom: 1 to: (start - 1)) , aStringOrUniString asUniString , (self copyFrom: (stop + 1) to: (self size))) ! !
 
-!UniString methodsFor: 'copying' stamp: 'KenD 6/21/2014 14:56'!
+!UniString methodsFor: 'copying' stamp: 'KenD 7/1/2014 19:58'!
 copyReplaceTokens: oldSubstring with: newSubstring 
 	"Replace all occurrences of oldSubstring that are surrounded
 	by non-alphanumeric characters"
 	^ self copyReplaceAll: oldSubstring with: newSubstring asTokens: true
 "
-	'File asFile Files File''s File' copyReplaceTokens: 'File' with: 'Snick'.
+	'File asFile Files File''s File' asUniString copyReplaceTokens: 'File' with: 'Snick'.
 "! !
 
 !UniString methodsFor: 'displaying' stamp: 'KenD 3/4/2013 20:29'!
