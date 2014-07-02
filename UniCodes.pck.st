@@ -1,9 +1,9 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #1982] on 7 May 2014 at 5:17:50.328005 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2021] on 21 June 2014 at 2:59:56.136894 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 16!
-!requires: 'Cuis-Base' 42 1982 nil!
+!provides: 'UniCodes' 1 18!
 !requires: 'Compression' 1 nil nil!
+!requires: 'Cuis-Base' 42 1982 nil!
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
@@ -1767,12 +1767,14 @@ copyReplaceFrom: start to: stop with: aStringOrUniString
 
 	^((self copyFrom: 1 to: (start - 1)) , aStringOrUniString asUniString , (self copyFrom: (stop + 1) to: (self size))) ! !
 
-!UniString methodsFor: 'copying' stamp: 'KenD 4/8/2013 19:42'!
+!UniString methodsFor: 'copying' stamp: 'KenD 6/21/2014 14:56'!
 copyReplaceTokens: oldSubstring with: newSubstring 
 	"Replace all occurrences of oldSubstring that are surrounded
 	by non-alphanumeric characters"
 	^ self copyReplaceAll: oldSubstring with: newSubstring asTokens: true
-	"'File asFile Files File''s File' copyReplaceTokens: 'File' with: 'Snick'"! !
+"
+	'File asFile Files File''s File' copyReplaceTokens: 'File' with: 'Snick'.
+"! !
 
 !UniString methodsFor: 'displaying' stamp: 'KenD 3/4/2013 20:29'!
 displayAt: aPoint 
@@ -3780,7 +3782,7 @@ finalize
 	self fileCleanup.
 	! !
 
-!UniLazyString methodsFor: 'private' stamp: 'KenD 5/7/2014 17:17'!
+!UniLazyString methodsFor: 'private' stamp: 'KenD 6/19/2014 16:41'!
 genTempFileName
 	"Answer the name of a file which is different than one that exists"
 	
@@ -3793,7 +3795,7 @@ genTempFileName
 	[looking] whileTrue: [
 		 rand := 777 atRandom: (Random new initialize).
  		 theFileName := 'tmp' , rand asString.
- 		 looking := dir fileExists: fileName.
+ 		 looking := dir fileExists: theFileName.
 	].
 	^ theFileName
 ! !
