@@ -319,7 +319,7 @@ asUniString
 
 	^UniString fromString: self asString! !
 
-!FormCanvas methodsFor: '*unicodes' stamp: 'KenD 4/14/2013 21:03'!
+!BitBltCanvas methodsFor: '*unicodes' stamp: 'KenD 4/14/2013 21:03'!
 grafPort
 
 	^port! !
