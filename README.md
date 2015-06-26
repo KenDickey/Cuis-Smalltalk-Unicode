@@ -13,7 +13,7 @@ Incomplete; Pre-Alpha; Not ready yet to see the light of day...
 - Simple edit of Unicode files with copy/cut and paste.
 - NO font support (uses simple 'forms' from GNU UniFont).
 - Currently, there is NO grapheme composition. Unicode code points are displayed, including 'combining marks'.
-- Tested with Cuis 4.2 -- Due to system changes, requires version 1982 or newer
+- Tested with Cuis 4.2 rev 2367.
 
 
 ### Introduction/Overview
@@ -42,6 +42,7 @@ This means that the class UniChar does not inherit from Character and UniString 
 
 
 ### For the impatient
+Tested in Cuis 4.2 rev 2049
 
 Import packages and required core scaffolding:
 ````Smalltalk
@@ -65,6 +66,10 @@ Open a text editor on a file
 ````Smalltalk
  UniTextEditor fromFile: 'utf8sampler.txt'.
  UniTextEditor fromUser.  "Puts up a file dialog"
+````
+Show a 'slice' of unicode character forms in an explorer.
+````Smalltalk
+ (UniForms sliceStart: 16r2701 size: 40) explore. 
 ````
 
 Bugs are expected, but please email report to  Ken [dot] Dickey [at] whidbey [dot] com
