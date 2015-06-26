@@ -42,7 +42,6 @@ This means that the class UniChar does not inherit from Character and UniString 
 
 
 ### For the impatient
-Tested in Cuis 4.2 rev 2049
 
 Import packages and required core scaffolding:
 ````Smalltalk
