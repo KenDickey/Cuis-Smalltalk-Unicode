@@ -1,9 +1,9 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2021] on 1 July 2014 at 8:03:27.592728 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2367] on 27 June 2015 at 2:39:54.324911 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 19!
-!requires: 'Compression' 1 nil nil!
+!provides: 'UniCodes' 1 20!
 !requires: 'Cuis-Base' 42 1982 nil!
+!requires: 'Compression' 1 nil nil!
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
@@ -319,11 +319,6 @@ asUniString
 
 	^UniString fromString: self asString! !
 
-!BitBltCanvas methodsFor: '*unicodes' stamp: 'KenD 4/14/2013 21:03'!
-grafPort
-
-	^port! !
-
 !Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 14:08'!
 asUniChar
 	"Answer a Unicode character based on my value interpreted as a code point."
@@ -436,13 +431,18 @@ nextUnicodeCodePointFromUtf8: anUtf8Stream
 
 	^nil! !
 
-!FileListWindow class methodsFor: '*unicodes' stamp: 'KenD 4/13/2013 16:32'!
+!FileListWindow class methodsFor: '*unicodes' stamp: 'jmv 6/27/2015 09:56'!
 openUniFileList
 	"Answer a FileList which can view Unicode"
 	"
 	FileListWindow openUniFileList.
 	"
-	FileListWindow open: (UniFileList new directory: FileDirectory default) label: nil! !
+	FileListWindow open: (UniFileList new directory: FileDirectory currentDirectory ) label: nil! !
+
+!BitBltCanvas methodsFor: '*unicodes' stamp: 'KenD 4/14/2013 21:03'!
+grafPort
+
+	^port! !
 
 !UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 16:57'!
 approxWidthOfText: aText
@@ -929,14 +929,14 @@ fileName
 
 	^ fileName! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 5/7/2013 14:55'!
+!UniTextModel methodsFor: 'file handling' stamp: 'jmv 6/27/2015 09:56'!
 fromFile: aFileName
 	"Open the file aFileName if possible and read the file into actualContents.
 	Answer self if successful else nil."
 	
 	| aFile fullPath |
 	(aFileName isEmpty) ifFalse: [
-		fullPath := (FileDirectory default  fullPathFor:  aFileName).
+		fullPath := (FileDirectory currentDirectory  fullPathFor:  aFileName).
 		aFile := UniFileStream readOnlyFileNamed: fullPath.
 		((aFile isNil) or: [ aFile isDirectory ]) ifFalse: [
 			"Found a non-directory file; assume reable UTF-8"
@@ -986,13 +986,13 @@ refetch
 		
 	^true! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 20:35'!
+!UniTextModel methodsFor: 'file handling' stamp: 'jmv 6/27/2015 09:56'!
 saveToNewFileNotifying: aTextModelMorph
 	"Answer true if OK, else nil"
 
 	| dialogResult |	
 	dialogResult := (StandardFileMenu new) 
-   					newFileFrom: (FileDirectory default)
+   					newFileFrom: (FileDirectory currentDirectory)
 					withPattern: '*' ; 
 					startUpWithCaption: 'Type new file name for save'.
 	
@@ -1046,7 +1046,7 @@ fromFile: aFileName
 
 	^self new initialize fromFile: aFileName! !
 
-!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:32'!
+!UniTextModel class methodsFor: 'instance creation' stamp: 'jmv 6/27/2015 09:57'!
 fromUser
 	"Put up a StandardFileMenu and let the user choose a file to read into me."
 	"Answer an instance of me or nil"
@@ -1055,7 +1055,7 @@ fromUser
 "		
 	| dialogResult slash textModel |
 	dialogResult := (StandardFileMenu new)
-						oldFileFrom: (FileDirectory default) ;
+						oldFileFrom: (FileDirectory currentDirectory) ;
 	 					startUpWithCaption: 'Select a UTF-8 Unicode text file'.
 	
 	((dialogResult isNil) or: [dialogResult isDirectory]) ifTrue: [ ^nil ].
@@ -3799,14 +3799,14 @@ Transcript log: 'UniLazyString>>fileCheck  closed? >> ',
 	((uniFileStream closed not) and: [uniFileStream atEnd])
 		 ifTrue: [ self fileCleanup ]! !
 
-!UniLazyString methodsFor: 'private' stamp: 'KenD 5/7/2014 17:17'!
+!UniLazyString methodsFor: 'private' stamp: 'jmv 6/27/2015 09:58'!
 fileCleanup
 	"Close and remove tempFile"
 
 	 | theFileName |
 	theFileName := uniFileStream name.
 	uniFileStream close.
-	FileDirectory deleteFilePath: theFileName.! !
+	uniFileStream directory deleteFileNamed: theFileName.! !
 
 !UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 18:03'!
 finalize
@@ -3815,7 +3815,7 @@ finalize
 	self fileCleanup.
 	! !
 
-!UniLazyString methodsFor: 'private' stamp: 'KenD 6/19/2014 16:41'!
+!UniLazyString methodsFor: 'private' stamp: 'jmv 6/27/2015 09:56'!
 genTempFileName
 	"Answer the name of a file which is different than one that exists"
 	
@@ -3824,7 +3824,7 @@ genTempFileName
 	| dir looking rand theFileName |
 	
 	looking := true.
-	dir := FileDirectory default.
+	dir := FileDirectory currentDirectory.
 	[looking] whileTrue: [
 		 rand := 777 atRandom: (Random new initialize).
  		 theFileName := 'tmp' , rand asString.
@@ -3833,14 +3833,14 @@ genTempFileName
 	^ theFileName
 ! !
 
-!UniLazyString methodsFor: 'initialize-release' stamp: 'KenD 4/18/2013 21:31'!
+!UniLazyString methodsFor: 'initialize-release' stamp: 'jmv 6/27/2015 09:56'!
 initializeFromFile: aName
 	
 	| tmpFileName |
 	super initialize.
 	"As UniStrings are immutable, copy the file"
 	tmpFileName := self genTempFileName.
-	FileDirectory default copyFileNamed: aName toFileNamed: tmpFileName.
+	FileDirectory currentDirectory copyFileNamed: aName toFileNamed: tmpFileName.
 	
 	"Open a UniFileStream on the copy"
 	fileName := aName.
@@ -3915,7 +3915,7 @@ initialize
 	ChunkSize := 1024.
 	! !
 
-!UniLazyString class methodsFor: 'instance creation' stamp: 'KenD 4/18/2013 20:54'!
+!UniLazyString class methodsFor: 'instance creation' stamp: 'jmv 6/27/2015 09:57'!
 onFileNamed: aName
 	"Answer a new instance of me"
 "
@@ -3923,10 +3923,10 @@ ls := (UniLazyString onFileNamed: 'Pasted.utf8').
 ls := (UniLazyString onFileNamed: 'test-utf8.txt').
 "
 	 | dirEntry |
-	(FileDirectory default fileExists: aName)
+	(FileDirectory currentDirectory fileExists: aName)
 		ifFalse: [ ^ self error: 'Failed to find file ' , aName ].
 
-	dirEntry := FileDirectory directoryEntryFor: aName.
+	dirEntry := FileDirectory currentDirectory directoryEntryFor: aName.
 	(dirEntry isDirectory) 
 		ifTrue: [ ^self error: 'Not a text file: ' , aName ].
 		
