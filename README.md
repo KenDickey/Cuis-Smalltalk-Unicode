@@ -13,7 +13,8 @@ Incomplete; Pre-Alpha; Not ready yet to see the light of day...
 - Simple edit of Unicode files with copy/cut and paste.
 - NO font support (uses simple 'forms' from GNU UniFont).
 - Currently, there is NO grapheme composition. Unicode code points are displayed, including 'combining marks'.
-- Tested with Cuis 4.2 rev 2390
+
+- Tested with Cuis 4.2 rev 2424
 
 
 ### Introduction/Overview
