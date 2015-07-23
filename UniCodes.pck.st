@@ -1,9 +1,9 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2367] on 27 June 2015 at 2:39:54.324911 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2424] on 23 July 2015 at 4:57:55.470896 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !provides: 'UniCodes' 1 20!
-!requires: 'Cuis-Base' 42 1982 nil!
 !requires: 'Compression' 1 nil nil!
+!requires: 'Cuis-Base' 42 1982 nil!
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
@@ -644,15 +644,16 @@ heightOf: CharOrCodePoint
 	^ (self formForCodePoint: codePoint) height
 		! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/17/2013 20:23'!
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 7/23/2015 16:52'!
 initialize
 "
 	UniForms initialize.
 "
 
-	| slash |
+	| slash dirName |
+	dirName :=   FmFileIOAccessor default imageDirectoryPath.
 	slash := FileDirectory slash.
-	FormsArray := self readFormsArray: '..' , slash , 'Cuis-Smalltalk-Unicode', slash, 'unifont-5.1.20080907.hex'.
+	FormsArray := self readFormsArray: dirName, '..' , slash , 'Cuis-Smalltalk-Unicode', slash, 'unifont-5.1.20080907.hex'.
 	"'unifontfull-5.1.20080820.hex'."
 	"unifont-5.1.20080907.hex"
 	self formForMissingChar: (self defaultFormForMissingChar).
@@ -5954,7 +5955,7 @@ initialize
 	
 	! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/9/2013 09:41'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 7/23/2015 16:55'!
 initializeCaseMappings
 	"UniChar initializeCaseMappings"
  	
@@ -5966,7 +5967,10 @@ initializeCaseMappings
   	slash := FileDirectory slash.
 	
 	self parseCaseMappingFrom: (FileStream concreteStream readOnlyFileNamed:
-		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'CaseFolding.txt')..
+		FmFileIOAccessor default imageDirectoryPath, 
+		'..', slash, 
+		'Cuis-Smalltalk-Unicode', slash,
+		 'CaseFolding.txt')..
 	
 "
 @@FIXME: download using ProgressBarMorph
@@ -5982,14 +5986,17 @@ initializeCaseMappings
 	]
 ".! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/7/2013 16:37'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 7/23/2015 16:56'!
 initializeGeneralCharacterProperties
 
  	 | slash |
     	slash := FileDirectory slash.
 	
 	self parseGeneralPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
-		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'UnicodeData.txt')..
+		FmFileIOAccessor default imageDirectoryPath, 
+		'..', slash, 
+		'Cuis-Smalltalk-Unicode', slash, 
+		'UnicodeData.txt')..
 		
 	"@@FIXME: Download from  http://unicode.org/Public/UNIDATA/UnicodeData.txt "! !
 
@@ -6112,7 +6119,7 @@ initializeHangulJamoLVT
 	LVTStateMap at: JT put: T.
 ! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/17/2013 15:21'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 7/23/2015 16:57'!
 initializeLineBreakProperties
 "
 	UniChar initializeLineBreakProperties.
@@ -6208,7 +6215,10 @@ initializeLineBreakProperties
   	slash := FileDirectory slash.
 	
 	self parseLineBreakPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
-		'..', slash, 'Cuis-Smalltalk-Unicode', slash, 'LineBreak.txt')..
+		FmFileIOAccessor default imageDirectoryPath,
+		'..', slash,
+		'Cuis-Smalltalk-Unicode', slash, 
+		'LineBreak.txt')..
 ! !
 
 !UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/29/2013 16:56'!
