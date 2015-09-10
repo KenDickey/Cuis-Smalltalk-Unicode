@@ -74,6 +74,7 @@ Show a 'slice' of unicode character forms in an explorer.
 
 Bugs are expected, but please email report to  Ken [dot] Dickey [at] whidbey [dot] com
 
+![Unicode Sampler](UnicodeSampler.png)
 
 ### The grand plan
 
