@@ -14,7 +14,7 @@ Incomplete; Pre-Alpha; Not ready yet to see the light of day...
 - NO font support (uses simple 'forms' from GNU UniFont).
 - Currently, there is NO grapheme composition. Unicode code points are displayed, including 'combining marks'.
 
-- Tested with Cuis 4.2 rev 2424
+- Tested with Cuis 4.2 rev 2568
 
 
 ### Introduction/Overview
@@ -46,10 +46,8 @@ This means that the class UniChar does not inherit from Character and UniString 
 
 Import packages and required core scaffolding:
 ````Smalltalk
- |slash|
- slash := FileDirectory slash.
  Feature require: #'UniCodesTests'.
- ChangeSet install: ( '..', slash, 'Cuis-Smalltalk-Unicode', slash, 'RequiredCoreScaffolding.cs.st' ).
+ ChangeSet install: (UniChar package fullFileName asFileEntry parent  / 'RequiredCoreScaffolding.cs.st') asFileEntry.
 ````
 
 Try things out.
@@ -64,7 +62,7 @@ Open a text editor on a UniString [Unicode String].  Copy & paste.  Cmd-s to sav
 ````
 Open a text editor on a file
 ````Smalltalk
- UniTextEditor fromFile: 'utf8sampler.txt'.
+ UniTextEditor fromFile: (UniChar package fullFileName asFileEntry parent pathName, '/utf8sampler.txt').
  UniTextEditor fromUser.  "Puts up a file dialog"
 ````
 Show a 'slice' of unicode character forms in an explorer.

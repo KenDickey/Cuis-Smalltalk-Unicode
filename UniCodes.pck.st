@@ -1,9 +1,9 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2424] on 23 July 2015 at 4:57:55.470896 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2568] on 2 November 2015 at 8:18:40.6578 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 20!
+!provides: 'UniCodes' 1 22!
+!requires: 'Cuis-Base' 42 2525 nil!
 !requires: 'Compression' 1 nil nil!
-!requires: 'Cuis-Base' 42 1982 nil!
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
@@ -437,7 +437,7 @@ openUniFileList
 	"
 	FileListWindow openUniFileList.
 	"
-	FileListWindow open: (UniFileList new directory: FileDirectory currentDirectory ) label: nil! !
+	FileListWindow open: (UniFileList new directory: FmDirectoryEntry currentDirectory ) label: nil! !
 
 !BitBltCanvas methodsFor: '*unicodes' stamp: 'KenD 4/14/2013 21:03'!
 grafPort
@@ -644,16 +644,13 @@ heightOf: CharOrCodePoint
 	^ (self formForCodePoint: codePoint) height
 		! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 7/23/2015 16:52'!
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 12/31/1969 16:35'!
 initialize
 "
 	UniForms initialize.
 "
 
-	| slash dirName |
-	dirName :=   FmFileIOAccessor default imageDirectoryPath.
-	slash := FileDirectory slash.
-	FormsArray := self readFormsArray: dirName, '..' , slash , 'Cuis-Smalltalk-Unicode', slash, 'unifont-5.1.20080907.hex'.
+	FormsArray := self readFormsArray: 'unifont-5.1.20080907.hex'.
 	"'unifontfull-5.1.20080820.hex'."
 	"unifont-5.1.20080907.hex"
 	self formForMissingChar: (self defaultFormForMissingChar).
@@ -818,42 +815,42 @@ oldArray16FromHexString: aString
 	^ ( coll asArray collect: [ :bits | bits  bitShift: 16] )
 ! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/7/2013 15:46'!
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 11/1/2015 18:44'!
 readFormsArray: fileName
 
-	| formsArray fileStream aLine |
+	| formsArray |
 	formsArray := Array new: 16rFFFF + 1 withAll: nil.
-	fileStream := FileStream concreteStream readOnlyFileNamed: fileName.
-	
-	aLine := fileStream nextLine.
-	"Each line is of form:  
-		  <codePoint>:<bits>
-	where <codePoint> is 4 hex digits and
-	<bits> are either 32 or 64 hex digits.
-	"
-	[aLine isNil] whileFalse:[ |tokens codePoint pixelArray|
-		(aLine size > 0) ifFalse: [
-			self error: 'Bad file format ' , fileName.
-			^formsArray
-		].
-		tokens := aLine findTokens: ':' . "Split line at colon"
-		(tokens size = 2) ifFalse: [Error signal: 'Malformed UniForm line: ' , aLine].
-		codePoint := ( '16r', (tokens at: 1)) asNumber.
-		((codePoint > 16rFFFF) or: [codePoint < 0]) ifTrue: [Error signal: 'Bad codePoint ' , (tokens at: 1) ].
-		pixelArray := self array16FromHexString: (tokens at: 2).
+	(self package fullFileName asFileEntry parent pathName,  '/', fileName) asFileEntry
+		readStream: [ :fileStream | | aLine |
+			aLine := fileStream nextLine.
+			"Each line is of form:  
+				  <codePoint>:<bits>
+			where <codePoint> is 4 hex digits and
+			<bits> are either 32 or 64 hex digits. "
+			[aLine isNil] whileFalse:[ |tokens codePoint pixelArray|
+				(aLine size > 0) ifFalse: [
+					self error: 'Bad file format ' , fileName.
+				^formsArray
+			].
+			tokens := aLine findTokens: ':' . "Split line at colon"
+			(tokens size = 2) ifFalse: [Error signal: 'Malformed UniForm line: ' , aLine].
+			codePoint := ( '16r', (tokens at: 1)) asNumber.
+			((codePoint > 16rFFFF) or: [codePoint < 0]) ifTrue: [Error signal: 'Bad codePoint ' , (tokens at: 1) ].
+			pixelArray := self array16FromHexString: (tokens at: 2).
 		
-		((tokens at: 2) size = 32)
-		ifTrue: [ "Half Width Character"
-		formsArray 
-				at: (1 + codePoint)  "Note Bene: CodePoints start at zero"
-				put:  (Form extent: 8@16 fromArray: pixelArray offset: (0 @ 0))
+			((tokens at: 2) size = 32)
+			ifTrue: [ "Half Width Character"
+				formsArray 
+					at: (1 + codePoint)  "Note Bene: CodePoints start at zero"
+					put:  (Form extent: 8@16 fromArray: pixelArray offset: (0 @ 0))
+			]
+			ifFalse: [ "Full width character"
+				formsArray 
+					at: (1 + codePoint) "Note Bene: CodePoints start at zero"
+					put:  (Form extent: 16@16 fromArray: pixelArray offset: (0 @ 0)).
+			].
+			aLine := fileStream nextLine.
 		]
-		ifFalse: [ "Full width character"
-			formsArray 
-				at: (1 + codePoint) "Note Bene: CodePoints start at zero"
-				put:  (Form extent: 16@16 fromArray: pixelArray offset: (0 @ 0)).
-		].
-		aLine := fileStream nextLine.
 	].
 	^formsArray
 	
@@ -935,16 +932,14 @@ fromFile: aFileName
 	"Open the file aFileName if possible and read the file into actualContents.
 	Answer self if successful else nil."
 	
-	| aFile fullPath |
+	| aFile |
 	(aFileName isEmpty) ifFalse: [
-		fullPath := (FileDirectory currentDirectory  fullPathFor:  aFileName).
-		aFile := UniFileStream readOnlyFileNamed: fullPath.
-		((aFile isNil) or: [ aFile isDirectory ]) ifFalse: [
+		aFile := aFileName asFileEntry.
+		((aFile exists) and: [aFile isDirectory not])
+		ifTrue: [
 			"Found a non-directory file; assume reable UTF-8"
-			fileName := aFileName.
-			timeStamp := aFile directoryEntry modificationDateAndTime.
-			aFile close.
-			actualContents := (UniLazyString onFileNamed: aFileName) asText.
+			timeStamp := aFile modificationTime.
+			actualContents := (UniLazyString onFileNamed: aFile pathName) asText.
 			^self
 		]
 	].
@@ -979,8 +974,8 @@ refetch
 		"(Re)read contents"
 		actualContents := (UniLazyString onFileNamed: fileName) asText.
 		"Reset timeStamp"
-		dirEntry :=  (FileDirectory lookInUsualPlaces: fileName) directoryEntry.
-		timeStamp := dirEntry modificationDateAndTime.
+		dirEntry :=  fileName asDirectoryEntry.
+		timeStamp := dirEntry modificationTime.
 	].
 
 	self changed: #refetched.
@@ -993,17 +988,17 @@ saveToNewFileNotifying: aTextModelMorph
 
 	| dialogResult |	
 	dialogResult := (StandardFileMenu new) 
-   					newFileFrom: (FileDirectory currentDirectory)
+   					newFileFrom: (FmDirectoryEntry currentDirectory)
 					withPattern: '*' ; 
 					startUpWithCaption: 'Type new file name for save'.
 	
 	(dialogResult isNil)
 	ifTrue: [ ^nil ]
 	ifFalse: [ | uniFileStream  |
-		fileName := (dialogResult directory) fullPathFor: (dialogResult name).
+		fileName := (dialogResult directory), '/', (dialogResult name).
 		uniFileStream := UniFileStream newFileNamed: fileName.
 		uniFileStream nextPutAll: self actualContents asUniString; close.
-		timeStamp := (FileDirectory on: fileName) directoryEntry modificationDateAndTime.
+		timeStamp := fileName asFileEntry modificationTime.
 		"@@@FIXME Notify aTextModelMorph"
 		^true
 	]! !
@@ -1013,8 +1008,8 @@ saveToOldFileNotifying: aTextModelMorph
 	"Answer true if OK, else nil"
 
 	| dirEntry uniFileStream  |	
-	dirEntry :=  (FileDirectory on: fileName) directoryEntry.
-	(timeStamp = dirEntry  modificationDateAndTime) 
+	dirEntry :=  fileName FmDirectoryEntry.
+	(timeStamp = dirEntry  modificationTime) 
 	ifFalse: [
 		(self confirm: 
 'Caution!! Contents were saved
@@ -1025,7 +1020,7 @@ editing them here.  Accept anyway?' )
 					
 	uniFileStream := UniFileStream newFileNamed: fileName.
 	uniFileStream nextPutAll: self actualContents asUniString; close.
-	timeStamp := (FileDirectory on: fileName) directoryEntry modificationDateAndTime.
+	timeStamp := fileName FmDirectoryEntry modificationTime.
 	"@@@FIXME Notify aTextModelMorph"
 	^true
 ! !
@@ -1047,24 +1042,22 @@ fromFile: aFileName
 
 	^self new initialize fromFile: aFileName! !
 
-!UniTextModel class methodsFor: 'instance creation' stamp: 'jmv 6/27/2015 09:57'!
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 11/1/2015 19:54'!
 fromUser
 	"Put up a StandardFileMenu and let the user choose a file to read into me."
 	"Answer an instance of me or nil"
 "
 	UniTextModel fromUser.
 "		
-	| dialogResult slash textModel |
+	| dialogResult textModel |
 	dialogResult := (StandardFileMenu new)
-						oldFileFrom: (FileDirectory currentDirectory) ;
+						oldFileFrom: (FmDirectoryEntry currentDirectory) ;
 	 					startUpWithCaption: 'Select a UTF-8 Unicode text file'.
 	
 	((dialogResult isNil) or: [dialogResult isDirectory]) ifTrue: [ ^nil ].
 
-	slash := FileDirectory slash.
-
 	textModel := self new initialize 
-		fromFile: ( (dialogResult directory fullName) , slash , (dialogResult name) ).
+		fromFile: ( (dialogResult directory pathName) , '/' , (dialogResult name) ).
 		
 	SystemWindow 
 		editText: textModel
@@ -1172,15 +1165,15 @@ meaningfully be saved at present.' format:{type}).
 	^ false  "failed"
 ! !
 
-!UniFileList methodsFor: 'private' stamp: 'KenD 5/5/2014 20:57'!
+!UniFileList methodsFor: 'private' stamp: 'KenD 11/1/2015 18:58'!
 readContentsUnicode: brevity
 	"retrieve the contents from the external file unless it is too long.
 	  Don't create a file here.  Check if exists."
-	| uniFileStream  "uniString"  |
+	| fileEntry  "uniString"  |
 
-	uniFileStream := UniFileStream oldFileOrNoneNamed: self fullName. 
-	uniFileStream ifNil: [^ 'For some reason, this file cannot be read']
-		ifNotNil: [uniFileStream close].
+	fileEntry := self fullName asFileEntry. 
+	(fileEntry exists) ifFalse: [^ 'For some reason, this file cannot be read'].
+	(fileEntry isDirectory) ifTrue: [^ 'This ''file'' is a directory'].
 "	uniString := uniFileStream contentsOfEntireFile.
 	brevityState := #fullUnicode.
 	uniFileStream close. 
@@ -1193,7 +1186,7 @@ readContentsUnicode: brevity
 	(acceptedContentsCache class = UniLazyString)
 		ifTrue: [ acceptedContentsCache fileCleanup ]. "Remove old tmp file"
 		
-	^ acceptedContentsCache := (UniLazyString onFileNamed: self fullName) asText
+	^ acceptedContentsCache := (UniLazyString onFileNamed: fileEntry pathName) asText
 ! !
 
 !UniFileList methodsFor: 'own services' stamp: 'KenD 4/12/2013 14:42'!
@@ -1298,7 +1291,8 @@ asFileName
 	"Answer a String made up from the receiver that is an acceptable file 
 	name."
 
-	^FileDirectory checkName: self fixErrors: true! !
+	^self asString asFileEntry pathName
+! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 3/19/2013 19:04'!
 asIdentifier: shouldBeCapitalized
@@ -3800,14 +3794,16 @@ Transcript log: 'UniLazyString>>fileCheck  closed? >> ',
 	((uniFileStream closed not) and: [uniFileStream atEnd])
 		 ifTrue: [ self fileCleanup ]! !
 
-!UniLazyString methodsFor: 'private' stamp: 'jmv 6/27/2015 09:58'!
+!UniLazyString methodsFor: 'private' stamp: 'KenD 11/2/2015 07:59'!
 fileCleanup
 	"Close and remove tempFile"
 
-	 | theFileName |
+	 | theFileName fileEntry |
 	theFileName := uniFileStream name.
 	uniFileStream close.
-	uniFileStream directory deleteFileNamed: theFileName.! !
+	fileEntry := theFileName asFileEntry.
+	(fileEntry exists)
+		ifTrue: [ fileEntry delete ]! !
 
 !UniLazyString methodsFor: 'private' stamp: 'KenD 4/18/2013 18:03'!
 finalize
@@ -3816,7 +3812,7 @@ finalize
 	self fileCleanup.
 	! !
 
-!UniLazyString methodsFor: 'private' stamp: 'jmv 6/27/2015 09:56'!
+!UniLazyString methodsFor: 'private' stamp: 'KenD 11/1/2015 19:04'!
 genTempFileName
 	"Answer the name of a file which is different than one that exists"
 	
@@ -3825,29 +3821,30 @@ genTempFileName
 	| dir looking rand theFileName |
 	
 	looking := true.
-	dir := FileDirectory currentDirectory.
+	dir := FmDirectoryEntry currentDirectory.
 	[looking] whileTrue: [
 		 rand := 777 atRandom: (Random new initialize).
  		 theFileName := 'tmp' , rand asString.
- 		 looking := dir fileExists: theFileName.
+ 		 looking := (dir name: fileName) exists.
 	].
 	^ theFileName
 ! !
 
-!UniLazyString methodsFor: 'initialize-release' stamp: 'jmv 6/27/2015 09:56'!
+!UniLazyString methodsFor: 'initialize-release' stamp: 'KenD 11/2/2015 07:53'!
 initializeFromFile: aName
 	
-	| tmpFileName |
+	| fileEntry tmpFileName |
 	super initialize.
 	"As UniStrings are immutable, copy the file"
-	tmpFileName := self genTempFileName.
-	FileDirectory currentDirectory copyFileNamed: aName toFileNamed: tmpFileName.
+	fileEntry := aName asFileEntry.
+	tmpFileName := fileEntry parent pathName, '/', self genTempFileName.
+	fileEntry copyTo: tmpFileName.
 	
 	"Open a UniFileStream on the copy"
-	fileName := aName.
+	fileName := tmpFileName.
 	totalCount := nil.
-	uniFileStream := UniFileStream readOnlyFileNamed: tmpFileName.
-	soFar := uniFileStream nextUpTo: ChunkSize.
+	uniFileStream := UniFileStream new open: tmpFileName forWrite: false.
+	soFar := (uniFileStream next: ChunkSize) asUniString..
 	
 	^self
 	! !
@@ -3916,7 +3913,7 @@ initialize
 	ChunkSize := 1024.
 	! !
 
-!UniLazyString class methodsFor: 'instance creation' stamp: 'jmv 6/27/2015 09:57'!
+!UniLazyString class methodsFor: 'instance creation' stamp: 'KenD 11/1/2015 19:02'!
 onFileNamed: aName
 	"Answer a new instance of me"
 "
@@ -3924,10 +3921,10 @@ ls := (UniLazyString onFileNamed: 'Pasted.utf8').
 ls := (UniLazyString onFileNamed: 'test-utf8.txt').
 "
 	 | dirEntry |
-	(FileDirectory currentDirectory fileExists: aName)
+	dirEntry := aName asFileEntry.
+	(dirEntry exists)
 		ifFalse: [ ^ self error: 'Failed to find file ' , aName ].
 
-	dirEntry := FileDirectory currentDirectory directoryEntryFor: aName.
 	(dirEntry isDirectory) 
 		ifTrue: [ ^self error: 'Not a text file: ' , aName ].
 		
@@ -4278,18 +4275,21 @@ cmdShortcutsSpec
 		#(		$u	#align:						'Toggle alignment')
 	)! !
 
-!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:39'!
+!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 11/2/2015 08:13'!
 fromFile: aFileNameString
 "
 	UniTextEditor fromFile: 'utf8sampler.txt'.
 "
-	| textModel |
+	| textModel fileEntry |
+	fileEntry := aFileNameString asFileEntry.
+	(fileEntry exists)
+	ifFalse: [ self error: 'No file ''', aFileNameString , ''' was found' ].
 	textModel := UniTextModel fromFile: aFileNameString.
 
 	textModel isNil ifFalse: [
 		SystemWindow 
 			editText: textModel
-			label: 'Text Editor (''',  (textModel fileName) ,  ''')'
+			label: 'Text Editor (''',  fileEntry baseName, '.', fileEntry extension,  ''')'
 			wrap: true.
 	]
 	! !
@@ -5955,23 +5955,17 @@ initialize
 	
 	! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 7/23/2015 16:55'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 11/1/2015 18:48'!
 initializeCaseMappings
 	"UniChar initializeCaseMappings"
  	
-	 | slash |
   	ToCasefold 	:= IdentityDictionary new.
 	ToUpper 		:= IdentityDictionary new.
 	ToLower 		:= IdentityDictionary new.
 	
-  	slash := FileDirectory slash.
-	
-	self parseCaseMappingFrom: (FileStream concreteStream readOnlyFileNamed:
-		FmFileIOAccessor default imageDirectoryPath, 
-		'..', slash, 
-		'Cuis-Smalltalk-Unicode', slash,
-		 'CaseFolding.txt')..
-	
+  	(self package fullFileName asFileEntry parent pathName, '/', 'CaseFolding.txt') asFileEntry 
+		readStream: [ :fileStream |
+			self parseCaseMappingFrom: fileStream ].
 "
 @@FIXME: download using ProgressBarMorph
 
@@ -5986,18 +5980,13 @@ initializeCaseMappings
 	]
 ".! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 7/23/2015 16:56'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 11/1/2015 18:46'!
 initializeGeneralCharacterProperties
 
- 	 | slash |
-    	slash := FileDirectory slash.
-	
-	self parseGeneralPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
-		FmFileIOAccessor default imageDirectoryPath, 
-		'..', slash, 
-		'Cuis-Smalltalk-Unicode', slash, 
-		'UnicodeData.txt')..
-		
+  	(self package fullFileName asFileEntry parent pathName, '/', 'UnicodeData.txt') asFileEntry 
+		readStream: [ :fileStream |
+			self parseGeneralPropertiesFrom: fileStream ].
+
 	"@@FIXME: Download from  http://unicode.org/Public/UNIDATA/UnicodeData.txt "! !
 
 !UniChar class methodsFor: 'class initialization' stamp: 'KenD 4/16/2013 19:01'!
@@ -6119,13 +6108,12 @@ initializeHangulJamoLVT
 	LVTStateMap at: JT put: T.
 ! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 7/23/2015 16:57'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 11/1/2015 18:48'!
 initializeLineBreakProperties
 "
 	UniChar initializeLineBreakProperties.
 "
 	"Values in byte 16r00FF0000"
-	| slash |
 	LineBreakProperties := Array new: 40.
 	LineBreakTypeNames := #( BreakAfter DontbreakAfter 
 									BreakBefore DontbreakBefore
@@ -6212,13 +6200,11 @@ initializeLineBreakProperties
 	SG := 40.
 	LineBreakProperties at: SG put: #Surrogate . "DontbreakForPair"
 
-  	slash := FileDirectory slash.
-	
-	self parseLineBreakPropertiesFrom: (FileStream concreteStream readOnlyFileNamed:
-		FmFileIOAccessor default imageDirectoryPath,
-		'..', slash,
-		'Cuis-Smalltalk-Unicode', slash, 
-		'LineBreak.txt')..
+	(self package fullFileName asFileEntry parent pathName, '/', 'LineBreak.txt')
+		 asFileEntry readStream: [ :fileStream |	
+				self parseLineBreakPropertiesFrom: fileStream
+		].
+
 ! !
 
 !UniChar class methodsFor: 'class initialization' stamp: 'KenD 3/29/2013 16:56'!
