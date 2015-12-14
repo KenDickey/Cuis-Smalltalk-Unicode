@@ -1,8 +1,8 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2568] on 2 November 2015 at 8:18:40.6578 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2621] on 13 December 2015 at 8:53:38.879818 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 22!
-!requires: 'Cuis-Base' 42 2525 nil!
+!provides: 'UniCodes' 1 23!
+!requires: 'Cuis-Base' 42 2621 nil!
 !requires: 'Compression' 1 nil nil!
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
@@ -2430,14 +2430,14 @@ nextPutAll: aCollection
 
 	^ self , (aCollection as: UniString)! !
 
-!UniString methodsFor: 'private' stamp: 'KenD 4/1/2013 20:44'!
+!UniString methodsFor: 'private' stamp: 'KenD 12/13/2015 20:52'!
 numArgs 
 	"Answer either the number of arguments that the receiver would take if considered a selector.  Answer -1 if it couldn't be a selector. It is intended mostly for the assistance of spelling correction."
 
 	| firstChar numColons start ix |
 	self size = 0 ifTrue: [^ -1].
 	firstChar := self at: 1.
-	(firstChar isLetter or: [ firstChar = $_]) ifTrue:
+	((firstChar isLetter or: [ firstChar = $:]) or: [firstChar =  $_]) ifTrue:
 		["Reject if any chars are non-alphanumeric"
 		2 to: self size do: [:i | (self at: i) tokenish ifFalse: [^ -1]].
 		"Fast colon count"
@@ -5512,12 +5512,12 @@ toUpper
 
 	^UniChar value: (ToUpper at: self codePoint ifAbsent: [ ^self ])! !
 
-!UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:58'!
+!UniChar methodsFor: 'testing' stamp: 'KenD 12/13/2015 20:50'!
 tokenish
-	"Answer whether the receiver is a valid token-character--letter, digit, or 
-	colon."
+	"Answer whether the receiver is a valid token-character--letter, digit, 
+	colon or underscore."
 
-	^self isGenerallyValidInIdentifiers or: [self = $:]! !
+	^(self isGenerallyValidInIdentifiers or: [self = $:]) or: [self = $_]! !
 
 !UniChar methodsFor: 'accessing' stamp: 'KenD 2/17/2013 17:18'!
 unicodeCodePoint
