@@ -1,7 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2621] on 13 December 2015 at 8:53:38.879818 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2621] on 14 December 2015 at 7:20:50.7411 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 23!
+!provides: 'UniCodes' 1 24!
 !requires: 'Cuis-Base' 42 2621 nil!
 !requires: 'Compression' 1 nil nil!
 !classDefinition: #UniForms category: #UniCodes!
@@ -1003,12 +1003,12 @@ saveToNewFileNotifying: aTextModelMorph
 		^true
 	]! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 4/14/2013 20:35'!
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 12/14/2015 19:17'!
 saveToOldFileNotifying: aTextModelMorph
 	"Answer true if OK, else nil"
-
+	
 	| dirEntry uniFileStream  |	
-	dirEntry :=  fileName FmDirectoryEntry.
+	dirEntry :=  fileName asFileEntry.
 	(timeStamp = dirEntry  modificationTime) 
 	ifFalse: [
 		(self confirm: 
@@ -1020,7 +1020,7 @@ editing them here.  Accept anyway?' )
 					
 	uniFileStream := UniFileStream newFileNamed: fileName.
 	uniFileStream nextPutAll: self actualContents asUniString; close.
-	timeStamp := fileName FmDirectoryEntry modificationTime.
+	timeStamp := fileName asFileEntry modificationTime.
 	"@@@FIXME Notify aTextModelMorph"
 	^true
 ! !
