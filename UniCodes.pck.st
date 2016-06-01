@@ -1,9 +1,10 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2621] on 14 December 2015 at 7:20:50.7411 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2783] on 1 June 2016 at 3:43:59.577533 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 24!
-!requires: 'Cuis-Base' 42 2621 nil!
+!provides: 'UniCodes' 1 25!
 !requires: 'Compression' 1 nil nil!
+!requires: 'Collections-CompactArrays' 1 4 nil!
+!requires: 'Cuis-Base' 42 2621 nil!
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
@@ -282,6 +283,18 @@ Use in place of WriteStream for #nextPut: and #nextPutAll.
 	WriteStream on: 'abc',
 !
 
+!Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 14:08'!
+asUniChar
+	"Answer a Unicode character based on my value interpreted as a code point."
+
+	^UniChar fromCodePoint: (self unicodeCodePoint)! !
+
+!Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 20:43'!
+asUniString
+	"Answer a Unicode string based on my value interpreted as a code point."
+
+	^UniString fromString: (self asString )! !
+
 !Array methodsFor: '*unicodes' stamp: 'KenD 4/7/2013 19:02'!
 asUniString
 	"Consider self a collection of Unicode codePoints.  Answer a UniString"
@@ -318,18 +331,6 @@ defaultFontClass
 asUniString
 
 	^UniString fromString: self asString! !
-
-!Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 14:08'!
-asUniChar
-	"Answer a Unicode character based on my value interpreted as a code point."
-
-	^UniChar fromCodePoint: (self unicodeCodePoint)! !
-
-!Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 20:43'!
-asUniString
-	"Answer a Unicode string based on my value interpreted as a code point."
-
-	^UniString fromString: (self asString )! !
 
 !Number methodsFor: '*unicodes' stamp: 'KenD 4/15/2013 21:06'!
 asUniChar
@@ -437,7 +438,7 @@ openUniFileList
 	"
 	FileListWindow openUniFileList.
 	"
-	FileListWindow open: (UniFileList new directory: FmDirectoryEntry currentDirectory ) label: nil! !
+	FileListWindow open: (UniFileList new directory: DirectoryEntry currentDirectory ) label: nil! !
 
 !BitBltCanvas methodsFor: '*unicodes' stamp: 'KenD 4/14/2013 21:03'!
 grafPort
@@ -815,13 +816,13 @@ oldArray16FromHexString: aString
 	^ ( coll asArray collect: [ :bits | bits  bitShift: 16] )
 ! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 11/1/2015 18:44'!
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 6/1/2016 15:24'!
 readFormsArray: fileName
 
 	| formsArray |
 	formsArray := Array new: 16rFFFF + 1 withAll: nil.
 	(self package fullFileName asFileEntry parent pathName,  '/', fileName) asFileEntry
-		readStream: [ :fileStream | | aLine |
+		readStreamDo: [ :fileStream | | aLine |
 			aLine := fileStream nextLine.
 			"Each line is of form:  
 				  <codePoint>:<bits>
@@ -988,7 +989,7 @@ saveToNewFileNotifying: aTextModelMorph
 
 	| dialogResult |	
 	dialogResult := (StandardFileMenu new) 
-   					newFileFrom: (FmDirectoryEntry currentDirectory)
+   					newFileFrom: (DirectoryEntry currentDirectory)
 					withPattern: '*' ; 
 					startUpWithCaption: 'Type new file name for save'.
 	
@@ -1051,7 +1052,7 @@ fromUser
 "		
 	| dialogResult textModel |
 	dialogResult := (StandardFileMenu new)
-						oldFileFrom: (FmDirectoryEntry currentDirectory) ;
+						oldFileFrom: (DirectoryEntry currentDirectory) ;
 	 					startUpWithCaption: 'Select a UTF-8 Unicode text file'.
 	
 	((dialogResult isNil) or: [dialogResult isDirectory]) ifTrue: [ ^nil ].
@@ -3812,20 +3813,19 @@ finalize
 	self fileCleanup.
 	! !
 
-!UniLazyString methodsFor: 'private' stamp: 'KenD 11/1/2015 19:04'!
+!UniLazyString methodsFor: 'private' stamp: 'KenD 6/1/2016 15:28'!
 genTempFileName
 	"Answer the name of a file which is different than one that exists"
 	
 	"@@FIXME: Use /tmp on Unix, ??? on Windows"
 	
-	| dir looking rand theFileName |
+	| looking rand theFileName |
 	
 	looking := true.
-	dir := FmDirectoryEntry currentDirectory.
 	[looking] whileTrue: [
 		 rand := 777 atRandom: (Random new initialize).
  		 theFileName := 'tmp' , rand asString.
- 		 looking := (dir name: fileName) exists.
+ 		 looking := (theFileName asFileEntry) exists.
 	].
 	^ theFileName
 ! !
@@ -5955,7 +5955,7 @@ initialize
 	
 	! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 11/1/2015 18:48'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 6/1/2016 15:26'!
 initializeCaseMappings
 	"UniChar initializeCaseMappings"
  	
@@ -5964,7 +5964,7 @@ initializeCaseMappings
 	ToLower 		:= IdentityDictionary new.
 	
   	(self package fullFileName asFileEntry parent pathName, '/', 'CaseFolding.txt') asFileEntry 
-		readStream: [ :fileStream |
+		readStreamDo: [ :fileStream |
 			self parseCaseMappingFrom: fileStream ].
 "
 @@FIXME: download using ProgressBarMorph
@@ -5980,11 +5980,11 @@ initializeCaseMappings
 	]
 ".! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 11/1/2015 18:46'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 6/1/2016 15:25'!
 initializeGeneralCharacterProperties
 
   	(self package fullFileName asFileEntry parent pathName, '/', 'UnicodeData.txt') asFileEntry 
-		readStream: [ :fileStream |
+		readStreamDo: [ :fileStream |
 			self parseGeneralPropertiesFrom: fileStream ].
 
 	"@@FIXME: Download from  http://unicode.org/Public/UNIDATA/UnicodeData.txt "! !
@@ -6108,7 +6108,7 @@ initializeHangulJamoLVT
 	LVTStateMap at: JT put: T.
 ! !
 
-!UniChar class methodsFor: 'class initialization' stamp: 'KenD 11/1/2015 18:48'!
+!UniChar class methodsFor: 'class initialization' stamp: 'KenD 6/1/2016 15:26'!
 initializeLineBreakProperties
 "
 	UniChar initializeLineBreakProperties.
@@ -6201,7 +6201,7 @@ initializeLineBreakProperties
 	LineBreakProperties at: SG put: #Surrogate . "DontbreakForPair"
 
 	(self package fullFileName asFileEntry parent pathName, '/', 'LineBreak.txt')
-		 asFileEntry readStream: [ :fileStream |	
+		 asFileEntry readStreamDo: [ :fileStream |	
 				self parseLineBreakPropertiesFrom: fileStream
 		].
 
