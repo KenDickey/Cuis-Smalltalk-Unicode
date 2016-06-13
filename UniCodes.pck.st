@@ -1,10 +1,11 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2783] on 1 June 2016 at 3:43:59.577533 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2818] on 13 June 2016 at 12:29:31.279754 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 25!
+!provides: 'UniCodes' 1 26!
 !requires: 'Compression' 1 nil nil!
 !requires: 'Collections-CompactArrays' 1 4 nil!
 !requires: 'Cuis-Base' 42 2621 nil!
+!requires: 'Goodies' 1 6 nil!
 !classDefinition: #UniForms category: #UniCodes!
 AbstractFont subclass: #UniForms
 	instanceVariableNames: ''
@@ -3167,19 +3168,12 @@ crlfString
 defaultFontClass
 	^UniForms! !
 
-!UniString class methodsFor: 'user interface' stamp: 'KenD 4/19/2013 08:41'!
+!UniString class methodsFor: 'user interface' stamp: 'KenD 6/13/2016 12:28'!
 editFileFromUser
 "
 	UniString editFileFromUser.
 "
-	| uniTextModel |
-	uniTextModel := UniTextModel fromUser.
-	(uniTextModel isNil) ifFalse: [
-		SystemWindow 
-			editText: uniTextModel
-			label: ('Unicode(''' , uniTextModel fileName , ''')' ) asUniString 
-			wrap: true
-	]! !
+	UniTextModel fromUser! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:23'!
 emptyString
