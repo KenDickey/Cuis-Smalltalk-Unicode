@@ -1,43 +1,13 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2818] on 13 June 2016 at 12:29:31.279754 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2850] on 23 August 2016 at 7:07:35 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 26!
-!requires: 'Compression' 1 nil nil!
+!provides: 'UniCodes' 1 27!
 !requires: 'Collections-CompactArrays' 1 4 nil!
-!requires: 'Cuis-Base' 42 2621 nil!
 !requires: 'Goodies' 1 6 nil!
-!classDefinition: #UniForms category: #UniCodes!
-AbstractFont subclass: #UniForms
-	instanceVariableNames: ''
-	classVariableNames: 'FormForMissingChar FormsArray'
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'UniForms class' category: #UniCodes!
-UniForms class
-	instanceVariableNames: ''!
-
-!classDefinition: #UniTextModel category: #UniCodes!
-TextModel subclass: #UniTextModel
-	instanceVariableNames: 'fileName timeStamp'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'UniTextModel class' category: #UniCodes!
-UniTextModel class
-	instanceVariableNames: ''!
-
-!classDefinition: #UniFileList category: #UniCodes!
-FileList subclass: #UniFileList
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'UniFileList class' category: #UniCodes!
-UniFileList class
-	instanceVariableNames: ''!
-
+!requires: 'Compression' 1 nil nil!
+!requires: 'Cuis-Base' 42 2621 nil!
 !classDefinition: #UniString category: #UniCodes!
-ArrayedCollection subclass: #UniString
+SequenceableCollection subclass: #UniString
 	instanceVariableNames: ''
 	classVariableNames: 'EmptyString Fibonacci MaxRopeDepth'
 	poolDictionaries: ''
@@ -96,16 +66,6 @@ UniString subclass: #UniSplice
 UniSplice class
 	instanceVariableNames: ''!
 
-!classDefinition: #UniTextEditor category: #UniCodes!
-TextEditor subclass: #UniTextEditor
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'UniCodes'!
-!classDefinition: 'UniTextEditor class' category: #UniCodes!
-UniTextEditor class
-	instanceVariableNames: ''!
-
 !classDefinition: #UniFileStream category: #UniCodes!
 StandardFileStream subclass: #UniFileStream
 	instanceVariableNames: ''
@@ -114,6 +74,46 @@ StandardFileStream subclass: #UniFileStream
 	category: 'UniCodes'!
 !classDefinition: 'UniFileStream class' category: #UniCodes!
 UniFileStream class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniForms category: #UniCodes!
+AbstractFont subclass: #UniForms
+	instanceVariableNames: ''
+	classVariableNames: 'FormForMissingChar FormsArray'
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniForms class' category: #UniCodes!
+UniForms class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniTextModel category: #UniCodes!
+TextModel subclass: #UniTextModel
+	instanceVariableNames: 'fileName timeStamp'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniTextModel class' category: #UniCodes!
+UniTextModel class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniFileList category: #UniCodes!
+FileList subclass: #UniFileList
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniFileList class' category: #UniCodes!
+UniFileList class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniTextEditor category: #UniCodes!
+TextEditor subclass: #UniTextEditor
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniTextEditor class' category: #UniCodes!
+UniTextEditor class
 	instanceVariableNames: ''!
 
 !classDefinition: #UniChar category: #UniCodes!
@@ -136,41 +136,6 @@ Object subclass: #UniStringWrapper
 UniStringWrapper class
 	instanceVariableNames: ''!
 
-
-!UniForms commentStamp: '<historical>' prior: 0!
-GNU Unifont Forms
-
-This bitmapped font has glyphs for Unicode plane 0, the Basic Multilingual Plane, codePoints 0 through 16rFFFF (U+0000..U+FFFF).  See  http://unicode.org
-
-The GNU Unifont glyphs are available at:  http://www.unifoundry.com/unifont.html
-
-Licence is GPL 2 
-
-See the class method:
-	UniForms licence.
-
-"U+4E7E is 1st YiJing Hexagram - a Chinese charater"
-
-((UniForms formForCodePoint: 16r4E7E) magnifyBy: 4)  displayAt: 100@100. 
-(UniForms sliceStart: 16r2701 size: 40) explore. "Dingbats"
-
-| aMorph |
-aMorph := ImageMorph new.
-aMorph image: ((UniForms formForCodePoint: 16r4E7E)  magnifyBy: 8).
-aMorph openInWorld .
-!
-
-!UniTextModel commentStamp: '<historical>' prior: 0!
-I am a TextModel which handles Unicode using UniStrings.
-
-fileName is the fullName of a file or nil.
-timeStamp is zero or the time the file was read to create a view.
-
-If a user goes to save a file, the timeStamp should not have changed.!
-
-!UniFileList commentStamp: '<historical>' prior: 0!
-I am a FileList which can display Unicode.
-!
 
 !UniString commentStamp: '<historical>' prior: 0!
 I am the abstract class of immutable strings known as Ropes.  My instances hold Unicode 'strings' (really ropes).
@@ -240,10 +205,6 @@ I am the splice/concatenation of two other UniStrings.
 I am typically created as a side effect of operaions on UniStrings.
 !
 
-!UniTextEditor commentStamp: '<historical>' prior: 0!
-I am an editor for Unicode text.
-!
-
 !UniFileStream commentStamp: '<historical>' prior: 0!
 I read and/or write UniChars and UniStrings from/to UTF-8 Unicode files.
 
@@ -258,6 +219,45 @@ A UniFileStream deals with the first two only.  Subclass me for Graphemes.
 
 @@@FIXME:  Currently I assume well formed UTF-8.  I do not recover gracefully.
 
+!
+
+!UniForms commentStamp: '<historical>' prior: 0!
+GNU Unifont Forms
+
+This bitmapped font has glyphs for Unicode plane 0, the Basic Multilingual Plane, codePoints 0 through 16rFFFF (U+0000..U+FFFF).  See  http://unicode.org
+
+The GNU Unifont glyphs are available at:  http://www.unifoundry.com/unifont.html
+
+Licence is GPL 2 
+
+See the class method:
+	UniForms licence.
+
+"U+4E7E is 1st YiJing Hexagram - a Chinese charater"
+
+((UniForms formForCodePoint: 16r4E7E) magnifyBy: 4)  displayAt: 100@100. 
+(UniForms sliceStart: 16r2701 size: 40) explore. "Dingbats"
+
+| aMorph |
+aMorph := ImageMorph new.
+aMorph image: ((UniForms formForCodePoint: 16r4E7E)  magnifyBy: 8).
+aMorph openInWorld .
+!
+
+!UniTextModel commentStamp: '<historical>' prior: 0!
+I am a TextModel which handles Unicode using UniStrings.
+
+fileName is the fullName of a file or nil.
+timeStamp is zero or the time the file was read to create a view.
+
+If a user goes to save a file, the timeStamp should not have changed.!
+
+!UniFileList commentStamp: '<historical>' prior: 0!
+I am a FileList which can display Unicode.
+!
+
+!UniTextEditor commentStamp: '<historical>' prior: 0!
+I am an editor for Unicode text.
 !
 
 !UniChar commentStamp: '<historical>' prior: 0!
@@ -283,18 +283,6 @@ Use in place of WriteStream for #nextPut: and #nextPutAll.
  vs:
 	WriteStream on: 'abc',
 !
-
-!Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 14:08'!
-asUniChar
-	"Answer a Unicode character based on my value interpreted as a code point."
-
-	^UniChar fromCodePoint: (self unicodeCodePoint)! !
-
-!Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 20:43'!
-asUniString
-	"Answer a Unicode string based on my value interpreted as a code point."
-
-	^UniString fromString: (self asString )! !
 
 !Array methodsFor: '*unicodes' stamp: 'KenD 4/7/2013 19:02'!
 asUniString
@@ -433,6 +421,18 @@ nextUnicodeCodePointFromUtf8: anUtf8Stream
 
 	^nil! !
 
+!Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 14:08'!
+asUniChar
+	"Answer a Unicode character based on my value interpreted as a code point."
+
+	^UniChar fromCodePoint: (self unicodeCodePoint)! !
+
+!Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 20:43'!
+asUniString
+	"Answer a Unicode string based on my value interpreted as a code point."
+
+	^UniString fromString: (self asString )! !
+
 !FileListWindow class methodsFor: '*unicodes' stamp: 'jmv 6/27/2015 09:56'!
 openUniFileList
 	"Answer a FileList which can view Unicode"
@@ -445,761 +445,6 @@ openUniFileList
 grafPort
 
 	^port! !
-
-!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 16:57'!
-approxWidthOfText: aText
-"Return the width of aText -- quickly, and a little bit dirty. Used by lists morphs containing Text objects to get a quick, fairly accurate measure of the width of a list item."
-
-	"@@@Fixme: Scan for zero, half width codepoints @@@"
-    ^ 16 * (aText size)! !
-
-!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:14'!
-ascent
-
-	^16! !
-
-!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:14'!
-baseFont
-
-	^self! !
-
-!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:14'!
-descent
-
-	^ 0! !
-
-!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:15'!
-descentKern
-
-	^ 0! !
-
-!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:15'!
-emphasis
-
-	^ 0! !
-
-!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:15'!
-emphasized: code
-	"@@Fixme: BOGUS@@"
-	^ self! !
-
-!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 19:13'!
-familyName
-
-	^'UniFont'! !
-
-!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:11'!
-height
-
-	^16! !
-
-!UniForms methodsFor: 'testing' stamp: 'KenD 5/2/2014 20:18'!
-isBaseFont
-
-	^ true! !
-
-!UniForms methodsFor: 'testing' stamp: 'KenD 4/30/2014 16:40'!
-isBold
-
-	^ false "NYI"! !
-
-!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 16:47'!
-name
-
-	"Answer my font name"
-	^ 'GNU Unifont'! !
-
-!UniForms methodsFor: 'as yet unclassified' stamp: 'jmv 5/5/2014 22:42'!
-on: aGrafPort displayString: aString from: firstIndex to: lastIndex at: p color: color
-	"Show a representation of aString as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
-
-	| delta |
-	delta _ 0.
-	firstIndex to: lastIndex do: [ :index |
-		| uniChar width |
-		uniChar _ aString at: index.
-		width _ UniForms widthOf: uniChar.
-		width isZero ifFalse: [
-			aGrafPort copyForm: (UniForms formForCodePoint: uniChar unicodeCodePoint) to: ((p x + delta) @ (p y)) rule: Form and.
-			delta _ delta + width ]]! !
-
-!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:12'!
-pointSize
-
-	^16! !
-
-!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:16'!
-widthOf: aCharacter
-		"@@FIXME: Zero (combining marks, zero width space, ..), 8 (half width :Latin), 16 (full width)"
-	^ self class widthOf: aCharacter ! !
-
-!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:02'!
-widthOfString: aString
-
-
-	^ (1 to: aString size) inject: 0 into: [ :accum :char | accum + (self widthOf: char) ]! !
-
-!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:06'!
-widthOfString: aString from: startIndex to: stopIndex
-	"Measure the length of the given string between start and stop index"
-
-	^ (startIndex to: stopIndex) inject: 0 into: [ :accum :char | accum + (self widthOf: char) ]! !
-
-!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:09'!
-widthOfStringOrText: aStringOrText
-
-	^ self widthOfString: aStringOrText asUniString! !
-
-!UniForms class methodsFor: 'private' stamp: 'KenD 4/7/2013 15:33'!
-array16FromHexString: aString
-	"aString consists of 32 or 64 hex digits.
-	If 32, form into 16rXX where XX is each succeeding pair of hex digits.
-	If 64, form into 16rXXXX where hex digits are taken in 4s
-	Shift left 16 and answer the resultant array, which must be size 16
-	"
-	| coll hexStr |
-	coll := OrderedCollection new: 16.
-	
-	"@@FIXME: Find a smart way to do this"
-	
-	(aString size = 32) ifTrue: [
-		hexStr := '16rXX00'. 
-		1 to: 32 by: 2 do: [ :index |
-			hexStr at: 4 put: (aString at: index).
-			hexStr at: 5 put: (aString at: index + 1).
-			coll addLast: (hexStr asNumber)
-		]
-	]
-	ifFalse: [ 
-		(aString size = 64) 
-			ifFalse: [Error signal: 'Malformed hex pixel string ' , aString].
-		
-		hexStr := '16rXXXX'. "Full-width glyph"
-		1 to: 64 by: 4 do: [ :index |
-			 hexStr at: 4 put: (aString at: index).
-			 hexStr at: 5 put: (aString at: index + 1).
-			 hexStr at: 6 put: (aString at: index + 2).
-			 hexStr at: 7 put: (aString at: index + 3).
-			coll addLast: (hexStr asNumber)
-		]
-	].
-	
-	^ ( coll asArray collect: [ :bits | bits bitShift: 16] ) 
-! !
-
-!UniForms class methodsFor: 'font' stamp: 'KenD 4/6/2013 18:58'!
-default
-	^self new! !
-
-!UniForms class methodsFor: 'private' stamp: 'KenD 4/17/2013 14:26'!
-defaultFormForMissingChar
-
-	"Answer a DIAGONAL CROSS for missing forms"
-	^ (FormsArray at: 16r2573)! !
-
-!UniForms class methodsFor: 'accessing' stamp: 'KenD 5/5/2014 21:23'!
-formForCodePoint: aCodePoint
-
-	"Answer a form for glyph/character at codePoint or nil"
-
-	| index form |
-	index := aCodePoint + 1. "Convert to zero based index"
-	
-	(index < 1)
-	ifTrue: [DomainError signal: 'Unicode code point out of range ' , aCodePoint printString ].
-	
-	(index > 16rFFFF or: [(form := FormsArray at: index) isNil])
-	"Substitute DIAGONAL CROSS for missing forms"
-	ifTrue: [ ^ self formForMissingChar ] 
-	ifFalse: [ ^ form ]! !
-
-!UniForms class methodsFor: 'private' stamp: 'KenD 4/17/2013 14:24'!
-formForMissingChar
-
-	^FormForMissingChar! !
-
-!UniForms class methodsFor: 'private' stamp: 'KenD 4/17/2013 14:25'!
-formForMissingChar: aForm
-
-	(aForm isKindOf: Form) ifFalse: [DomainError signal: 'formForMissingChar: requires a Form'].
-	FormForMissingChar := aForm! !
-
-!UniForms class methodsFor: 'private' stamp: 'KenD 3/2/2013 20:04'!
-formsArray
-
-	"Note: Unicode indexes from zero, so index is 1+codePoint."
-	^FormsArray 	! !
-
-!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:02'!
-height
-
-	^ 16! !
-
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/6/2013 17:04'!
-heightOf: CharOrCodePoint
-	"Answer my display width"
-
-	| codePoint |
-	(CharOrCodePoint isInteger)
-	ifTrue: [ codePoint := CharOrCodePoint ]
-	ifFalse: [ codePoint := CharOrCodePoint unicodeCodePoint ].
-	^ (self formForCodePoint: codePoint) height
-		! !
-
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 12/31/1969 16:35'!
-initialize
-"
-	UniForms initialize.
-"
-
-	FormsArray := self readFormsArray: 'unifont-5.1.20080907.hex'.
-	"'unifontfull-5.1.20080820.hex'."
-	"unifont-5.1.20080907.hex"
-	self formForMissingChar: (self defaultFormForMissingChar).
-	self installMeAsFont. "Fake it"
-	! !
-
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/6/2013 19:26'!
-installMeAsFont
-"
-	UniForms installMeAsFont.
-"
-	| uniFontDict |
-	uniFontDict := Dictionary new.
-	uniFontDict at: 16 put: (self default).
-	AvailableFonts at: 'UniFont' put: uniFontDict.! !
-
-!UniForms class methodsFor: 'licence' stamp: 'KenD 3/4/2013 07:30'!
-licence
-
-^
-'GNU Unifont licence is GPL 2 -- details below
-
-Original files from:
-
-	http://www.unifoundry.com/unifont.html
-
-OVERVIEW
---------
-The Unifont is a dual-width (8x16/16x16) bitmap font, designed to provide
-coverage for all of Unicode Plane 0, the Basic Multilingual Plane (BMP).
-This version has a glyph for each visible code point in the Unicode 5.1
-Basic Multilingual Plane.
-
-Note that this version of the Unifont only provides a single glyph
-for each character, making it impossible to handle any language that
-needs context-dependent character shaping well. It is supplied in the
-form of a hex file, with a converter to convert it to bdf. See
-http://czyborra.com/unifont/ or http://unifoundry.com/unifont.html
-for more information.
-
-unifont AUTHORS
----------------
-Roman Czyborra created the original GNU Unifont, including the
-.hex format.  For greater detail, see the HISTORY section below.
-
-David Starner aggregated many glyphs contributed by others and
-built these into earlier unifont releases.
-
-Qianqian Fang began his Wen Quan Yi fonts in 2004; most of the
-almost 30,000 CJK ideographs in the latest unifont were taken
-from Wen Quan Yi with permission of Qianqian Fang.  
-
-Changwoo Ryu created the 11,172 thick-stroke Hangul Syllables glyphs
-using thin-stroke glyphs from the xfonts-baekmuk Debian package, in
-the file unifont.bdf in the Debian bf-utf-source package.  The fonts
-in the xfonts-baekmuk Debian package were created by Jeong-Hwan Kim.
-Replacing the thick-stroke Hangul glyphs was a desire expressed by
-Roman Czyborra for years.
-
-Paul Hardy merged Qianqian Fang''s unibit and Wen Quan Yi glyphs
-into the GNU Unifont (with lots of help and enthusiasm from Qianqian
-Fang), copied the Hangul Syllables glyphs from Changwoo Ryu''s copy
-of unifont.bdf, drew about 8,500 more glyphs, and replaced the
-existing Tibetan glyphs with new ones contributed by Rich Felker.
-
-
-LICENSE
--------
-Roman Czyborra released his work (Perl scripts and font .hex files)
-under the following terms:
-
-     All of my works you find here are freeware. You may
-     freely copy, use, quote, modify or redistribute them
-     as long as you properly attribute my contribution and
-     have given a quick thought about whether Roman might
-     perhaps be interested to read what you did with his
-     stuff. Horizontal rules don''t apply.
-
-David Starner released what in this package is named "hex2bdf-split"
-under the same license as Roman Czyborra''s work.
-
-License 
-
-     These are released under the terms of the GNU General Public
-     License version 2, or (at your option) a later version.
-
-License for Fonts:
-
-     Any fonts using glyphs from the "wqy-cjk.hex" file (including
-     the default TrueType font) are bound by the terms of the Wen
-     Quan Yi font license.  Those fonts are released under the terms
-     of the GNU General Public License (GPL) versionn 2, with the
-     exception that embedding the font in a document does not by
-     itself bind that document to the terms of the GNU GPL.
-
-     Any fonts that do not use glyphs from the wqy-cjk.hex file
-     fall under the above License for all of Roman Czyborra''s work
-
-     The fonts in "./font/precompiled" do use wqy-cjk.hex, and so
-     are licensed under the GNU GPL version 2, with the exception
-     that embedding the font in a document does not in itself bind
-     that document to the terms of the GNU GPL.  The following
-     paragraphs explaining the exception is taken from the Wen
-     Quan Yi font distribution:
-
-          ** GPL v2.0 license with font embedding exception:
-
-          As a special exception, if you create a document which
-          uses this font, and embed this font or unaltered portions
-          of this font into the document, this font does not by
-          itself cause the resulting document to be covered by
-          the GNU General Public License. This exception does not
-          however invalidate any other reasons why the document
-          might be covered by the GNU General Public License.
-          If you modify this font, you may extend this exception
-          to your version of the font, but you are not obligated
-          to do so. If you do not wish to do so, delete this
-          exception statement from your version.
-
-License for blanks.hex
-
-     There is one exception to the above rules: Paul Hardy earlier
-     released the blanks.hex file into the public domain.
-
-'
-! !
-
-!UniForms class methodsFor: 'private' stamp: 'KenD 4/7/2013 13:16'!
-oldArray16FromHexString: aString
-	"aString consists of 32 or 64 hex digits.
-	If 32, form into 16rXX where XX is each succeeding pair of hex digits.
-	If 64, form into 16rXXXX where hex digits are taken in 4s
-	Shift left 16 and answer the resultant array, which must be size 16
-	"
-	| coll hexStr |
-	coll := OrderedCollection new: 16.
-	
-	"@@FIXME: Find a smart way to do this"
-	
-	(aString size = 32) ifTrue: [
-		hexStr := '16rXX0'. "Zero at end centers a half-width glyph"
-		1 to: 32 by: 2 do: [ :index |
-			hexStr at: 4 put: (aString at: index).
-			hexStr at: 5 put: (aString at: index + 1).
-			coll addLast: (hexStr asNumber)
-		]
-	]
-	ifFalse: [ 
-		(aString size = 64) 
-			ifFalse: [Error signal: 'Malformed hex pixel string ' , aString].
-		
-		hexStr := '16rXXXX'. "Full-width glyph"
-		1 to: 64 by: 4 do: [ :index |
-			 hexStr at: 4 put: (aString at: index).
-			 hexStr at: 5 put: (aString at: index + 1).
-			 hexStr at: 6 put: (aString at: index + 2).
-			 hexStr at: 7 put: (aString at: index + 3).
-			coll addLast: (hexStr asNumber)
-		]
-	].
-	
-	^ ( coll asArray collect: [ :bits | bits  bitShift: 16] )
-! !
-
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 6/1/2016 15:24'!
-readFormsArray: fileName
-
-	| formsArray |
-	formsArray := Array new: 16rFFFF + 1 withAll: nil.
-	(self package fullFileName asFileEntry parent pathName,  '/', fileName) asFileEntry
-		readStreamDo: [ :fileStream | | aLine |
-			aLine := fileStream nextLine.
-			"Each line is of form:  
-				  <codePoint>:<bits>
-			where <codePoint> is 4 hex digits and
-			<bits> are either 32 or 64 hex digits. "
-			[aLine isNil] whileFalse:[ |tokens codePoint pixelArray|
-				(aLine size > 0) ifFalse: [
-					self error: 'Bad file format ' , fileName.
-				^formsArray
-			].
-			tokens := aLine findTokens: ':' . "Split line at colon"
-			(tokens size = 2) ifFalse: [Error signal: 'Malformed UniForm line: ' , aLine].
-			codePoint := ( '16r', (tokens at: 1)) asNumber.
-			((codePoint > 16rFFFF) or: [codePoint < 0]) ifTrue: [Error signal: 'Bad codePoint ' , (tokens at: 1) ].
-			pixelArray := self array16FromHexString: (tokens at: 2).
-		
-			((tokens at: 2) size = 32)
-			ifTrue: [ "Half Width Character"
-				formsArray 
-					at: (1 + codePoint)  "Note Bene: CodePoints start at zero"
-					put:  (Form extent: 8@16 fromArray: pixelArray offset: (0 @ 0))
-			]
-			ifFalse: [ "Full width character"
-				formsArray 
-					at: (1 + codePoint) "Note Bene: CodePoints start at zero"
-					put:  (Form extent: 16@16 fromArray: pixelArray offset: (0 @ 0)).
-			].
-			aLine := fileStream nextLine.
-		]
-	].
-	^formsArray
-	
-	
-	! !
-
-!UniForms class methodsFor: 'accessing' stamp: 'KenD 5/5/2014 21:24'!
-sliceStart: codePoint size: arraySize
-	"Answer a slice of forms"
-"
-	(UniForms sliceStart: 16r2701 size: 40) explore.   "" Dingbats ""
-"
-	| slice |
-	slice := Array new: arraySize.
-	1 to: arraySize do: [ :idx |
-		slice at: idx put: (UniForms formForCodePoint: idx - 1 + codePoint)
-	].
-
-	^ slice! !
-
-!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:06'!
-widthOf: aCharacterOrCodePoint
-		"@@FIXME: Zero (combining marks, zero width space, ..), 8 (half width :Latin), 16 (full width)"
-	| codePoint |
-	(aCharacterOrCodePoint isInteger)
-	ifTrue: [codePoint := aCharacterOrCodePoint ]
-	ifFalse: [codePoint := aCharacterOrCodePoint unicodeCodePoint ].
-	
-	^ (self formForCodePoint: codePoint) width! !
-
-!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:01'!
-widthOfString: aString
-
-	^ (1 to: aString size) inject: 0 into: [ :accum :char | accum + (self widthOf: char) ]! !
-
-!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:01'!
-widthOfStringOrText: aStringOrText
-
-	^ self widthOfString: aStringOrText asUniString! !
-
-!UniTextModel methodsFor: 'commands' stamp: 'KenD 4/14/2013 19:59'!
-acceptContentsFrom: aTextModelMorph
-	"The user has typed Cmd+s -> Accept.
-	Update backing file (query if needed).
-	Answer true if OK, else false."
-	
-	(fileName isNil)
-	ifTrue: [ ^(self saveToNewFileNotifying: aTextModelMorph) isNil not ]
-	ifFalse: [ ^(self saveToOldFileNotifying: aTextModelMorph) isNil not ]! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/19/2013 08:56'!
-actualContents: aTextOrString
-	"Reset contents"
-
-	(actualContents class = UniLazyString)
-		ifTrue: [ actualContents fileCleanup ]. "Remove old tmp file"
-	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
-	undoRedoCommands resetToStart.
-	self changed: #actualContents! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/8/2013 19:14'!
-basicActualContents: aTextOrString
-	"Do not throw events... Not nice... Use with care... Clean some day..."
-	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
-	undoRedoCommands resetToStart.! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 19:17'!
-editorClass
-
-	^UniTextEditor! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:57'!
-fileName
-
-	^ fileName! !
-
-!UniTextModel methodsFor: 'file handling' stamp: 'jmv 6/27/2015 09:56'!
-fromFile: aFileName
-	"Open the file aFileName if possible and read the file into actualContents.
-	Answer self if successful else nil."
-	
-	| aFile |
-	(aFileName isEmpty) ifFalse: [
-		aFile := aFileName asFileEntry.
-		((aFile exists) and: [aFile isDirectory not])
-		ifTrue: [
-			"Found a non-directory file; assume reable UTF-8"
-			timeStamp := aFile modificationTime.
-			actualContents := (UniLazyString onFileNamed: aFile pathName) asText.
-			^self
-		]
-	].
-	"Not a readable file"
-	^nil
-
-			! !
-
-!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/14/2013 14:55'!
-initialize
-	"Initialize the state of the receiver with its default contents."
-
-	actualContents _ UniString emptyString asText.
-	timeStamp := 0.
-	self flushUndoRedoCommands! !
-
-!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 19:14'!
-openLabel: aString 
-	"Create a standard system view of the model, me, and open it."
-	
-	SystemWindow editText: self label: aString asUniString wrap: true! !
-
-!UniTextModel methodsFor: 'misc' stamp: 'KenD 5/5/2014 01:18'!
-refetch
-	"Answer true if actualContents was actually fetched."
-	
-	(actualContents class = UniLazyString) ifTrue: [
-		 "Remove old tmp file"
-		actualContents fileCleanup. 
-	].
-	(self fileName) ifNotNil: [ | dirEntry  |	
-		"(Re)read contents"
-		actualContents := (UniLazyString onFileNamed: fileName) asText.
-		"Reset timeStamp"
-		dirEntry :=  fileName asDirectoryEntry.
-		timeStamp := dirEntry modificationTime.
-	].
-
-	self changed: #refetched.
-		
-	^true! !
-
-!UniTextModel methodsFor: 'file handling' stamp: 'jmv 6/27/2015 09:56'!
-saveToNewFileNotifying: aTextModelMorph
-	"Answer true if OK, else nil"
-
-	| dialogResult |	
-	dialogResult := (StandardFileMenu new) 
-   					newFileFrom: (DirectoryEntry currentDirectory)
-					withPattern: '*' ; 
-					startUpWithCaption: 'Type new file name for save'.
-	
-	(dialogResult isNil)
-	ifTrue: [ ^nil ]
-	ifFalse: [ | uniFileStream  |
-		fileName := (dialogResult directory), '/', (dialogResult name).
-		uniFileStream := UniFileStream newFileNamed: fileName.
-		uniFileStream nextPutAll: self actualContents asUniString; close.
-		timeStamp := fileName asFileEntry modificationTime.
-		"@@@FIXME Notify aTextModelMorph"
-		^true
-	]! !
-
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 12/14/2015 19:17'!
-saveToOldFileNotifying: aTextModelMorph
-	"Answer true if OK, else nil"
-	
-	| dirEntry uniFileStream  |	
-	dirEntry :=  fileName asFileEntry.
-	(timeStamp = dirEntry  modificationTime) 
-	ifFalse: [
-		(self confirm: 
-'Caution!! Contents were saved
-elsewhere since you started
-editing them here.  Accept anyway?' ) 
-		ifFalse: [ aTextModelMorph flash. ^nil ]
-	].
-					
-	uniFileStream := UniFileStream newFileNamed: fileName.
-	uniFileStream nextPutAll: self actualContents asUniString; close.
-	timeStamp := fileName asFileEntry modificationTime.
-	"@@@FIXME Notify aTextModelMorph"
-	^true
-! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/30/2014 16:59'!
-scrollDeltaHeight
-	"Return the increment in pixels which this pane should be scrolled."
-
-	^ UniForms height! !
-
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:56'!
-timeStamp
-
-	^ timeStamp! !
-
-!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/14/2013 15:38'!
-fromFile: aFileName
-	"Answer an instance of me if aFileName denotes a readable text file, else nil"
-
-	^self new initialize fromFile: aFileName! !
-
-!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 11/1/2015 19:54'!
-fromUser
-	"Put up a StandardFileMenu and let the user choose a file to read into me."
-	"Answer an instance of me or nil"
-"
-	UniTextModel fromUser.
-"		
-	| dialogResult textModel |
-	dialogResult := (StandardFileMenu new)
-						oldFileFrom: (DirectoryEntry currentDirectory) ;
-	 					startUpWithCaption: 'Select a UTF-8 Unicode text file'.
-	
-	((dialogResult isNil) or: [dialogResult isDirectory]) ifTrue: [ ^nil ].
-
-	textModel := self new initialize 
-		fromFile: ( (dialogResult directory pathName) , '/' , (dialogResult name) ).
-		
-	SystemWindow 
-		editText: textModel
-			label: 'Unicode Text(''',  (dialogResult name) ,  ''')'
-			wrap: true.
-	
-	^ textModel! !
-
-!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 19:11'!
-openLabel: aString
-
-	self new openLabel: aString asUniString! !
-
-!UniFileList methodsFor: 'contents' stamp: 'KenD 5/5/2014 21:58'!
-acceptedContents
-	| aStringOrText |
-	aStringOrText := self acceptedStringOrText.
-	(aStringOrText is: #Text)
-	ifTrue: [ ^ aStringOrText ].
-	^ Text
-		initialFont: (
-			(aStringOrText is: #UniString) 
-					ifTrue: [UniForms default] 
-					ifFalse: [Preferences standardCodeFont]
-		)
-		stringOrText: aStringOrText! !
-
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 15:59'!
-acceptedStringOrText
-	"Answer the contents of the file, reading it first if needed."
-	"Possible brevityState values:
-		FileList,
-		fullFile, briefFile, needToGetFull, needToGetBrief,
-		fullHex, briefHex, needToGetFullHex, needToGetBriefHex"
-
-	(listIndex = 0) | (brevityState == #FileList) ifTrue: [ ^ self defaultContents ].  "no file selected"
-	
-	({ #fullFile. #fullHex. #fullUnicode. #briefFile. #briefHex. #briefUnicode. }
-		includes: 	brevityState) 
-	ifTrue: [ ^ acceptedContentsCache ].
-
-	brevityState == #needToGetUnicode ifTrue: [^ self readContentsUnicode: false ].
-"	brevityState == #needToGetFullUnicode ifTrue: [^ self readContentsUnicode: false ].
-	brevityState == #needToGetBriefUnicode ifTrue: [^ self readContentsUnicode: true ].
-"
-	brevityState == #needToGetFullHex ifTrue: [^ self readContentsHex: false ].
-	brevityState == #needToGetBriefHex ifTrue: [^ self readContentsHex: true ].
-
-	brevityState == #needToGetFull ifTrue:  [^ self readContentsBrief: false ].
-	brevityState == #needToGetBrief ifTrue: [ ^ self readContentsBrief: true ].  "default"
-
-	self halt: 'unknown state ' , brevityState printString! !
-
-!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/14/2013 19:22'!
-editorClass
-
-	^UniTextEditor! !
-
-!UniFileList methodsFor: 'file menu action' stamp: 'KenD 4/12/2013 15:56'!
-getUnicode
-	"Get contents of file again, and display in Unicode. Do this by making the cancel string be the contents, and doing a cancel."
-
-	Cursor read showWhile: [
-		brevityState := #needToGetUnicode.  
-		"See method: acceptedStringOrText"
-		self acceptedContentsChanged ]! !
-
-!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/12/2013 15:47'!
-itemsForAnyFile2
-	"Answer a list of universal services that could apply to any file"
-	
-	| services |
-	services := super itemsForAnyFile2.
-	services addFirst: self serviceGetUnicode.
-	^services
-
-! !
-
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/19/2013 08:35'!
-put: aText
-	"Private - put the supplied text onto the file"
-
-	| ff type |
-	(brevityState == #fullUnicode)
-	ifTrue: [ff _ UniFileStream newFileNamed: self fullName.
-		Cursor write showWhile: [ff nextPutAll: aText asString; close].
-		fileName = ff localName 
-			ifTrue: [ acceptedContentsCache _ aText asUniString asText]  "@@@UniLazyString@@@"
-			ifFalse: [self updateFileList].		"user renamed the file"
-		^ true  "accepted"].
-
-	listIndex = 0 ifTrue:
-		[self inform: 'No fileName is selected'.
-		^ false  "failed"].
-	type _ 'These'.
-	brevityState = #fullFile ifTrue: [type _ 'Ascii'].
-	brevityState = #briefFile ifTrue: [type _ 'Abbreviated'].
-	brevityState = #briefHex ifTrue: [type _ 'Abbreviated'].
-	brevityState = #fullHex ifTrue: [type _ 'Hexadecimal'].
-	brevityState = #briefUnicode ifTrue: [type _ 'Unicode'].
-"	brevityState = #fullUnicode ifTrue: [type _ 'Unicode']."
-	brevityState = #FileList ifTrue: [type _ 'Directory'].
-	self inform: ('{1} contents cannot
-meaningfully be saved at present.' format:{type}).
-	^ false  "failed"
-! !
-
-!UniFileList methodsFor: 'private' stamp: 'KenD 11/1/2015 18:58'!
-readContentsUnicode: brevity
-	"retrieve the contents from the external file unless it is too long.
-	  Don't create a file here.  Check if exists."
-	| fileEntry  "uniString"  |
-
-	fileEntry := self fullName asFileEntry. 
-	(fileEntry exists) ifFalse: [^ 'For some reason, this file cannot be read'].
-	(fileEntry isDirectory) ifTrue: [^ 'This ''file'' is a directory'].
-"	uniString := uniFileStream contentsOfEntireFile.
-	brevityState := #fullUnicode.
-	uniFileStream close. 
-	acceptedContentsCache := uniString.
-"
-	brevityState := #fullUnicode.
-	
-"	 ^ acceptedContentsCache "
-
-	(acceptedContentsCache class = UniLazyString)
-		ifTrue: [ acceptedContentsCache fileCleanup ]. "Remove old tmp file"
-		
-	^ acceptedContentsCache := (UniLazyString onFileNamed: fileEntry pathName) asText
-! !
-
-!UniFileList methodsFor: 'own services' stamp: 'KenD 4/12/2013 14:42'!
-serviceGetUnicode
-
-	^  (SimpleServiceEntry 
-			provider: self 
-			label: 'view as Unicode' 
-			selector: #getUnicode
-			description: 'view as Unicode')
-			! !
 
 !UniString methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:40'!
 , aStringOrUniString
@@ -1530,6 +775,11 @@ d90!! foo, Yes bar. then x.
 		ifTrue: [result nextPut: UniChar defaultBreakDisplayChar ].
 	
 	^ result asUniString! !
+
+!UniString methodsFor: 'private' stamp: 'KenD 8/23/2016 18:49:18'!
+bytesPerElement
+
+	self subclassResponsibility ! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:25'!
 capitalized
@@ -1865,11 +1115,11 @@ progress display, by catching the exception.
 		to: maxVal 
 		during: workBlock! !
 
-!UniString methodsFor: 'enumerating' stamp: 'KenD 3/18/2013 16:16'!
+!UniString methodsFor: 'enumerating' stamp: 'KenD 8/23/2016 18:57:01'!
 do: aBlock
 	"aBlock takes each UniChar in me as an argument"
 	
-	self subclassResponsibility ! !
+	^nil "zero elements to process" ! !
 
 !UniString methodsFor: 'debugging' stamp: 'KenD 3/21/2013 16:44'!
 doesNotUnderstand: aMessage
@@ -3459,6 +2709,11 @@ balanceAsRequired
 
 	^self "No action required"! !
 
+!UniFlat methodsFor: 'private' stamp: 'KenD 8/23/2016 18:50:13'!
+bytesPerElement
+
+	^ charBlock bytesPerElement! !
+
 !UniFlat methodsFor: 'private' stamp: 'KenD 2/17/2013 16:09'!
 charBlock
 
@@ -4223,86 +3478,6 @@ with:  aUniString with: anotherUniString
 
 	^ self splice: aUniString with: anotherUniString ! !
 
-!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 5/7/2014 17:13'!
-paste
-	"Paste the text from the shared buffer over the current selection and 
-	redisplay if necessary."
-	
-	| currentContents clipString |
-	currentContents := morph model actualContents.
-	clipString := 
-		((currentContents is: #UniString)
-		 or: [(currentContents is: #Text) 
-			and: [ currentContents string is: #UniString]])
-		ifTrue: [	 self clipboardStringOrText asUniString ]
-		ifFalse: [ self clipboardStringOrText ].
-	
-	self replaceSelectionWith: clipString ! !
-
-!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 4/13/2013 19:09'!
-save: aKeyboardEvent
-	"Submit the current text.  Equivalent to 'accept' "
-
-	self acceptContents.
-	^ true! !
-
-!UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 4/30/2014 14:53'!
-cmdShortcutsSpec
-	"
-	Editor initialize
-	"
-	"arranged in QWERTY keyboard order"
-	^#(
-		#(		$0 	changeEmphasis:			'Normal')
-		#(		$1 	changeEmphasis:			'Bold')
-		#(		$2 	changeEmphasis:			'Italic')
-		#(		$3 	changeEmphasis:			'Underline')
-		#(		$4 	changeEmphasis:			'Strikeout')
-"		#(		$5 	changeEmphasis:			'Negative kern (letters 1 pixel closer)')
-		#(		$6 	changeEmphasis:			'Positive kern (letters 1 pixel larger spread)')
-"		#(		$8	#offerColorMenu:			'Change color')
-
-		#(		$k	#offerFontMenu:			'Set font')
-		
-		#(		$s	#save:							'Save (i.e. accept)')
-
-		#(		$u	#align:						'Toggle alignment')
-	)! !
-
-!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 11/2/2015 08:13'!
-fromFile: aFileNameString
-"
-	UniTextEditor fromFile: 'utf8sampler.txt'.
-"
-	| textModel fileEntry |
-	fileEntry := aFileNameString asFileEntry.
-	(fileEntry exists)
-	ifFalse: [ self error: 'No file ''', aFileNameString , ''' was found' ].
-	textModel := UniTextModel fromFile: aFileNameString.
-
-	textModel isNil ifFalse: [
-		SystemWindow 
-			editText: textModel
-			label: 'Text Editor (''',  fileEntry baseName, '.', fileEntry extension,  ''')'
-			wrap: true.
-	]
-	! !
-
-!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:28'!
-fromUser
-"
-	UniTextEditor fromUser.
-"
-	UniTextModel fromUser! !
-
-!UniTextEditor class methodsFor: 'class initialization' stamp: 'KenD 4/14/2013 18:05'!
-initialize
-
-"
-	UniTextEditor initialize.
-"
-	super initialize! !
-
 !UniFileStream methodsFor: 'properties-setting' stamp: 'KenD 4/10/2013 09:49'!
 ascii
 	"We don't do ASCII"
@@ -4600,6 +3775,841 @@ upToEnd
 concreteStream
 	"Who should we really direct class queries to? "
 	^ UniFileStream! !
+
+!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 16:57'!
+approxWidthOfText: aText
+"Return the width of aText -- quickly, and a little bit dirty. Used by lists morphs containing Text objects to get a quick, fairly accurate measure of the width of a list item."
+
+	"@@@Fixme: Scan for zero, half width codepoints @@@"
+    ^ 16 * (aText size)! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:14'!
+ascent
+
+	^16! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:14'!
+baseFont
+
+	^self! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:14'!
+descent
+
+	^ 0! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:15'!
+descentKern
+
+	^ 0! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:15'!
+emphasis
+
+	^ 0! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:15'!
+emphasized: code
+	"@@Fixme: BOGUS@@"
+	^ self! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 19:13'!
+familyName
+
+	^'UniFont'! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:11'!
+height
+
+	^16! !
+
+!UniForms methodsFor: 'testing' stamp: 'KenD 5/2/2014 20:18'!
+isBaseFont
+
+	^ true! !
+
+!UniForms methodsFor: 'testing' stamp: 'KenD 4/30/2014 16:40'!
+isBold
+
+	^ false "NYI"! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 16:47'!
+name
+
+	"Answer my font name"
+	^ 'GNU Unifont'! !
+
+!UniForms methodsFor: 'as yet unclassified' stamp: 'jmv 5/5/2014 22:42'!
+on: aGrafPort displayString: aString from: firstIndex to: lastIndex at: p color: color
+	"Show a representation of aString as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
+
+	| delta |
+	delta _ 0.
+	firstIndex to: lastIndex do: [ :index |
+		| uniChar width |
+		uniChar _ aString at: index.
+		width _ UniForms widthOf: uniChar.
+		width isZero ifFalse: [
+			aGrafPort copyForm: (UniForms formForCodePoint: uniChar unicodeCodePoint) to: ((p x + delta) @ (p y)) rule: Form and.
+			delta _ delta + width ]]! !
+
+!UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:12'!
+pointSize
+
+	^16! !
+
+!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:16'!
+widthOf: aCharacter
+		"@@FIXME: Zero (combining marks, zero width space, ..), 8 (half width :Latin), 16 (full width)"
+	^ self class widthOf: aCharacter ! !
+
+!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:02'!
+widthOfString: aString
+
+
+	^ (1 to: aString size) inject: 0 into: [ :accum :char | accum + (self widthOf: char) ]! !
+
+!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:06'!
+widthOfString: aString from: startIndex to: stopIndex
+	"Measure the length of the given string between start and stop index"
+
+	^ (startIndex to: stopIndex) inject: 0 into: [ :accum :char | accum + (self widthOf: char) ]! !
+
+!UniForms methodsFor: 'measuring' stamp: 'KenD 4/6/2013 17:09'!
+widthOfStringOrText: aStringOrText
+
+	^ self widthOfString: aStringOrText asUniString! !
+
+!UniForms class methodsFor: 'private' stamp: 'KenD 4/7/2013 15:33'!
+array16FromHexString: aString
+	"aString consists of 32 or 64 hex digits.
+	If 32, form into 16rXX where XX is each succeeding pair of hex digits.
+	If 64, form into 16rXXXX where hex digits are taken in 4s
+	Shift left 16 and answer the resultant array, which must be size 16
+	"
+	| coll hexStr |
+	coll := OrderedCollection new: 16.
+	
+	"@@FIXME: Find a smart way to do this"
+	
+	(aString size = 32) ifTrue: [
+		hexStr := '16rXX00'. 
+		1 to: 32 by: 2 do: [ :index |
+			hexStr at: 4 put: (aString at: index).
+			hexStr at: 5 put: (aString at: index + 1).
+			coll addLast: (hexStr asNumber)
+		]
+	]
+	ifFalse: [ 
+		(aString size = 64) 
+			ifFalse: [Error signal: 'Malformed hex pixel string ' , aString].
+		
+		hexStr := '16rXXXX'. "Full-width glyph"
+		1 to: 64 by: 4 do: [ :index |
+			 hexStr at: 4 put: (aString at: index).
+			 hexStr at: 5 put: (aString at: index + 1).
+			 hexStr at: 6 put: (aString at: index + 2).
+			 hexStr at: 7 put: (aString at: index + 3).
+			coll addLast: (hexStr asNumber)
+		]
+	].
+	
+	^ ( coll asArray collect: [ :bits | bits bitShift: 16] ) 
+! !
+
+!UniForms class methodsFor: 'font' stamp: 'KenD 4/6/2013 18:58'!
+default
+	^self new! !
+
+!UniForms class methodsFor: 'private' stamp: 'KenD 4/17/2013 14:26'!
+defaultFormForMissingChar
+
+	"Answer a DIAGONAL CROSS for missing forms"
+	^ (FormsArray at: 16r2573)! !
+
+!UniForms class methodsFor: 'accessing' stamp: 'KenD 5/5/2014 21:23'!
+formForCodePoint: aCodePoint
+
+	"Answer a form for glyph/character at codePoint or nil"
+
+	| index form |
+	index := aCodePoint + 1. "Convert to zero based index"
+	
+	(index < 1)
+	ifTrue: [DomainError signal: 'Unicode code point out of range ' , aCodePoint printString ].
+	
+	(index > 16rFFFF or: [(form := FormsArray at: index) isNil])
+	"Substitute DIAGONAL CROSS for missing forms"
+	ifTrue: [ ^ self formForMissingChar ] 
+	ifFalse: [ ^ form ]! !
+
+!UniForms class methodsFor: 'private' stamp: 'KenD 4/17/2013 14:24'!
+formForMissingChar
+
+	^FormForMissingChar! !
+
+!UniForms class methodsFor: 'private' stamp: 'KenD 4/17/2013 14:25'!
+formForMissingChar: aForm
+
+	(aForm isKindOf: Form) ifFalse: [DomainError signal: 'formForMissingChar: requires a Form'].
+	FormForMissingChar := aForm! !
+
+!UniForms class methodsFor: 'private' stamp: 'KenD 3/2/2013 20:04'!
+formsArray
+
+	"Note: Unicode indexes from zero, so index is 1+codePoint."
+	^FormsArray 	! !
+
+!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:02'!
+height
+
+	^ 16! !
+
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/6/2013 17:04'!
+heightOf: CharOrCodePoint
+	"Answer my display width"
+
+	| codePoint |
+	(CharOrCodePoint isInteger)
+	ifTrue: [ codePoint := CharOrCodePoint ]
+	ifFalse: [ codePoint := CharOrCodePoint unicodeCodePoint ].
+	^ (self formForCodePoint: codePoint) height
+		! !
+
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 12/31/1969 16:35'!
+initialize
+"
+	UniForms initialize.
+"
+
+	FormsArray := self readFormsArray: 'unifont-5.1.20080907.hex'.
+	"'unifontfull-5.1.20080820.hex'."
+	"unifont-5.1.20080907.hex"
+	self formForMissingChar: (self defaultFormForMissingChar).
+	self installMeAsFont. "Fake it"
+	! !
+
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/6/2013 19:26'!
+installMeAsFont
+"
+	UniForms installMeAsFont.
+"
+	| uniFontDict |
+	uniFontDict := Dictionary new.
+	uniFontDict at: 16 put: (self default).
+	AvailableFonts at: 'UniFont' put: uniFontDict.! !
+
+!UniForms class methodsFor: 'licence' stamp: 'KenD 3/4/2013 07:30'!
+licence
+
+^
+'GNU Unifont licence is GPL 2 -- details below
+
+Original files from:
+
+	http://www.unifoundry.com/unifont.html
+
+OVERVIEW
+--------
+The Unifont is a dual-width (8x16/16x16) bitmap font, designed to provide
+coverage for all of Unicode Plane 0, the Basic Multilingual Plane (BMP).
+This version has a glyph for each visible code point in the Unicode 5.1
+Basic Multilingual Plane.
+
+Note that this version of the Unifont only provides a single glyph
+for each character, making it impossible to handle any language that
+needs context-dependent character shaping well. It is supplied in the
+form of a hex file, with a converter to convert it to bdf. See
+http://czyborra.com/unifont/ or http://unifoundry.com/unifont.html
+for more information.
+
+unifont AUTHORS
+---------------
+Roman Czyborra created the original GNU Unifont, including the
+.hex format.  For greater detail, see the HISTORY section below.
+
+David Starner aggregated many glyphs contributed by others and
+built these into earlier unifont releases.
+
+Qianqian Fang began his Wen Quan Yi fonts in 2004; most of the
+almost 30,000 CJK ideographs in the latest unifont were taken
+from Wen Quan Yi with permission of Qianqian Fang.  
+
+Changwoo Ryu created the 11,172 thick-stroke Hangul Syllables glyphs
+using thin-stroke glyphs from the xfonts-baekmuk Debian package, in
+the file unifont.bdf in the Debian bf-utf-source package.  The fonts
+in the xfonts-baekmuk Debian package were created by Jeong-Hwan Kim.
+Replacing the thick-stroke Hangul glyphs was a desire expressed by
+Roman Czyborra for years.
+
+Paul Hardy merged Qianqian Fang''s unibit and Wen Quan Yi glyphs
+into the GNU Unifont (with lots of help and enthusiasm from Qianqian
+Fang), copied the Hangul Syllables glyphs from Changwoo Ryu''s copy
+of unifont.bdf, drew about 8,500 more glyphs, and replaced the
+existing Tibetan glyphs with new ones contributed by Rich Felker.
+
+
+LICENSE
+-------
+Roman Czyborra released his work (Perl scripts and font .hex files)
+under the following terms:
+
+     All of my works you find here are freeware. You may
+     freely copy, use, quote, modify or redistribute them
+     as long as you properly attribute my contribution and
+     have given a quick thought about whether Roman might
+     perhaps be interested to read what you did with his
+     stuff. Horizontal rules don''t apply.
+
+David Starner released what in this package is named "hex2bdf-split"
+under the same license as Roman Czyborra''s work.
+
+License 
+
+     These are released under the terms of the GNU General Public
+     License version 2, or (at your option) a later version.
+
+License for Fonts:
+
+     Any fonts using glyphs from the "wqy-cjk.hex" file (including
+     the default TrueType font) are bound by the terms of the Wen
+     Quan Yi font license.  Those fonts are released under the terms
+     of the GNU General Public License (GPL) versionn 2, with the
+     exception that embedding the font in a document does not by
+     itself bind that document to the terms of the GNU GPL.
+
+     Any fonts that do not use glyphs from the wqy-cjk.hex file
+     fall under the above License for all of Roman Czyborra''s work
+
+     The fonts in "./font/precompiled" do use wqy-cjk.hex, and so
+     are licensed under the GNU GPL version 2, with the exception
+     that embedding the font in a document does not in itself bind
+     that document to the terms of the GNU GPL.  The following
+     paragraphs explaining the exception is taken from the Wen
+     Quan Yi font distribution:
+
+          ** GPL v2.0 license with font embedding exception:
+
+          As a special exception, if you create a document which
+          uses this font, and embed this font or unaltered portions
+          of this font into the document, this font does not by
+          itself cause the resulting document to be covered by
+          the GNU General Public License. This exception does not
+          however invalidate any other reasons why the document
+          might be covered by the GNU General Public License.
+          If you modify this font, you may extend this exception
+          to your version of the font, but you are not obligated
+          to do so. If you do not wish to do so, delete this
+          exception statement from your version.
+
+License for blanks.hex
+
+     There is one exception to the above rules: Paul Hardy earlier
+     released the blanks.hex file into the public domain.
+
+'
+! !
+
+!UniForms class methodsFor: 'private' stamp: 'KenD 4/7/2013 13:16'!
+oldArray16FromHexString: aString
+	"aString consists of 32 or 64 hex digits.
+	If 32, form into 16rXX where XX is each succeeding pair of hex digits.
+	If 64, form into 16rXXXX where hex digits are taken in 4s
+	Shift left 16 and answer the resultant array, which must be size 16
+	"
+	| coll hexStr |
+	coll := OrderedCollection new: 16.
+	
+	"@@FIXME: Find a smart way to do this"
+	
+	(aString size = 32) ifTrue: [
+		hexStr := '16rXX0'. "Zero at end centers a half-width glyph"
+		1 to: 32 by: 2 do: [ :index |
+			hexStr at: 4 put: (aString at: index).
+			hexStr at: 5 put: (aString at: index + 1).
+			coll addLast: (hexStr asNumber)
+		]
+	]
+	ifFalse: [ 
+		(aString size = 64) 
+			ifFalse: [Error signal: 'Malformed hex pixel string ' , aString].
+		
+		hexStr := '16rXXXX'. "Full-width glyph"
+		1 to: 64 by: 4 do: [ :index |
+			 hexStr at: 4 put: (aString at: index).
+			 hexStr at: 5 put: (aString at: index + 1).
+			 hexStr at: 6 put: (aString at: index + 2).
+			 hexStr at: 7 put: (aString at: index + 3).
+			coll addLast: (hexStr asNumber)
+		]
+	].
+	
+	^ ( coll asArray collect: [ :bits | bits  bitShift: 16] )
+! !
+
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 6/1/2016 15:24'!
+readFormsArray: fileName
+
+	| formsArray |
+	formsArray := Array new: 16rFFFF + 1 withAll: nil.
+	(self package fullFileName asFileEntry parent pathName,  '/', fileName) asFileEntry
+		readStreamDo: [ :fileStream | | aLine |
+			aLine := fileStream nextLine.
+			"Each line is of form:  
+				  <codePoint>:<bits>
+			where <codePoint> is 4 hex digits and
+			<bits> are either 32 or 64 hex digits. "
+			[aLine isNil] whileFalse:[ |tokens codePoint pixelArray|
+				(aLine size > 0) ifFalse: [
+					self error: 'Bad file format ' , fileName.
+				^formsArray
+			].
+			tokens := aLine findTokens: ':' . "Split line at colon"
+			(tokens size = 2) ifFalse: [Error signal: 'Malformed UniForm line: ' , aLine].
+			codePoint := ( '16r', (tokens at: 1)) asNumber.
+			((codePoint > 16rFFFF) or: [codePoint < 0]) ifTrue: [Error signal: 'Bad codePoint ' , (tokens at: 1) ].
+			pixelArray := self array16FromHexString: (tokens at: 2).
+		
+			((tokens at: 2) size = 32)
+			ifTrue: [ "Half Width Character"
+				formsArray 
+					at: (1 + codePoint)  "Note Bene: CodePoints start at zero"
+					put:  (Form extent: 8@16 fromArray: pixelArray offset: (0 @ 0))
+			]
+			ifFalse: [ "Full width character"
+				formsArray 
+					at: (1 + codePoint) "Note Bene: CodePoints start at zero"
+					put:  (Form extent: 16@16 fromArray: pixelArray offset: (0 @ 0)).
+			].
+			aLine := fileStream nextLine.
+		]
+	].
+	^formsArray
+	
+	
+	! !
+
+!UniForms class methodsFor: 'accessing' stamp: 'KenD 5/5/2014 21:24'!
+sliceStart: codePoint size: arraySize
+	"Answer a slice of forms"
+"
+	(UniForms sliceStart: 16r2701 size: 40) explore.   "" Dingbats ""
+"
+	| slice |
+	slice := Array new: arraySize.
+	1 to: arraySize do: [ :idx |
+		slice at: idx put: (UniForms formForCodePoint: idx - 1 + codePoint)
+	].
+
+	^ slice! !
+
+!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:06'!
+widthOf: aCharacterOrCodePoint
+		"@@FIXME: Zero (combining marks, zero width space, ..), 8 (half width :Latin), 16 (full width)"
+	| codePoint |
+	(aCharacterOrCodePoint isInteger)
+	ifTrue: [codePoint := aCharacterOrCodePoint ]
+	ifFalse: [codePoint := aCharacterOrCodePoint unicodeCodePoint ].
+	
+	^ (self formForCodePoint: codePoint) width! !
+
+!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:01'!
+widthOfString: aString
+
+	^ (1 to: aString size) inject: 0 into: [ :accum :char | accum + (self widthOf: char) ]! !
+
+!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:01'!
+widthOfStringOrText: aStringOrText
+
+	^ self widthOfString: aStringOrText asUniString! !
+
+!UniTextModel methodsFor: 'commands' stamp: 'KenD 4/14/2013 19:59'!
+acceptContentsFrom: aTextModelMorph
+	"The user has typed Cmd+s -> Accept.
+	Update backing file (query if needed).
+	Answer true if OK, else false."
+	
+	(fileName isNil)
+	ifTrue: [ ^(self saveToNewFileNotifying: aTextModelMorph) isNil not ]
+	ifFalse: [ ^(self saveToOldFileNotifying: aTextModelMorph) isNil not ]! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/19/2013 08:56'!
+actualContents: aTextOrString
+	"Reset contents"
+
+	(actualContents class = UniLazyString)
+		ifTrue: [ actualContents fileCleanup ]. "Remove old tmp file"
+	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
+	undoRedoCommands resetToStart.
+	self changed: #actualContents! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/8/2013 19:14'!
+basicActualContents: aTextOrString
+	"Do not throw events... Not nice... Use with care... Clean some day..."
+	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
+	undoRedoCommands resetToStart.! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 19:17'!
+editorClass
+
+	^UniTextEditor! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:57'!
+fileName
+
+	^ fileName! !
+
+!UniTextModel methodsFor: 'file handling' stamp: 'jmv 6/27/2015 09:56'!
+fromFile: aFileName
+	"Open the file aFileName if possible and read the file into actualContents.
+	Answer self if successful else nil."
+	
+	| aFile |
+	(aFileName isEmpty) ifFalse: [
+		aFile := aFileName asFileEntry.
+		((aFile exists) and: [aFile isDirectory not])
+		ifTrue: [
+			"Found a non-directory file; assume reable UTF-8"
+			timeStamp := aFile modificationTime.
+			actualContents := (UniLazyString onFileNamed: aFile pathName) asText.
+			^self
+		]
+	].
+	"Not a readable file"
+	^nil
+
+			! !
+
+!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/14/2013 14:55'!
+initialize
+	"Initialize the state of the receiver with its default contents."
+
+	actualContents _ UniString emptyString asText.
+	timeStamp := 0.
+	self flushUndoRedoCommands! !
+
+!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 19:14'!
+openLabel: aString 
+	"Create a standard system view of the model, me, and open it."
+	
+	SystemWindow editText: self label: aString asUniString wrap: true! !
+
+!UniTextModel methodsFor: 'misc' stamp: 'KenD 5/5/2014 01:18'!
+refetch
+	"Answer true if actualContents was actually fetched."
+	
+	(actualContents class = UniLazyString) ifTrue: [
+		 "Remove old tmp file"
+		actualContents fileCleanup. 
+	].
+	(self fileName) ifNotNil: [ | dirEntry  |	
+		"(Re)read contents"
+		actualContents := (UniLazyString onFileNamed: fileName) asText.
+		"Reset timeStamp"
+		dirEntry :=  fileName asDirectoryEntry.
+		timeStamp := dirEntry modificationTime.
+	].
+
+	self changed: #refetched.
+		
+	^true! !
+
+!UniTextModel methodsFor: 'file handling' stamp: 'jmv 6/27/2015 09:56'!
+saveToNewFileNotifying: aTextModelMorph
+	"Answer true if OK, else nil"
+
+	| dialogResult |	
+	dialogResult := (StandardFileMenu new) 
+   					newFileFrom: (DirectoryEntry currentDirectory)
+					withPattern: '*' ; 
+					startUpWithCaption: 'Type new file name for save'.
+	
+	(dialogResult isNil)
+	ifTrue: [ ^nil ]
+	ifFalse: [ | uniFileStream  |
+		fileName := (dialogResult directory), '/', (dialogResult name).
+		uniFileStream := UniFileStream newFileNamed: fileName.
+		uniFileStream nextPutAll: self actualContents asUniString; close.
+		timeStamp := fileName asFileEntry modificationTime.
+		"@@@FIXME Notify aTextModelMorph"
+		^true
+	]! !
+
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 12/14/2015 19:17'!
+saveToOldFileNotifying: aTextModelMorph
+	"Answer true if OK, else nil"
+	
+	| dirEntry uniFileStream  |	
+	dirEntry :=  fileName asFileEntry.
+	(timeStamp = dirEntry  modificationTime) 
+	ifFalse: [
+		(self confirm: 
+'Caution!! Contents were saved
+elsewhere since you started
+editing them here.  Accept anyway?' ) 
+		ifFalse: [ aTextModelMorph flash. ^nil ]
+	].
+					
+	uniFileStream := UniFileStream newFileNamed: fileName.
+	uniFileStream nextPutAll: self actualContents asUniString; close.
+	timeStamp := fileName asFileEntry modificationTime.
+	"@@@FIXME Notify aTextModelMorph"
+	^true
+! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/30/2014 16:59'!
+scrollDeltaHeight
+	"Return the increment in pixels which this pane should be scrolled."
+
+	^ UniForms height! !
+
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:56'!
+timeStamp
+
+	^ timeStamp! !
+
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/14/2013 15:38'!
+fromFile: aFileName
+	"Answer an instance of me if aFileName denotes a readable text file, else nil"
+
+	^self new initialize fromFile: aFileName! !
+
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 11/1/2015 19:54'!
+fromUser
+	"Put up a StandardFileMenu and let the user choose a file to read into me."
+	"Answer an instance of me or nil"
+"
+	UniTextModel fromUser.
+"		
+	| dialogResult textModel |
+	dialogResult := (StandardFileMenu new)
+						oldFileFrom: (DirectoryEntry currentDirectory) ;
+	 					startUpWithCaption: 'Select a UTF-8 Unicode text file'.
+	
+	((dialogResult isNil) or: [dialogResult isDirectory]) ifTrue: [ ^nil ].
+
+	textModel := self new initialize 
+		fromFile: ( (dialogResult directory pathName) , '/' , (dialogResult name) ).
+		
+	SystemWindow 
+		editText: textModel
+			label: 'Unicode Text(''',  (dialogResult name) ,  ''')'
+			wrap: true.
+	
+	^ textModel! !
+
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 19:11'!
+openLabel: aString
+
+	self new openLabel: aString asUniString! !
+
+!UniFileList methodsFor: 'contents' stamp: 'KenD 5/5/2014 21:58'!
+acceptedContents
+	| aStringOrText |
+	aStringOrText := self acceptedStringOrText.
+	(aStringOrText is: #Text)
+	ifTrue: [ ^ aStringOrText ].
+	^ Text
+		initialFont: (
+			(aStringOrText is: #UniString) 
+					ifTrue: [UniForms default] 
+					ifFalse: [Preferences standardCodeFont]
+		)
+		stringOrText: aStringOrText! !
+
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/12/2013 15:59'!
+acceptedStringOrText
+	"Answer the contents of the file, reading it first if needed."
+	"Possible brevityState values:
+		FileList,
+		fullFile, briefFile, needToGetFull, needToGetBrief,
+		fullHex, briefHex, needToGetFullHex, needToGetBriefHex"
+
+	(listIndex = 0) | (brevityState == #FileList) ifTrue: [ ^ self defaultContents ].  "no file selected"
+	
+	({ #fullFile. #fullHex. #fullUnicode. #briefFile. #briefHex. #briefUnicode. }
+		includes: 	brevityState) 
+	ifTrue: [ ^ acceptedContentsCache ].
+
+	brevityState == #needToGetUnicode ifTrue: [^ self readContentsUnicode: false ].
+"	brevityState == #needToGetFullUnicode ifTrue: [^ self readContentsUnicode: false ].
+	brevityState == #needToGetBriefUnicode ifTrue: [^ self readContentsUnicode: true ].
+"
+	brevityState == #needToGetFullHex ifTrue: [^ self readContentsHex: false ].
+	brevityState == #needToGetBriefHex ifTrue: [^ self readContentsHex: true ].
+
+	brevityState == #needToGetFull ifTrue:  [^ self readContentsBrief: false ].
+	brevityState == #needToGetBrief ifTrue: [ ^ self readContentsBrief: true ].  "default"
+
+	self halt: 'unknown state ' , brevityState printString! !
+
+!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/14/2013 19:22'!
+editorClass
+
+	^UniTextEditor! !
+
+!UniFileList methodsFor: 'file menu action' stamp: 'KenD 4/12/2013 15:56'!
+getUnicode
+	"Get contents of file again, and display in Unicode. Do this by making the cancel string be the contents, and doing a cancel."
+
+	Cursor read showWhile: [
+		brevityState := #needToGetUnicode.  
+		"See method: acceptedStringOrText"
+		self acceptedContentsChanged ]! !
+
+!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/12/2013 15:47'!
+itemsForAnyFile2
+	"Answer a list of universal services that could apply to any file"
+	
+	| services |
+	services := super itemsForAnyFile2.
+	services addFirst: self serviceGetUnicode.
+	^services
+
+! !
+
+!UniFileList methodsFor: 'private' stamp: 'KenD 4/19/2013 08:35'!
+put: aText
+	"Private - put the supplied text onto the file"
+
+	| ff type |
+	(brevityState == #fullUnicode)
+	ifTrue: [ff _ UniFileStream newFileNamed: self fullName.
+		Cursor write showWhile: [ff nextPutAll: aText asString; close].
+		fileName = ff localName 
+			ifTrue: [ acceptedContentsCache _ aText asUniString asText]  "@@@UniLazyString@@@"
+			ifFalse: [self updateFileList].		"user renamed the file"
+		^ true  "accepted"].
+
+	listIndex = 0 ifTrue:
+		[self inform: 'No fileName is selected'.
+		^ false  "failed"].
+	type _ 'These'.
+	brevityState = #fullFile ifTrue: [type _ 'Ascii'].
+	brevityState = #briefFile ifTrue: [type _ 'Abbreviated'].
+	brevityState = #briefHex ifTrue: [type _ 'Abbreviated'].
+	brevityState = #fullHex ifTrue: [type _ 'Hexadecimal'].
+	brevityState = #briefUnicode ifTrue: [type _ 'Unicode'].
+"	brevityState = #fullUnicode ifTrue: [type _ 'Unicode']."
+	brevityState = #FileList ifTrue: [type _ 'Directory'].
+	self inform: ('{1} contents cannot
+meaningfully be saved at present.' format:{type}).
+	^ false  "failed"
+! !
+
+!UniFileList methodsFor: 'private' stamp: 'KenD 11/1/2015 18:58'!
+readContentsUnicode: brevity
+	"retrieve the contents from the external file unless it is too long.
+	  Don't create a file here.  Check if exists."
+	| fileEntry  "uniString"  |
+
+	fileEntry := self fullName asFileEntry. 
+	(fileEntry exists) ifFalse: [^ 'For some reason, this file cannot be read'].
+	(fileEntry isDirectory) ifTrue: [^ 'This ''file'' is a directory'].
+"	uniString := uniFileStream contentsOfEntireFile.
+	brevityState := #fullUnicode.
+	uniFileStream close. 
+	acceptedContentsCache := uniString.
+"
+	brevityState := #fullUnicode.
+	
+"	 ^ acceptedContentsCache "
+
+	(acceptedContentsCache class = UniLazyString)
+		ifTrue: [ acceptedContentsCache fileCleanup ]. "Remove old tmp file"
+		
+	^ acceptedContentsCache := (UniLazyString onFileNamed: fileEntry pathName) asText
+! !
+
+!UniFileList methodsFor: 'own services' stamp: 'KenD 4/12/2013 14:42'!
+serviceGetUnicode
+
+	^  (SimpleServiceEntry 
+			provider: self 
+			label: 'view as Unicode' 
+			selector: #getUnicode
+			description: 'view as Unicode')
+			! !
+
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 5/7/2014 17:13'!
+paste
+	"Paste the text from the shared buffer over the current selection and 
+	redisplay if necessary."
+	
+	| currentContents clipString |
+	currentContents := morph model actualContents.
+	clipString := 
+		((currentContents is: #UniString)
+		 or: [(currentContents is: #Text) 
+			and: [ currentContents string is: #UniString]])
+		ifTrue: [	 self clipboardStringOrText asUniString ]
+		ifFalse: [ self clipboardStringOrText ].
+	
+	self replaceSelectionWith: clipString ! !
+
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 4/13/2013 19:09'!
+save: aKeyboardEvent
+	"Submit the current text.  Equivalent to 'accept' "
+
+	self acceptContents.
+	^ true! !
+
+!UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 4/30/2014 14:53'!
+cmdShortcutsSpec
+	"
+	Editor initialize
+	"
+	"arranged in QWERTY keyboard order"
+	^#(
+		#(		$0 	changeEmphasis:			'Normal')
+		#(		$1 	changeEmphasis:			'Bold')
+		#(		$2 	changeEmphasis:			'Italic')
+		#(		$3 	changeEmphasis:			'Underline')
+		#(		$4 	changeEmphasis:			'Strikeout')
+"		#(		$5 	changeEmphasis:			'Negative kern (letters 1 pixel closer)')
+		#(		$6 	changeEmphasis:			'Positive kern (letters 1 pixel larger spread)')
+"		#(		$8	#offerColorMenu:			'Change color')
+
+		#(		$k	#offerFontMenu:			'Set font')
+		
+		#(		$s	#save:							'Save (i.e. accept)')
+
+		#(		$u	#align:						'Toggle alignment')
+	)! !
+
+!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 11/2/2015 08:13'!
+fromFile: aFileNameString
+"
+	UniTextEditor fromFile: 'utf8sampler.txt'.
+"
+	| textModel fileEntry |
+	fileEntry := aFileNameString asFileEntry.
+	(fileEntry exists)
+	ifFalse: [ self error: 'No file ''', aFileNameString , ''' was found' ].
+	textModel := UniTextModel fromFile: aFileNameString.
+
+	textModel isNil ifFalse: [
+		SystemWindow 
+			editText: textModel
+			label: 'Text Editor (''',  fileEntry baseName, '.', fileEntry extension,  ''')'
+			wrap: true.
+	]
+	! !
+
+!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:28'!
+fromUser
+"
+	UniTextEditor fromUser.
+"
+	UniTextModel fromUser! !
+
+!UniTextEditor class methodsFor: 'class initialization' stamp: 'KenD 4/14/2013 18:05'!
+initialize
+
+"
+	UniTextEditor initialize.
+"
+	super initialize! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
 < aCharacter 
@@ -6672,9 +6682,9 @@ new: aSize
 with: aString
 
 	^ self basicNew with: (aString asUniString)! !
-UniForms initialize!
 UniString initialize!
 UniLazyString initialize!
 UniSplice initialize!
+UniForms initialize!
 UniTextEditor initialize!
 UniChar initialize!
