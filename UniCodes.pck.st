@@ -1,11 +1,11 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2850] on 23 August 2016 at 7:07:35 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2919] on 28 August 2016 at 5:21:31 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 27!
-!requires: 'Collections-CompactArrays' 1 4 nil!
-!requires: 'Goodies' 1 6 nil!
+!provides: 'UniCodes' 1 30!
 !requires: 'Compression' 1 nil nil!
-!requires: 'Cuis-Base' 42 2621 nil!
+!requires: 'Goodies' 1 6 nil!
+!requires: 'Cuis-Base' 42 2919 nil!
+!requires: 'Collections-CompactArrays' 1 4 nil!
 !classDefinition: #UniString category: #UniCodes!
 SequenceableCollection subclass: #UniString
 	instanceVariableNames: ''
@@ -254,6 +254,8 @@ If a user goes to save a file, the timeStamp should not have changed.!
 
 !UniFileList commentStamp: '<historical>' prior: 0!
 I am a FileList which can display Unicode.
+
+FileListWindow openUniFileList.
 !
 
 !UniTextEditor commentStamp: '<historical>' prior: 0!
@@ -275,11 +277,11 @@ UniString ropes are immutable.  Actual operatrions yield new UniStrings.
 
 A UniStringWrapper just keeps/remembers the last operation yielding a UniString.
 
-This allows one to keep a variable up to date.See use of #nextPut: in UniCodesTests>>testWrapper
+This allows one to keep a variable up to date. See use of #nextPut: in UniCodesTests>>testWrapper
 
 Use in place of WriteStream for #nextPut: and #nextPutAll.
   i.e. 
-	RopeWrapper with: ('abc' asRope).
+	UniStringWrapper with: ('abc' asUniString).
  vs:
 	WriteStream on: 'abc',
 !
@@ -659,11 +661,11 @@ asString
 
 	^self stringRepresentation! !
 
-!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:18'!
+!UniString methodsFor: 'converting' stamp: 'KenD 8/28/2016 14:46:24'!
 asStringOrText
 	"Answer this string."
 
-	^ self "@@@ ?asString? @@@"! !
+	^ self asString! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 08:18'!
 asSymbol
@@ -672,11 +674,11 @@ asSymbol
 
 	^Symbol intern: self asString! !
 
-!UniString methodsFor: 'converting' stamp: 'KenD 4/9/2013 19:35'!
+!UniString methodsFor: 'converting' stamp: 'KenD 8/27/2016 19:19:26'!
 asText
 	"Answer a Text whose ''string'' is the receiver."
 
-	^Text initialFont: UniForms default stringOrText: self! !
+	^ (Text string: self) font: UniForms default! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 2/17/2013 15:54'!
 asUniString
@@ -1804,10 +1806,10 @@ printOn: aStream
 	self storeOn: aStream.
 	aStream nextPut: $)! !
 
-!UniString methodsFor: 'printing' stamp: 'KenD 3/24/2013 10:13'!
+!UniString methodsFor: 'printing' stamp: 'KenD 8/28/2016 15:17:43'!
 printString
 
-	^String streamContents: [:s | self storeOn: s]! !
+	^ self stringRepresentation printString! !
 
 !UniString methodsFor: 'private' stamp: 'KenD 4/10/2013 20:07'!
 rebalance
@@ -2471,12 +2473,12 @@ fromCodePointCollection: anIntegerCollection
 	^ (UniFlat new initialize with: charBlock size: length) 
 ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 4/18/2013 15:32'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 8/27/2016 15:18:22'!
 fromFile: aName
 	"Answer a new UniString. aName MUST name an existing file."
 	
 	| uniFile uniString |
-	uniFile := UniFileStream readOnlyFileNamed: aName.
+	uniFile := UniFileStream new open: aName forWrite: false.
 	uniString := uniFile contentsOfEntireFile.
 	uniFile close.
 	^ uniString! !
@@ -3079,7 +3081,7 @@ genTempFileName
 	^ theFileName
 ! !
 
-!UniLazyString methodsFor: 'initialize-release' stamp: 'KenD 11/2/2015 07:53'!
+!UniLazyString methodsFor: 'initialize-release' stamp: 'KenD 8/27/2016 19:21:47'!
 initializeFromFile: aName
 	
 	| fileEntry tmpFileName |
@@ -3093,7 +3095,7 @@ initializeFromFile: aName
 	fileName := tmpFileName.
 	totalCount := nil.
 	uniFileStream := UniFileStream new open: tmpFileName forWrite: false.
-	soFar := (uniFileStream next: ChunkSize) asUniString..
+	soFar := (uniFileStream next: ChunkSize) asUniString.
 	
 	^self
 	! !
@@ -3484,24 +3486,29 @@ ascii
 	
 	DomainError signal: 'Unicode does not fit into ASCII; ASCII is a subset of Unicode'! !
 
-!UniFileStream methodsFor: 'access' stamp: 'KenD 5/5/2014 20:42'!
+!UniFileStream methodsFor: 'access' stamp: 'KenD 8/28/2016 08:35:07'!
 contents
-	"Answer the file contrents as a UniString"
+	"Answer the file contrents as a UniString. Reset position to original"
 	
-	"@@FIXME: answer a lazy file UniString @@"
 	| oldPos result |
 	self ensureOpen.
 	oldPos := self position.
 	self resetToStart.
-	result := self upToEnd.
+	result := self next: self size.
 	self position: oldPos.
-	^result! !
+	^ result asUniString! !
 
-!UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 17:00'!
+!UniFileStream methodsFor: 'access' stamp: 'KenD 8/28/2016 16:59:56'!
 contentsOfEntireFile
 	"Read all of the contents of the receiver."
-	
-	^ self contents! !
+
+	| s |
+	self readOnly.
+	self binary.
+	self reset.
+	s := self next: self size.
+	self close.
+	^ s asUniString! !
 
 !UniFileStream methodsFor: 'initialize-release' stamp: 'KenD 4/10/2013 21:38'!
 initialize
@@ -4259,7 +4266,7 @@ fileName
 
 	^ fileName! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'jmv 6/27/2015 09:56'!
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/28/2016 11:18:44'!
 fromFile: aFileName
 	"Open the file aFileName if possible and read the file into actualContents.
 	Answer self if successful else nil."
@@ -4267,11 +4274,11 @@ fromFile: aFileName
 	| aFile |
 	(aFileName isEmpty) ifFalse: [
 		aFile := aFileName asFileEntry.
-		((aFile exists) and: [aFile isDirectory not])
-		ifTrue: [
+		((aFile exists) and: [ aFile isFile ]) ifTrue: [
 			"Found a non-directory file; assume reable UTF-8"
-			timeStamp := aFile modificationTime.
-			actualContents := (UniLazyString onFileNamed: aFile pathName) asText.
+			fileName := aFileName.
+			timeStamp := aFile modificationTime .
+			actualContents := (UniLazyString fromFile: aFile pathName) asText.
 			^self
 		]
 	].
@@ -4288,33 +4295,86 @@ initialize
 	timeStamp := 0.
 	self flushUndoRedoCommands! !
 
-!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 4/8/2013 19:14'!
+!UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 8/27/2016 14:54:13'!
 openLabel: aString 
 	"Create a standard system view of the model, me, and open it."
 	
-	SystemWindow editText: self label: aString asUniString wrap: true! !
+	SystemWindow editText: self label: aString wrap: true! !
 
-!UniTextModel methodsFor: 'misc' stamp: 'KenD 5/5/2014 01:18'!
+!UniTextModel methodsFor: 'misc' stamp: 'KenD 8/28/2016 13:19:30'!
 refetch
 	"Answer true if actualContents was actually fetched."
 	
-	(actualContents class = UniLazyString) ifTrue: [
-		 "Remove old tmp file"
-		actualContents fileCleanup. 
-	].
 	(self fileName) ifNotNil: [ | dirEntry  |	
-		"(Re)read contents"
-		actualContents := (UniLazyString onFileNamed: fileName) asText.
 		"Reset timeStamp"
-		dirEntry :=  fileName asDirectoryEntry.
+		dirEntry :=  fileName asFileEntry .
 		timeStamp := dirEntry modificationTime.
+		"(Re)read contents"
+		actualContents := (UniString fromFile: dirEntry pathName) asText.
 	].
 
 	self changed: #refetched.
 		
 	^true! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'jmv 6/27/2015 09:56'!
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/28/2016 14:48:38'!
+save
+	"Answer true if OK, else false"
+
+	| dirEntry |	
+	dirEntry :=  fileName asFileEntry.
+	(timeStamp = dirEntry modificationTime) 
+	ifFalse: [
+		(self confirm: 
+'Caution!! Contents were saved
+elsewhere since you started
+editing them here.  Accept anyway?' ) 
+		ifFalse: [ ^ false ]
+	].
+
+	^ self saveToFile 
+! !
+
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/28/2016 14:06:33'!
+saveAs
+	"Answer true if OK, else nil"
+
+	| dialogResult |	
+	dialogResult := (StandardFileMenu new) 
+   					newFileFrom: (DirectoryEntry currentDirectory)
+					withPattern: '*' ; 
+					startUpWithCaption: 'Type new file name for save'.
+	
+	(dialogResult isNil)
+	ifTrue: [ ^ nil ]
+	ifFalse: [ ^ self saveAs: ( dialogResult directory, '/', dialogResult name )]
+! !
+
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/28/2016 14:12:53'!
+saveAs: aFileName
+	"Answer true if OK, else nil"
+	
+	|  |	
+	fileName := aFileName.
+	^ self saveToFile 
+
+! !
+
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/28/2016 14:13:52'!
+saveToFile
+	"Answer true if OK, else nil"
+
+	| uniFile |	
+	uniFile := UniFileStream new open: fileName forWrite: true.
+	[ uniFile nextPutAll: (self actualContents string) ]
+			ensure: [ uniFile close ].		
+
+	timeStamp := fileName asDirectoryEntry modificationTime.
+	
+	^ true
+! !
+
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/28/2016 14:11:41'!
 saveToNewFileNotifying: aTextModelMorph
 	"Answer true if OK, else nil"
 
@@ -4326,20 +4386,17 @@ saveToNewFileNotifying: aTextModelMorph
 	
 	(dialogResult isNil)
 	ifTrue: [ ^nil ]
-	ifFalse: [ | uniFileStream  |
-		fileName := (dialogResult directory), '/', (dialogResult name).
-		uniFileStream := UniFileStream newFileNamed: fileName.
-		uniFileStream nextPutAll: self actualContents asUniString; close.
-		timeStamp := fileName asFileEntry modificationTime.
+	ifFalse: [ | uniFile pathName  |
+		fileName := dialogResult directory, '/', dialogResult name.
 		"@@@FIXME Notify aTextModelMorph"
-		^true
+		^ self saveToFile
 	]! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 12/14/2015 19:17'!
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/28/2016 14:12:34'!
 saveToOldFileNotifying: aTextModelMorph
 	"Answer true if OK, else nil"
 	
-	| dirEntry uniFileStream  |	
+	| dirEntry |	
 	dirEntry :=  fileName asFileEntry.
 	(timeStamp = dirEntry  modificationTime) 
 	ifFalse: [
@@ -4349,12 +4406,11 @@ elsewhere since you started
 editing them here.  Accept anyway?' ) 
 		ifFalse: [ aTextModelMorph flash. ^nil ]
 	].
-					
-	uniFileStream := UniFileStream newFileNamed: fileName.
-	uniFileStream nextPutAll: self actualContents asUniString; close.
-	timeStamp := fileName asFileEntry modificationTime.
+
 	"@@@FIXME Notify aTextModelMorph"
-	^true
+
+	^ self saveToFile
+
 ! !
 
 !UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/30/2014 16:59'!
@@ -4398,10 +4454,10 @@ fromUser
 	
 	^ textModel! !
 
-!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 4/8/2013 19:11'!
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 8/27/2016 14:54:23'!
 openLabel: aString
 
-	self new openLabel: aString asUniString! !
+	self new openLabel: aString! !
 
 !UniFileList methodsFor: 'contents' stamp: 'KenD 5/5/2014 21:58'!
 acceptedContents
@@ -4531,7 +4587,26 @@ serviceGetUnicode
 			description: 'view as Unicode')
 			! !
 
-!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 5/7/2014 17:13'!
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 8/28/2016 17:06:20'!
+addString: aString
+	"Think of a better name"
+	"This is a user command, and generates undo"
+
+	self replaceSelectionWith: aString asUniString asText! !
+
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 8/28/2016 17:12:52'!
+afterSelectionInsertAndSelect: aString
+	"This is a user command, and generates undo"
+
+	self insertAndSelect: aString asUniString at: self stopIndex ! !
+
+!UniTextEditor methodsFor: 'initialization' stamp: 'KenD 8/27/2016 14:45:56'!
+initialize
+
+	super initialize.
+	self defaultFont: UniForms ! !
+
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 8/27/2016 18:21:53'!
 paste
 	"Paste the text from the shared buffer over the current selection and 
 	redisplay if necessary."
@@ -4542,59 +4617,95 @@ paste
 		((currentContents is: #UniString)
 		 or: [(currentContents is: #Text) 
 			and: [ currentContents string is: #UniString]])
-		ifTrue: [	 self clipboardStringOrText asUniString ]
+		ifTrue: [ self clipboardStringOrText asUniString asText]
 		ifFalse: [ self clipboardStringOrText ].
 	
 	self replaceSelectionWith: clipString ! !
 
-!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 4/13/2013 19:09'!
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 8/27/2016 13:57:48'!
+save
+	"Save command"
+	model fileName ifNotNil: [
+		model save
+			ifTrue: [ morph hasUnacceptedEdits: false ]
+		]
+		 ifNil: [ self saveAs ].
+	^true! !
+
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 8/27/2016 13:58:24'!
 save: aKeyboardEvent
-	"Submit the current text.  Equivalent to 'accept' "
+	"Save keystroke"
+	^self save! !
 
-	self acceptContents.
-	^ true! !
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 8/27/2016 13:58:11'!
+saveAs
+	"SaveAs command"
+	| fileName |
+	fileName _ FillInTheBlankMorph
+			request: 'File name?'
+			initialAnswer: ''.
+	fileName isEmpty ifTrue: [ ^false ]. "abort"
 
-!UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 4/30/2014 14:53'!
-cmdShortcutsSpec
+	model saveAs: fileName.	
+	morph hasUnacceptedEdits: false.
+	morph owningWindow
+		setLabel: model fileName;
+		invalidateTitleArea.
+	
+	^true! !
+
+!UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 8/28/2016 15:02:34'!
+basicCmdShortcutsSpec
 	"
 	Editor initialize
 	"
+
 	"arranged in QWERTY keyboard order"
 	^#(
-		#(		$0 	changeEmphasis:			'Normal')
-		#(		$1 	changeEmphasis:			'Bold')
-		#(		$2 	changeEmphasis:			'Italic')
-		#(		$3 	changeEmphasis:			'Underline')
-		#(		$4 	changeEmphasis:			'Strikeout')
-"		#(		$5 	changeEmphasis:			'Negative kern (letters 1 pixel closer)')
-		#(		$6 	changeEmphasis:			'Positive kern (letters 1 pixel larger spread)')
-"		#(		$8	#offerColorMenu:			'Change color')
+		#(		$a 	#selectAll:				'Select all')
+		#(		$f 	#find:						'Find')
+		#(		$g 	#findAgain:				'Find again')
+		#(		$h 	#help:					'Open this help')
+		#(		$j 	#setSearchString:		'Set selection as search string for find again')
 
-		#(		$k	#offerFontMenu:			'Set font')
-		
-		#(		$s	#save:							'Save (i.e. accept)')
+		#(		$z 	#undo:					'Undo (multiple levels)')
+		#(		$x 	#cut:						'Cut selection and store it in the Clipboard')
+		#(		$c 	#copySelection:		'Copy selection to the Clipboard')
+		#(		$v 	#paste:					'Paste Clipboard contents')
 
+		#(		$Z	#redo:					'Redo (multiple levels)')
+	)! !
+
+!UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 8/28/2016 14:59:14'!
+cmdShortcutsSpec
+	"
+	UniTextEditor initialize.
+	"
+	"arranged in QWERTY keyboard order"
+	^#(
+		#(		$s	#save:						'Save (i.e. accept)')
 		#(		$u	#align:						'Toggle alignment')
 	)! !
 
-!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 11/2/2015 08:13'!
+!UniTextEditor class methodsFor: 'file reader registration' stamp: 'KenD 8/27/2016 14:04:37'!
+fileReaderServicesForFile: filename suffix: suffix
+	"FileList buttons that open a UnicodeText Editor on contents."
+
+	(#('utf8' 'txt') includes: suffix) ifTrue: [
+		^ { self serviceUniTextEdit } ].
+
+	^#()! !
+
+!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 8/27/2016 14:11:33'!
 fromFile: aFileNameString
 "
 	UniTextEditor fromFile: 'utf8sampler.txt'.
 "
-	| textModel fileEntry |
+	| fileEntry |
 	fileEntry := aFileNameString asFileEntry.
 	(fileEntry exists)
-	ifFalse: [ self error: 'No file ''', aFileNameString , ''' was found' ].
-	textModel := UniTextModel fromFile: aFileNameString.
-
-	textModel isNil ifFalse: [
-		SystemWindow 
-			editText: textModel
-			label: 'Text Editor (''',  fileEntry baseName, '.', fileEntry extension,  ''')'
-			wrap: true.
-	]
-	! !
+	ifFalse: [ self error: 'No file ''', aFileNameString , ''' was found' ]
+	ifTrue:  [ self openFromFileEntry: fileEntry ]! !
 
 !UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 5/7/2013 14:28'!
 fromUser
@@ -4603,13 +4714,108 @@ fromUser
 "
 	UniTextModel fromUser! !
 
-!UniTextEditor class methodsFor: 'class initialization' stamp: 'KenD 4/14/2013 18:05'!
+!UniTextEditor class methodsFor: 'class initialization' stamp: 'KenD 8/27/2016 14:05:10'!
 initialize
 
 "
 	UniTextEditor initialize.
 "
-	super initialize! !
+	super initialize.
+	self initializeMenu.
+	FileList registerFileReader: self.
+	! !
+
+!UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 8/27/2016 16:04:42'!
+initializeMenu
+	"Initialize the mouseButton2 (right button) pop-up menu and corresponding messages."
+	"
+	UniTextEditor initializeMenu.
+	"
+
+	menu _ SelectionMenu fromArray: {
+		{'Help...'.						#openHelp}.
+		#-.
+		{'Save (s)'.						#save}.
+		{'SaveAs...'.					#saveAs}.
+		#-.
+		{'Find...(f)'.						#find}.
+		{'Find Again (g)'.				#findAgain}.
+		{'Use Selection for Find (j)'.	#setSearchString}.
+		#-.
+		{'Undo - multiple (z)'.			#undo}.
+		{'Redo - multiple (Z)'.			#redo}.
+		{'Undo / Redo history'.		#offerUndoHistory}.
+		#-.
+		{'Copy (c)'.						#copySelection}.
+		{'Cut (x)'.						#cut}.
+		{'Paste (v)'.					#paste}.
+		{'Paste without Format'.		#pasteString}.
+		{'Paste...'.						#pasteRecent}.
+		#-.
+		{'Toggle WordWrap'.			#wrapOnOff}.
+		{'Set Alignment...'.				#chooseAlignment}.
+	}! !
+
+!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 8/27/2016 14:49:33'!
+openFromFileEntry: fileEntry
+
+	| model fileName  |
+	fileName := fileEntry pathName.
+	model := UniTextModel fromFile: fileName.
+	model isNil ifFalse: [
+		SystemWindow 
+			editText: model
+			label: 'Unicode(''',  fileEntry name ,  ''')'
+			wrap: true.
+	]! !
+
+!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 8/27/2016 14:08:55'!
+openTextEditor
+
+	UniTextModel openLabel: 'Unicode Editor'! !
+
+!UniTextEditor class methodsFor: 'file reader registration' stamp: 'KenD 8/27/2016 14:03:25'!
+serviceUniTextEdit
+	"Answer the service of opening a file in a RopeTextEditor"
+
+	^ (SimpleServiceEntry
+		provider: self 
+		label: 'open a Unicode text file'
+		selector: #openFromFileEntry:
+		description: 'open this file with a Unicode Text Editor'
+		buttonLabel: 'Unicode Text Edit')
+		argumentGetter: [ :fileList | fileList selectedFileEntry ]! !
+
+!UniTextEditor class methodsFor: 'file reader registration' stamp: 'KenD 8/27/2016 14:02:39'!
+unload
+"
+	self unload.
+"
+
+	FileList unregisterFileReader: self ! !
+
+!UniTextEditor class methodsFor: 'menu-world' stamp: 'KenD 8/28/2016 15:00:25'!
+worldMenuForOpenGroup
+	^ Dictionary new
+		
+			at: #itemGroup
+			put: 10;
+		
+			at: #itemOrder
+			put: 10;
+		
+			at: #label
+			put: 'Unicode Editor';
+		
+			at: #object
+			put: self;
+		
+			at: #selector
+			put: #openTextEditor;
+		
+			at: #balloonText
+			put: 'A window for composing Unicode text';
+		yourself.! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
 < aCharacter 
@@ -4657,6 +4863,10 @@ asInteger
 asLowercase
 
 	^self toLower! !
+
+!UniChar methodsFor: 'converting' stamp: 'KenD 8/27/2016 20:10:28'!
+asText
+	^ self asUniString asText! !
 
 !UniChar methodsFor: 'converting' stamp: 'KenD 2/17/2013 14:42'!
 asUniChar
@@ -5262,6 +5472,12 @@ isSymbolGyph
 isUppercase
 
 	^ self hasTagUppercase ! !
+
+!UniChar methodsFor: 'properties' stamp: 'KenD 8/28/2016 15:06:21'!
+isValidInIdentifiers
+	"Answer if generally valid Smalltalk identifier"
+	
+	^self isGenerallyValidInIdentifiers ! !
 
 !UniChar methodsFor: 'testing' stamp: 'KenD 3/19/2013 18:57'!
 isVowel
