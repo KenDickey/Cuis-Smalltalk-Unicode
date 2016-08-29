@@ -1,7 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2923] on 29 August 2016 at 3:15:38 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2923] on 29 August 2016 at 3:27:54 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 32!
+!provides: 'UniCodes' 1 33!
 !requires: 'Cuis-Base' 42 2919 nil!
 !requires: 'Compression' 1 nil nil!
 !requires: 'Collections-CompactArrays' 1 4 nil!
@@ -605,7 +605,7 @@ saveAs: aFileName
 
 ! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/28/2016 14:13:52'!
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/29/2016 15:26:19'!
 saveToFile
 	"Answer true if OK, else nil"
 
@@ -614,7 +614,7 @@ saveToFile
 	[ uniFile nextPutAll: (self actualContents string) ]
 			ensure: [ uniFile close ].		
 
-	timeStamp := fileName asDirectoryEntry modificationTime.
+	timeStamp := fileName asFileEntry modificationTime.
 	
 	^ true
 ! !
