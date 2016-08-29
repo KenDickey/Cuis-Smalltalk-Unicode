@@ -1,11 +1,11 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2923] on 28 August 2016 at 6:51:06 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2923] on 29 August 2016 at 3:15:38 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 31!
-!requires: 'Goodies' 1 6 nil!
+!provides: 'UniCodes' 1 32!
 !requires: 'Cuis-Base' 42 2919 nil!
 !requires: 'Compression' 1 nil nil!
 !requires: 'Collections-CompactArrays' 1 4 nil!
+!requires: 'Goodies' 1 6 nil!
 !classDefinition: #UniTextModel category: #UniCodes!
 TextModel subclass: #UniTextModel
 	instanceVariableNames: 'fileName timeStamp'
@@ -435,6 +435,10 @@ asUniString
 
 	^ UniString fromUtf8: self! !
 
+!TextReplaceCommand methodsFor: '*unicodes' stamp: 'KenD 8/29/2016 15:12:26'!
+appendUniStringToNew: aStringOrText
+	new _ new asUniString, aStringOrText! !
+
 !FileListWindow class methodsFor: '*unicodes' stamp: 'jmv 6/27/2015 09:56'!
 openUniFileList
 	"Answer a FileList which can view Unicode"
@@ -512,6 +516,29 @@ initialize
 	actualContents _ UniString emptyString asText.
 	timeStamp := 0.
 	self flushUndoRedoCommands! !
+
+!UniTextModel methodsFor: 'misc' stamp: 'KenD 8/29/2016 15:14:17'!
+logUndoAndReplaceFrom: start to: stop with: replacement
+	"As requested."
+
+	| command now |
+	"Time millisecondClockValue rolls over and is generally not adviced.
+	But here, we don't care. A user edit doing during rollover would be split  in two, as if the user did a pause.
+	Not a problem."
+	now _ Time millisecondClockValue.
+	command _ self commandForReplaceFrom: start to: stop with: replacement.
+	(stop+1 = start and: [ lastEditTimeStamp notNil and: [ now - lastEditTimeStamp < 1000 ]])
+		ifTrue: [
+			"Don't use the command we just built"
+			undoRedoCommands last appendUniStringToNew: replacement
+			]
+		ifFalse: [
+			undoRedoCommands
+				nextPut: command;
+				truncateAtPosition.	"To disable redo of previous commands, now invalidated."
+			].
+	command doOn: self.
+	lastEditTimeStamp _ now! !
 
 !UniTextModel methodsFor: 'initialize-release' stamp: 'KenD 8/27/2016 14:54:13'!
 openLabel: aString 
