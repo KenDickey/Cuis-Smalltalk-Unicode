@@ -47,7 +47,7 @@ This means that the class UniChar does not inherit from Character and UniString 
 Import packages and required core scaffolding:
 ````Smalltalk
  Feature require: #'UniCodesTests'.
- ChangeSet install: (UniChar package fullFileName asFileEntry parent  / 'RequiredCoreScaffolding.cs.st') asFileEntry.
+ ChangeSet install: UniChar package fullFileName asFileEntry parent // 'RequiredCoreScaffolding.cs.st'.
 ````
 
 Try things out.
