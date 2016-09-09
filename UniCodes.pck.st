@@ -1,11 +1,21 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2923] on 29 August 2016 at 3:27:54 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2935] on 9 September 2016 at 2:23:43 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 33!
-!requires: 'Cuis-Base' 42 2919 nil!
-!requires: 'Compression' 1 nil nil!
-!requires: 'Collections-CompactArrays' 1 4 nil!
+!provides: 'UniCodes' 1 36!
 !requires: 'Goodies' 1 6 nil!
+!requires: 'Collections-CompactArrays' 1 4 nil!
+!requires: 'Compression' 1 nil nil!
+!requires: 'Cuis-Base' 42 2934 nil!
+!classDefinition: #PluggableUniTextModel category: #UniCodes!
+PluggableTextModel subclass: #PluggableUniTextModel
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'PluggableUniTextModel class' category: #UniCodes!
+PluggableUniTextModel class
+	instanceVariableNames: ''!
+
 !classDefinition: #UniTextModel category: #UniCodes!
 TextModel subclass: #UniTextModel
 	instanceVariableNames: 'fileName timeStamp'
@@ -116,6 +126,36 @@ AbstractFont subclass: #UniForms
 UniForms class
 	instanceVariableNames: ''!
 
+!classDefinition: #UniTextModelMorph category: #UniCodes!
+TextModelMorph subclass: #UniTextModelMorph
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniTextModelMorph class' category: #UniCodes!
+UniTextModelMorph class
+	instanceVariableNames: ''!
+
+!classDefinition: #InnerUniTextMorph category: #UniCodes!
+InnerTextMorph subclass: #InnerUniTextMorph
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'InnerUniTextMorph class' category: #UniCodes!
+InnerUniTextMorph class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniFillInTheBlankMorph category: #UniCodes!
+FillInTheBlankMorph subclass: #UniFillInTheBlankMorph
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniFillInTheBlankMorph class' category: #UniCodes!
+UniFillInTheBlankMorph class
+	instanceVariableNames: ''!
+
 !classDefinition: #UniChar category: #UniCodes!
 Object subclass: #UniChar
 	instanceVariableNames: 'codePoint'
@@ -136,6 +176,9 @@ Object subclass: #UniStringWrapper
 UniStringWrapper class
 	instanceVariableNames: ''!
 
+
+!PluggableUniTextModel commentStamp: '<historical>' prior: 0!
+A PluggableTextModel which does not squash font.!
 
 !UniTextModel commentStamp: '<historical>' prior: 0!
 I am a TextModel which handles Unicode using UniStrings.
@@ -262,6 +305,15 @@ aMorph image: ((UniForms formForCodePoint: 16r4E7E)  magnifyBy: 8).
 aMorph openInWorld .
 !
 
+!UniTextModelMorph commentStamp: '<historical>' prior: 0!
+A TextModelMorph which does not squash font.!
+
+!InnerUniTextMorph commentStamp: '<historical>' prior: 0!
+An InnerTextMorph which does not squash the font.!
+
+!UniFillInTheBlankMorph commentStamp: '<historical>' prior: 0!
+A FillInTheBlankMorph which accepts Unicode text!
+
 !UniChar commentStamp: '<historical>' prior: 0!
 This is the abstract parent class of Unicode Characters with various representation sizes.
 See http://Unicode.org for information.
@@ -386,17 +438,22 @@ nextUnicodeCodePointFromUtf8: anUtf8Stream
 
 	^nil! !
 
-!Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 14:08'!
+!Character methodsFor: '*unicodes' stamp: 'KenD 9/5/2016 15:10:49'!
 asUniChar
 	"Answer a Unicode character based on my value interpreted as a code point."
 
-	^UniChar fromCodePoint: (self unicodeCodePoint)! !
+	^UniChar fromCodePoint: (self codePoint)! !
 
 !Character methodsFor: '*unicodes' stamp: 'KenD 2/17/2013 20:43'!
 asUniString
 	"Answer a Unicode string based on my value interpreted as a code point."
 
 	^UniString fromString: (self asString )! !
+
+!String methodsFor: '*unicodes' stamp: 'KenD 9/4/2016 16:55:52'!
+appendToUniString: aUniString
+
+	^ UniSplice splice: aUniString with: self asUniString! !
 
 !String methodsFor: '*unicodes' stamp: 'jmv 5/4/2014 10:13'!
 asUniString
@@ -409,6 +466,11 @@ asUniString
 defaultFontClass
 
 	^ StrikeFont ! !
+
+!String methodsFor: '*unicodes' stamp: 'KenD 9/6/2016 16:37:54'!
+replaceUniString: aUniString from: start to: stop
+
+	^ self asUniString replaceFrom: start to: stop with: aUniString.! !
 
 !Symbol methodsFor: '*unicodes' stamp: 'KenD 3/20/2013 22:16'!
 asUniString
@@ -435,6 +497,24 @@ asUniString
 
 	^ UniString fromUtf8: self! !
 
+!Text methodsFor: '*unicodes' stamp: 'KenD 9/4/2016 17:10:10'!
+appendToUniString: aUniString
+
+	| stringSize |
+	stringSize := aUniString size.
+	^ (aUniString asText) 
+			replaceFrom: stringSize + 1
+			to: stringSize 
+			with: self asUniString! !
+
+!Text methodsFor: '*unicodes' stamp: 'KenD 9/4/2016 16:44:44'!
+asUniString
+	"Answer a copy of me with a UniString as my string"
+	
+	^ (Text string: self string asUniString 
+	             runs:   self runs)
+		font: UniForms default! !
+
 !TextReplaceCommand methodsFor: '*unicodes' stamp: 'KenD 8/29/2016 15:12:26'!
 appendUniStringToNew: aStringOrText
 	new _ new asUniString, aStringOrText! !
@@ -451,6 +531,21 @@ openUniFileList
 grafPort
 
 	^port! !
+
+!PluggableUniTextModel methodsFor: 'misc' stamp: 'KenD 9/9/2016 13:54:54'!
+refetch
+	"Answer true if actualContents was actually fetched."
+	textGetter
+		ifNil: [
+			actualContents ifNil: [
+				self actualContents: Text new ].
+			^false ]
+		ifNotNil: [
+			self actualContents: (Text
+				initialFont: UniForms default
+				stringOrText: ((textProvider perform: textGetter) asUniString asText)).
+			self changed: #refetched.
+			^true ]! !
 
 !UniTextModel methodsFor: 'commands' stamp: 'KenD 4/14/2013 19:59'!
 acceptContentsFrom: aTextModelMorph
@@ -619,7 +714,7 @@ saveToFile
 	^ true
 ! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/28/2016 14:11:41'!
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 9/9/2016 12:16:52'!
 saveToNewFileNotifying: aTextModelMorph
 	"Answer true if OK, else nil"
 
@@ -632,7 +727,7 @@ saveToNewFileNotifying: aTextModelMorph
 	(dialogResult isNil)
 	ifTrue: [ ^nil ]
 	ifFalse: [ | uniFile pathName  |
-		fileName := dialogResult directory, '/', dialogResult name.
+		fileName := dialogResult directory pathName, '/', dialogResult name.
 		"@@@FIXME Notify aTextModelMorph"
 		^ self saveToFile
 	]! !
@@ -675,7 +770,7 @@ fromFile: aFileName
 
 	^self new initialize fromFile: aFileName! !
 
-!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 11/1/2015 19:54'!
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 9/9/2016 08:43:43'!
 fromUser
 	"Put up a StandardFileMenu and let the user choose a file to read into me."
 	"Answer an instance of me or nil"
@@ -689,7 +784,7 @@ fromUser
 	
 	((dialogResult isNil) or: [dialogResult isDirectory]) ifTrue: [ ^nil ].
 
-	textModel := self new initialize 
+	textModel := self new 
 		fromFile: ( (dialogResult directory pathName) , '/' , (dialogResult name) ).
 		
 	SystemWindow 
@@ -2180,14 +2275,14 @@ print
 
 	Transcript addEntry: self. Transcript newLine ! !
 
-!UniString methodsFor: 'printing' stamp: 'KenD 3/31/2013 22:50'!
+!UniString methodsFor: 'printing' stamp: 'KenD 9/5/2016 09:23:19'!
 printOn: aStream 
 	"Look good in the inspector"
 "
 	'little string thing' asUniString inspect.
 "
 	aStream nextPutAll: 'UniString('.
-	self storeOn: aStream.
+	self stringRepresentation printOn: aStream.
 	aStream nextPut: $)! !
 
 !UniString methodsFor: 'printing' stamp: 'KenD 8/28/2016 15:17:43'!
@@ -2880,7 +2975,7 @@ fromPacked: aLong
 	
 	^ (String fromPacked: aLong) asUniString ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 4/18/2013 15:34'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 9/5/2016 15:12:03'!
 fromString: aString
 	"Answer a new UniString"
 
@@ -2888,7 +2983,7 @@ fromString: aString
 	ifFalse: [ DomainError signal: 'UniString fromString: requires a String argument' ]
 	ifTrue: [	 
 		^ self fromCodePointCollection: 
-				(aString asArray collect: [ :c | c unicodeCodePoint]) 
+				(aString asArray collect: [ :c | c codePoint]) 
 	]
 ! !
 
@@ -2981,14 +3076,14 @@ merge: leafNodes start: start end: end
 	   (self merge: leafNodes start: middle + 1 end: end)
 ! !
 
-!UniString class methodsFor: 'instance creation' stamp: 'KenD 4/1/2013 20:31'!
+!UniString class methodsFor: 'instance creation' stamp: 'KenD 9/9/2016 14:17:22'!
 newFrom: aCollection
 	"Answer  <acollection of codePoints or Characters> as: UniString"
 
 "
 	 { 16r4E7E. 16r0020. 16r5143. 16r4EA8. 16r5229. 16r8C9E  } as: UniString.
 "
-	^ UniString fromCodePointCollection: (aCollection asArray collect: [ :elt | elt asInteger])
+	^ UniString fromCodePointCollection: (aCollection asArray collect: [ :elt | elt codePoint])
 	! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 2/19/2013 13:25'!
@@ -4187,11 +4282,28 @@ afterSelectionInsertAndSelect: aString
 
 	self insertAndSelect: aString asUniString at: self stopIndex ! !
 
-!UniTextEditor methodsFor: 'initialization' stamp: 'KenD 8/27/2016 14:45:56'!
+!UniTextEditor methodsFor: 'menu messages' stamp: 'KenD 9/9/2016 08:39:24'!
+find
+	"Prompt the user for a string to search for, and search the receiver from the current selection onward for it.  1/26/96 sw"
+
+	| reply |
+	reply _ UniFillInTheBlankMorph request: 'Find what? ' initialAnswer: self class findText asUniString.
+	"Set focus on our text morph, so that cmd-g does the search again"
+	morph world activeHand newKeyboardFocus: morph.
+	reply size = 0 ifTrue: [
+		^ self].
+	self setSearch: reply.
+	ChangeText _ self class findText.  "Implies no replacement to againOnce: method"
+	(self findAndReplaceMany: false)
+		ifFalse: [ self flash ].
+
+"	morph installEditorToReplace: self"! !
+
+!UniTextEditor methodsFor: 'initialization' stamp: 'KenD 9/4/2016 16:37:48'!
 initialize
 
 	super initialize.
-	self defaultFont: UniForms ! !
+	self defaultFont: UniForms default! !
 
 !UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 8/27/2016 18:21:53'!
 paste
@@ -4240,6 +4352,30 @@ saveAs
 		invalidateTitleArea.
 	
 	^true! !
+
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 9/9/2016 08:19:57'!
+selection
+	"Answer the text that is currently selected."
+
+	| t firstIndex lastIndex |
+	t _ model actualContents.
+	firstIndex _ self startIndex.
+	lastIndex _ self stopIndex - 1.
+	(firstIndex = 1 and: [ lastIndex = t size ])
+		ifTrue: [ ^t ].
+	(t string isKindOf: UniString)
+	ifTrue: [^ ( t string copyFrom: firstIndex to: lastIndex) asText  ]
+	ifFalse: [
+		^Text streamContents: [ :strm |
+			"Multiple selection"
+			selectionStartBlocks with: selectionStopBlocks do: [ :startBlock :stopBlock | | toAppend |
+				toAppend _ t copyFrom: startBlock stringIndex to: stopBlock stringIndex - 1.
+				toAppend size > 0 ifTrue: [
+					strm nextPutAll: toAppend.
+					strm withAttributes: (toAppend attributesAt: toAppend size) do: [ strm newLine ]]].
+			"Regular selection"
+			strm nextPutAll: ( t copyFrom: firstIndex to: lastIndex ) ]
+	]! !
 
 !UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 8/28/2016 15:02:34'!
 basicCmdShortcutsSpec
@@ -4431,6 +4567,11 @@ descentKern
 
 	^ 0! !
 
+!UniForms methodsFor: 'comparing' stamp: 'KenD 9/5/2016 08:06:50'!
+dominates: otherFontFamilyAndSize
+
+	^ true! !
+
 !UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:15'!
 emphasis
 
@@ -4467,7 +4608,7 @@ name
 	"Answer my font name"
 	^ 'GNU Unifont'! !
 
-!UniForms methodsFor: 'as yet unclassified' stamp: 'jmv 5/5/2014 22:42'!
+!UniForms methodsFor: 'as yet unclassified' stamp: 'KenD 9/5/2016 15:11:47'!
 on: aGrafPort displayString: aString from: firstIndex to: lastIndex at: p color: color
 	"Show a representation of aString as a DisplayText at location aPoint on aDisplayMedium, using black-colored text."
 
@@ -4478,7 +4619,7 @@ on: aGrafPort displayString: aString from: firstIndex to: lastIndex at: p color:
 		uniChar _ aString at: index.
 		width _ UniForms widthOf: uniChar.
 		width isZero ifFalse: [
-			aGrafPort copyForm: (UniForms formForCodePoint: uniChar unicodeCodePoint) to: ((p x + delta) @ (p y)) rule: Form and.
+			aGrafPort copyForm: (UniForms formForCodePoint: uniChar codePoint) to: ((p x + delta) @ (p y)) rule: Form and.
 			delta _ delta + width ]]! !
 
 !UniForms methodsFor: 'accessing' stamp: 'KenD 4/6/2013 17:12'!
@@ -4593,14 +4734,14 @@ height
 
 	^ 16! !
 
-!UniForms class methodsFor: 'class initialization' stamp: 'KenD 4/6/2013 17:04'!
+!UniForms class methodsFor: 'class initialization' stamp: 'KenD 9/5/2016 15:11:55'!
 heightOf: CharOrCodePoint
 	"Answer my display width"
 
 	| codePoint |
 	(CharOrCodePoint isInteger)
 	ifTrue: [ codePoint := CharOrCodePoint ]
-	ifFalse: [ codePoint := CharOrCodePoint unicodeCodePoint ].
+	ifFalse: [ codePoint := CharOrCodePoint codePoint ].
 	^ (self formForCodePoint: codePoint) height
 		! !
 
@@ -4831,13 +4972,13 @@ sliceStart: codePoint size: arraySize
 
 	^ slice! !
 
-!UniForms class methodsFor: 'measuring' stamp: 'KenD 4/6/2013 19:06'!
+!UniForms class methodsFor: 'measuring' stamp: 'KenD 9/5/2016 15:09:48'!
 widthOf: aCharacterOrCodePoint
 		"@@FIXME: Zero (combining marks, zero width space, ..), 8 (half width :Latin), 16 (full width)"
 	| codePoint |
 	(aCharacterOrCodePoint isInteger)
 	ifTrue: [codePoint := aCharacterOrCodePoint ]
-	ifFalse: [codePoint := aCharacterOrCodePoint unicodeCodePoint ].
+	ifFalse: [codePoint := aCharacterOrCodePoint codePoint ].
 	
 	^ (self formForCodePoint: codePoint) width! !
 
@@ -4850,6 +4991,94 @@ widthOfString: aString
 widthOfStringOrText: aStringOrText
 
 	^ self widthOfString: aStringOrText asUniString! !
+
+!UniTextModelMorph methodsFor: 'initialization' stamp: 'KenD 9/9/2016 14:05:09'!
+innerMorphClass
+	^InnerUniTextMorph! !
+
+!UniTextModelMorph class methodsFor: 'instance creation' stamp: 'KenD 9/9/2016 14:06:19'!
+textProvider: aTextProvider textGetter: textGetter textSetter: textSetter selectionGetter: selectionGetter
+	| newModel answer |
+	answer _ self new.
+	newModel _ PluggableUniTextModel on: aTextProvider.
+	newModel textGetter: textGetter textSetter: textSetter selectionGetter: selectionGetter.
+	aTextProvider addDependent: newModel.
+	answer model: newModel.
+	^answer! !
+
+!UniTextModelMorph class methodsFor: 'instance creation' stamp: 'KenD 9/9/2016 14:07:11'!
+withText: aTextOrString
+	^self withModel: (UniTextModel withText: aTextOrString asUniString asText)! !
+
+!InnerUniTextMorph methodsFor: 'private' stamp: 'KenD 9/9/2016 14:00:52'!
+installEditorAndTextComposition
+	"Install an editor for my textComposition. Install also the textComposition."
+	| e tc |
+	
+	"Editor and TextComposition are assigned here atomically."
+	e _ model editorClass new morph: self.
+	e model: model.
+	e defaultFont: UniForms default.
+	tc _ TextComposition new.
+	"Keep critical section short"
+	self mutex critical: [
+		editor _ e.
+		textComposition _ tc ].
+	tc
+		setModel: model;
+		extentForComposing: self extentForComposing.
+	e textComposition: tc.
+	tc editor: e.
+	e setEmphasisHereFromText.
+	tc composeAll.
+	e resetState.
+	self fit.
+	self selectionChanged.
+
+	"Add extras. Text Styler and Autocompleter"
+	self stylerClass:
+		(Preferences syntaxHighlightingAsYouType ifTrue: [
+			model textStylerClass ]).
+	self autoCompleterClass:
+		model autoCompleterClass! !
+
+!UniFillInTheBlankMorph methodsFor: 'initialization' stamp: 'KenD 9/9/2016 14:07:55'!
+createTextPaneExtent: answerExtent acceptBoolean: acceptBoolean
+	"create the textPane"
+	| result |
+
+	self flag: #todo. "Integrate this method with the Theme system. --cbr"
+
+	result _ UniTextModelMorph
+				textProvider: self
+				textGetter: #response
+				textSetter: #response:
+				selectionGetter: #selectionInterval.
+	result morphExtent: answerExtent.
+	result hasUnacceptedEdits: true.
+	result acceptOnCR: acceptBoolean.
+	result morphExtent: extent-(28@62).
+	self addMorph: result position: 14@25.
+	^ result! !
+
+!UniFillInTheBlankMorph methodsFor: 'initialization' stamp: 'KenD 9/9/2016 13:03:01'!
+initialize
+
+	super initialize.
+	responseUponCancel _ '' asUniString! !
+
+!UniFillInTheBlankMorph methodsFor: 'initialization' stamp: 'KenD 9/9/2016 13:40:47'!
+setQuery: queryString initialAnswer: initialAnswer answerExtent: answerExtent acceptOnCR: acceptBoolean 
+	response := initialAnswer asUniString asText.
+	done := false.
+	self removeAllMorphs.
+	self createQueryTextMorph: queryString.
+	self createAcceptButton.
+	self createCancelButton.
+	textPane := self
+				createTextPaneExtent: answerExtent
+				acceptBoolean: acceptBoolean
+	! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
 < aCharacter 
@@ -5563,6 +5792,11 @@ nextLVTStateFromState: aState
 	(index isZero)
 		ifTrue: [ ^ 0 ] "zero"
 		ifFalse: [ ^ (LVTStateVec at: aState) at: index ] "Next State"! !
+
+!UniChar methodsFor: 'accessing' stamp: 'KenD 9/9/2016 12:06:08'!
+numericValue
+
+	^codePoint! !
 
 !UniChar methodsFor: 'printing' stamp: 'KenD 4/7/2013 09:56'!
 printOn: aStream
