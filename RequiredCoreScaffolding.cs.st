@@ -1,4 +1,64 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #1982] on 7 May 2014 at 5:01:44.003216 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2935] on 9 September 2016 at 2:33:25 pm'!
+
+!String methodsFor: 'copying' stamp: 'KenD 9/4/2016 15:49:17'!
+append: aStringOrText
+
+	^ aStringOrText appendToString: self! !
+
+!String methodsFor: 'copying' stamp: 'KenD 9/4/2016 16:21:53'!
+appendToString: aString
+
+	| stringSize |
+	stringSize := aString size.
+	^ aString copyReplaceFrom: stringSize + 1
+		 	    to: stringSize
+		   	    with: self! !
+
+!String methodsFor: 'copying' stamp: 'KenD 9/4/2016 18:22:51'!
+appendToText: aText
+
+	| textStringSize |
+	textStringSize := aText string size.
+	^ aText replaceFrom: textStringSize + 1
+			 to: textStringSize 
+			 with: self asText! !
+
+
+!String class methodsFor: 'as yet unclassified' stamp: 'KenD 4/3/2013 14:59'!
+defaultFontClass
+
+	^StrikeFont! !
+
+
+!Text methodsFor: 'copying' stamp: 'KenD 9/4/2016 16:51:44'!
+, aStringOrText
+
+	^ aStringOrText appendToText: self! !
+
+!Text methodsFor: 'copying' stamp: 'KenD 9/4/2016 16:41:08'!
+appendToString: aString
+
+	| stringSize |
+	stringSize := aString size.
+	^ (aString asText) 
+			replaceFrom: stringSize + 1
+			to: stringSize 
+			with: self! !
+
+!Text methodsFor: 'copying' stamp: 'KenD 9/4/2016 19:08:07'!
+appendToText: aText
+
+	| textSize start stop textResult |
+	textSize := aText size.
+	start := textSize + 1.
+	stop := textSize.
+	textResult := Text fromString: aText string , self string.
+	textResult privateSetRuns: (aText runs copyReplaceFrom: start to: stop with: self runs).
+	"Ensure the ParagraphAttributes invariant for the interval that could have been affected"
+	textResult fixParagraphAttributesFrom: start to: start + self size - 1.
+	^ textResult
+	! !
+
 
 !InnerTextMorph methodsFor: 'accessing' stamp: 'KenD 5/7/2014 16:39'!
 model
@@ -7,57 +67,16 @@ model
 	^ model 
 	! !
 
-!String class methodsFor: 'as yet unclassified' stamp: 'KenD 4/3/2013 14:59'!
-defaultFontClass
 
-	^StrikeFont! !
-
-
-!Text methodsFor: '*unicode' stamp: 'KenD 4/3/2013 15:38'!
-asUniString
-	"Answer my string as a UniString"
-	
-	^ self string asUniString ! !
+!String methodsFor: 'copying' stamp: 'KenD 9/4/2016 16:50:54'!
+, aStringOrText
+	^ aStringOrText appendToString: self! !
 
 
-!SequenceableCollection methodsFor: 'private' stamp: 'KenD 4/8/2013 19:35'!
-copyReplaceAll: oldSubstring with: newSubstring asTokens: ifTokens
-	"Answer a copy of the receiver in which all occurrences of
-	oldSubstring have been replaced by newSubstring.
-	ifTokens (valid for Strings only) specifies that the characters
-	surrounding the recplacement must not be alphanumeric.
-		Bruce Simth,  must be incremented by 1 and not 
-	newSubstring if ifTokens is true.  See example below. "
+!Text methodsFor: 'accessing' stamp: 'KenD 9/5/2016 15:59:40'!
+append: stringOrText
 
-	| aString startSearch currentIndex endIndex |
-	(ifTokens and: [(self isKindOf: String) not])
-		ifTrue: [((self isKindOf: Text) or: [self isKindOf: UniString])
-			 ifFalse: [
-				self error: 'Token replacement only valid for Strings']].
-	aString _ self.
-	startSearch _ 1.
-	[(currentIndex _ aString indexOfSubCollection: oldSubstring startingAt: startSearch)
-			 > 0]
-		whileTrue: 
-		[endIndex _ currentIndex + oldSubstring size - 1.
-		(ifTokens not
-			or: [(currentIndex = 1
-					or: [(aString at: currentIndex-1) isGenerallyValidInIdentifiers not])
-				and: [endIndex = aString size
-					or: [(aString at: endIndex+1) isGenerallyValidInIdentifiers not]]])
-			ifTrue: [aString _ aString
-					copyReplaceFrom: currentIndex
-					to: endIndex
-					with: newSubstring.
-				startSearch _ currentIndex + newSubstring size]
-			ifFalse: [
-				ifTokens 
-					ifTrue: [startSearch _ currentIndex + 1]
-					ifFalse: [startSearch _ currentIndex + newSubstring size]]].
-	^ aString
-	
-! !
-
+	^ stringOrText appendToText: self! !
 
 !Text methodsFor: 'converting' stamp: 'KenD 4/5/2013 14:16'!
 replaceFrom: start to: stop withString: replacementString attributes: attributesArray startingAt: repStart 
@@ -71,37 +90,4 @@ replaceFrom: start to: stop withString: replacementString attributes: attributes
 	self privateSetRuns: (runs copyReplaceFrom: start to: stop with: newRepRuns).
 	"Ensure the ParagraphAttributes invariant for the interval that could have been affected"
 	self fixParagraphAttributesFrom: start to: start + replacementString size - 1! !
-
-!Text methodsFor: 'emphasis' stamp: 'jmv 5/1/2014 16:16'!
-fontIfApplying: textAttributes
-	"Answer the font for characters as specified by the argument."
-
-	self withAttributeValues: textAttributes do: [ :familyName :pointSize :emphasis :color :alignment :characterStyle :paragraphStyle |
-		^((AbstractFont familyName: familyName pointSize: pointSize) ifNil: [ string class defaultFontClass default baseFont ])
-			emphasized: emphasis ]! !
-
-
-!TextEditor methodsFor: 'accessing-selection' stamp: 'KenD 4/5/2013 14:26'!
-selection
-	"Answer the text that is currently selected."
-
-	| t firstIndex lastIndex |
-	t _ model actualContents.
-	firstIndex _ self startIndex.
-	lastIndex _ self stopIndex - 1.
-	(firstIndex = 1 and: [ lastIndex = t size ])
-		ifTrue: [ ^t ].
-	(t string isKindOf: UniString)
-	ifTrue: [^ ( t string copyFrom: firstIndex to: lastIndex) asText  ]
-	ifFalse: [
-		^Text streamContents: [ :strm |
-			"Multiple selection"
-			selectionStartBlocks with: selectionStopBlocks do: [ :startBlock :stopBlock | | toAppend |
-				toAppend _ t copyFrom: startBlock stringIndex to: stopBlock stringIndex - 1.
-				toAppend size > 0 ifTrue: [
-					strm nextPutAll: toAppend.
-					strm withAttributes: (toAppend attributesAt: toAppend size) do: [ strm newLine ]]].
-			"Regular selection"
-			strm nextPutAll: ( t copyFrom: firstIndex to: lastIndex ) ]
-	]! !
 
