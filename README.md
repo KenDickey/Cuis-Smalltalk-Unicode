@@ -14,7 +14,7 @@ Incomplete; Pre-Alpha; Not ready yet to see the light of day...
 - NO font support (uses simple 'forms' from GNU UniFont).
 - Currently, there is NO grapheme composition. Unicode code points are displayed, including 'combining marks'.
 
-- Tested with Cuis 4.2 rev 2934
+- Tested with Cuis 4.2 rev 2935
 
 
 ### Introduction/Overview
@@ -44,10 +44,9 @@ This means that the class UniChar does not inherit from Character and UniString 
 
 ### For the impatient
 
-Import packages and required core scaffolding:
+Import package and tests -- Unicode data takes a long time to read..
 ````Smalltalk
  Feature require: #'UniCodesTests'.
- ChangeSet install: UniChar package fullFileName asFileEntry parent // 'RequiredCoreScaffolding.cs.st'.
 ````
 
 Try things out.
