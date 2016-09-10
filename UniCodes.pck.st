@@ -1,11 +1,11 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2935] on 9 September 2016 at 2:23:43 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2935] on 10 September 2016 at 8:48:41 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 36!
-!requires: 'Goodies' 1 6 nil!
-!requires: 'Collections-CompactArrays' 1 4 nil!
+!provides: 'UniCodes' 1 39!
+!requires: 'Cuis-Base' 42 2935 nil!
 !requires: 'Compression' 1 nil nil!
-!requires: 'Cuis-Base' 42 2934 nil!
+!requires: 'Collections-CompactArrays' 1 4 nil!
+!requires: 'Goodies' 1 6 nil!
 !classDefinition: #PluggableUniTextModel category: #UniCodes!
 PluggableTextModel subclass: #PluggableUniTextModel
 	instanceVariableNames: ''
@@ -438,6 +438,11 @@ nextUnicodeCodePointFromUtf8: anUtf8Stream
 
 	^nil! !
 
+!Character methodsFor: '*unicodes' stamp: 'KenD 9/10/2016 08:16:29'!
+asInteger
+
+	^ self numericValue ! !
+
 !Character methodsFor: '*unicodes' stamp: 'KenD 9/5/2016 15:10:49'!
 asUniChar
 	"Answer a Unicode character based on my value interpreted as a code point."
@@ -526,6 +531,12 @@ openUniFileList
 	FileListWindow openUniFileList.
 	"
 	FileListWindow open: (UniFileList new directory: DirectoryEntry currentDirectory ) label: nil! !
+
+!InnerTextMorph methodsFor: '*unicodes' stamp: 'KenD 9/10/2016 07:59:47'!
+model
+
+	^model
+	! !
 
 !BitBltCanvas methodsFor: '*unicodes' stamp: 'KenD 4/14/2013 21:03'!
 grafPort
@@ -4044,14 +4055,14 @@ next: anInteger putAll: aCollection startingAt: startIndex
 	^ self nextPutAll: ((aCollection asUniString) copyFrom: startIndex to: (aCollection size)).
 ! !
 
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/17/2013 08:16'!
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 9/10/2016 08:42:42'!
 nextCodePoint
 	"Answer the next Unicode codePoint"
 	
 	"@@FIXME: Error recovery (perhaps ^nil) rather than signalling an error?"
 
 	| byte1 byte2 byte3 byte4 codePoint |
-	byte1 _ super next asInteger.
+	byte1 _ super next codePoint.
 	byte1 < 128 ifTrue: [ ^ byte1 ].	"single byte"
 		
 	
