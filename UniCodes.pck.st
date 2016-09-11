@@ -1,11 +1,11 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2935] on 10 September 2016 at 8:48:41 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2935] on 11 September 2016 at 4:17:17 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 39!
-!requires: 'Cuis-Base' 42 2935 nil!
-!requires: 'Compression' 1 nil nil!
+!provides: 'UniCodes' 1 41!
 !requires: 'Collections-CompactArrays' 1 4 nil!
 !requires: 'Goodies' 1 6 nil!
+!requires: 'Compression' 1 nil nil!
+!requires: 'Cuis-Base' 42 2935 nil!
 !classDefinition: #PluggableUniTextModel category: #UniCodes!
 PluggableTextModel subclass: #PluggableUniTextModel
 	instanceVariableNames: ''
@@ -589,6 +589,11 @@ editorClass
 
 	^UniTextEditor! !
 
+!UniTextModel methodsFor: 'user interface support' stamp: 'KenD 9/11/2016 11:42:17'!
+editorClassFor: textGetter
+
+	^ UniTextEditor! !
+
 !UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 14:57'!
 fileName
 
@@ -701,12 +706,12 @@ saveAs
 	ifFalse: [ ^ self saveAs: ( dialogResult directory, '/', dialogResult name )]
 ! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/28/2016 14:12:53'!
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 9/11/2016 16:16:21'!
 saveAs: aFileName
 	"Answer true if OK, else nil"
 	
 	|  |	
-	fileName := aFileName.
+	fileName := aFileName asString.
 	^ self saveToFile 
 
 ! !
@@ -850,10 +855,19 @@ acceptedStringOrText
 
 	self halt: 'unknown state ' , brevityState printString! !
 
-!UniFileList methodsFor: 'file list menu' stamp: 'KenD 4/14/2013 19:22'!
+!UniFileList methodsFor: 'file list menu' stamp: 'KenD 9/11/2016 08:30:09'!
 editorClass
 
-	^UniTextEditor! !
+	^ UniTextEditor! !
+
+!UniFileList methodsFor: 'user interface support' stamp: 'KenD 9/11/2016 15:41:57'!
+editorClassFor: textGetter
+
+"Transcript newLine; show: 'UniFileList editorClassFor: #' , textGetter asString."
+
+	(textGetter = #acceptedContents)
+	ifFalse: [ ^ super editorClassFor: textGetter ]
+	ifTrue: [ ^ UniTextEditor ]! !
 
 !UniFileList methodsFor: 'file menu action' stamp: 'KenD 4/12/2013 15:56'!
 getUnicode
@@ -875,13 +889,13 @@ itemsForAnyFile2
 
 ! !
 
-!UniFileList methodsFor: 'private' stamp: 'KenD 4/19/2013 08:35'!
+!UniFileList methodsFor: 'private' stamp: 'KenD 9/11/2016 15:26:27'!
 put: aText
 	"Private - put the supplied text onto the file"
 
 	| ff type |
 	(brevityState == #fullUnicode)
-	ifTrue: [ff _ UniFileStream newFileNamed: self fullName.
+	ifTrue: [ff _ UniFileStream new open: self fullName forWrite:  true.
 		Cursor write showWhile: [ff nextPutAll: aText asString; close].
 		fileName = ff localName 
 			ifTrue: [ acceptedContentsCache _ aText asUniString asText]  "@@@UniLazyString@@@"
@@ -938,9 +952,10 @@ serviceGetUnicode
 			description: 'view as Unicode')
 			! !
 
-!UniString methodsFor: 'copying' stamp: 'KenD 2/17/2013 20:40'!
-, aStringOrUniString
-	^ (UniSplice splice: self with: aStringOrUniString).! !
+!UniString methodsFor: 'copying' stamp: 'KenD 9/4/2016 16:52:24'!
+, aStringOrText
+
+	^ aStringOrText appendToUniString: self! !
 
 !UniString methodsFor: 'comparing' stamp: 'KenD 3/19/2013 12:27'!
 < aString
@@ -999,6 +1014,31 @@ adaptToPoint: rcvr andSend: selector
 	"If I am involved in arithmetic with a point, convert me to a number."
 
 	^ rcvr perform: selector with: self asNumber! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 9/4/2016 16:00:12'!
+append:  aStringOrText
+
+	^ aStringOrText appendToUniString: self! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 9/4/2016 16:15:19'!
+appendToString:  aString
+
+	^ UniSplice splice: aString asUniString with: self! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 9/4/2016 18:57:17'!
+appendToText: aText
+
+	| textStringSize |
+	textStringSize := aText string size.
+	^ aText asUniString
+			 replaceFrom: textStringSize + 1
+			 to: textStringSize 
+			 with: self asText! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 9/4/2016 15:59:41'!
+appendToUniString:  aUniString
+
+	^ UniSplice splice: aUniString with: self! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 3/19/2013 19:11'!
 asCamelCase
@@ -1548,6 +1588,16 @@ copyReplaceTokens: oldSubstring with: newSubstring
 	'File asFile Files File''s File' asUniString copyReplaceTokens: 'File' with: 'Snick'.
 "! !
 
+!UniString methodsFor: 'copying' stamp: 'KenD 9/5/2016 09:15:28'!
+copyToString: aString from: start to: stop
+
+	^ aString asUniString copyReplaceFrom: start to: stop with: self ! !
+
+!UniString methodsFor: 'copying' stamp: 'KenD 9/5/2016 09:15:40'!
+copyToText: aText from: start to: stop
+
+	^ aText asUniString copyReplaceFrom: start to: stop with: self asText! !
+
 !UniString methodsFor: 'displaying' stamp: 'KenD 3/4/2013 20:29'!
 displayAt: aPoint 
 	"Display the receiver as a DisplayText at aPoint on the display screen."
@@ -1639,6 +1689,16 @@ editLabel: labelString
 		label: labelString
 		wrap: true
 ! !
+
+!UniString methodsFor: 'user interface' stamp: 'KenD 9/11/2016 11:41:52'!
+editorClass
+
+	^ UniTextEditor! !
+
+!UniString methodsFor: 'user interface' stamp: 'KenD 9/11/2016 11:41:17'!
+editorClassFor: textGetter
+
+	^ UniTextEditor! !
 
 !UniString methodsFor: 'printing' stamp: 'KenD 3/18/2013 21:00'!
 encodeDoublingQuoteOn: aStream 
@@ -2923,6 +2983,12 @@ editFileFromUser
 	UniString editFileFromUser.
 "
 	UniTextModel fromUser! !
+
+!UniString class methodsFor: 'user interface support' stamp: 'KenD 9/11/2016 11:40:24'!
+editorClass
+
+
+	^ UniTextEditor! !
 
 !UniString class methodsFor: 'instance creation' stamp: 'KenD 3/18/2013 15:23'!
 emptyString
@@ -4332,7 +4398,7 @@ paste
 	
 	self replaceSelectionWith: clipString ! !
 
-!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 8/27/2016 13:57:48'!
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 9/11/2016 15:51:34'!
 save
 	"Save command"
 	model fileName ifNotNil: [
@@ -4342,16 +4408,19 @@ save
 		 ifNil: [ self saveAs ].
 	^true! !
 
-!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 8/27/2016 13:58:24'!
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 9/11/2016 16:03:34'!
 save: aKeyboardEvent
 	"Save keystroke"
-	^self save! !
+"	^self save "
 
-!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 8/27/2016 13:58:11'!
+	self acceptContents.
+	^ true! !
+
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 9/11/2016 15:01:54'!
 saveAs
 	"SaveAs command"
 	| fileName |
-	fileName _ FillInTheBlankMorph
+	fileName _ UniFillInTheBlankMorph
 			request: 'File name?'
 			initialAnswer: ''.
 	fileName isEmpty ifTrue: [ ^false ]. "abort"
@@ -5072,11 +5141,26 @@ createTextPaneExtent: answerExtent acceptBoolean: acceptBoolean
 	self addMorph: result position: 14@25.
 	^ result! !
 
-!UniFillInTheBlankMorph methodsFor: 'initialization' stamp: 'KenD 9/9/2016 13:03:01'!
+!UniFillInTheBlankMorph methodsFor: 'user interface' stamp: 'KenD 9/11/2016 14:58:00'!
+editorClassFor: textGetter
+
+	^ UniTextEditor! !
+
+!UniFillInTheBlankMorph methodsFor: 'initialization' stamp: 'KenD 9/11/2016 15:07:23'!
 initialize
 
 	super initialize.
-	responseUponCancel _ '' asUniString! !
+	response := UniString emptyString asText.
+	responseUponCancel := UniString emptyString! !
+
+!UniFillInTheBlankMorph methodsFor: 'accessing' stamp: 'KenD 9/11/2016 15:04:54'!
+response: aText
+	"Sent when text pane accepts."
+
+	response _ aText asText string asUniString.
+	done _ true.
+	^ true
+! !
 
 !UniFillInTheBlankMorph methodsFor: 'initialization' stamp: 'KenD 9/9/2016 13:40:47'!
 setQuery: queryString initialAnswer: initialAnswer answerExtent: answerExtent acceptOnCR: acceptBoolean 
@@ -5090,6 +5174,27 @@ setQuery: queryString initialAnswer: initialAnswer answerExtent: answerExtent ac
 				createTextPaneExtent: answerExtent
 				acceptBoolean: acceptBoolean
 	! !
+
+!UniFillInTheBlankMorph class methodsFor: 'instance creation' stamp: 'KenD 9/11/2016 15:42:47'!
+request: queryString initialAnswer: defaultAnswer centerAt: aPoint onCancelReturn: returnOnCancel acceptOnCR: acceptBoolean answerExtent: answerExtent
+	"Create an instance of me whose question is queryString with the given initial answer. Invoke it centered at the given point, and answer the string the user accepts.   If the user cancels, answer returnOnCancel."
+	"
+	FillInTheBlankMorph
+		request: 'Type something, then type [Return].'
+		initialAnswer: 'yo ho ho!!'
+		centerAt: Display center
+	"
+
+	| aFillInTheBlankMorph |
+	aFillInTheBlankMorph _ self new
+		setQuery: queryString
+		initialAnswer: defaultAnswer asUniString
+		answerExtent: answerExtent
+		acceptOnCR: acceptBoolean.
+	aFillInTheBlankMorph responseUponCancel: returnOnCancel asUniString.
+	self runningWorld addMorph: aFillInTheBlankMorph centeredNear: aPoint.
+	^ aFillInTheBlankMorph getUserResponse
+! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
 < aCharacter 
