@@ -1,11 +1,11 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2935] on 11 September 2016 at 4:17:17 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2935] on 15 September 2016 at 8:47:18 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 41!
-!requires: 'Collections-CompactArrays' 1 4 nil!
+!provides: 'UniCodes' 1 42!
 !requires: 'Goodies' 1 6 nil!
-!requires: 'Compression' 1 nil nil!
 !requires: 'Cuis-Base' 42 2935 nil!
+!requires: 'Compression' 1 nil nil!
+!requires: 'Collections-CompactArrays' 1 4 nil!
 !classDefinition: #PluggableUniTextModel category: #UniCodes!
 PluggableTextModel subclass: #PluggableUniTextModel
 	instanceVariableNames: ''
@@ -599,7 +599,7 @@ fileName
 
 	^ fileName! !
 
-!UniTextModel methodsFor: 'file handling' stamp: 'KenD 8/28/2016 11:18:44'!
+!UniTextModel methodsFor: 'file handling' stamp: 'KenD 9/15/2016 08:45:25'!
 fromFile: aFileName
 	"Open the file aFileName if possible and read the file into actualContents.
 	Answer self if successful else nil."
@@ -611,7 +611,7 @@ fromFile: aFileName
 			"Found a non-directory file; assume reable UTF-8"
 			fileName := aFileName.
 			timeStamp := aFile modificationTime .
-			actualContents := (UniLazyString fromFile: aFile pathName) asText.
+			actualContents := (UniString fromFile: aFile pathName) asText.
 			^self
 		]
 	].
@@ -918,7 +918,7 @@ meaningfully be saved at present.' format:{type}).
 	^ false  "failed"
 ! !
 
-!UniFileList methodsFor: 'private' stamp: 'KenD 11/1/2015 18:58'!
+!UniFileList methodsFor: 'private' stamp: 'KenD 9/15/2016 08:42:19'!
 readContentsUnicode: brevity
 	"retrieve the contents from the external file unless it is too long.
 	  Don't create a file here.  Check if exists."
@@ -939,7 +939,7 @@ readContentsUnicode: brevity
 	(acceptedContentsCache class = UniLazyString)
 		ifTrue: [ acceptedContentsCache fileCleanup ]. "Remove old tmp file"
 		
-	^ acceptedContentsCache := (UniLazyString onFileNamed: fileEntry pathName) asText
+	^ acceptedContentsCache := (UniString fromFile: fileEntry pathName) asText
 ! !
 
 !UniFileList methodsFor: 'own services' stamp: 'KenD 4/12/2013 14:42'!
@@ -4088,12 +4088,6 @@ isAscii
 isBinary
 	^false! !
 
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 10:06'!
-next
-	"Answer the next UniChar"
-
-	^ self nextCodePoint asUniChar! !
-
 !UniFileStream methodsFor: 'access' stamp: 'KenD 4/10/2013 16:58'!
 next: anInteger 
 	"Answer the next anInteger elements of my collection."
@@ -4121,47 +4115,11 @@ next: anInteger putAll: aCollection startingAt: startIndex
 	^ self nextPutAll: ((aCollection asUniString) copyFrom: startIndex to: (aCollection size)).
 ! !
 
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 9/10/2016 08:42:42'!
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 9/15/2016 08:28:50'!
 nextCodePoint
 	"Answer the next Unicode codePoint"
-	
-	"@@FIXME: Error recovery (perhaps ^nil) rather than signalling an error?"
 
-	| byte1 byte2 byte3 byte4 codePoint |
-	byte1 _ super next codePoint.
-	byte1 < 128 ifTrue: [ ^ byte1 ].	"single byte"
-		
-	
-	"At least 2 bytes"
-	byte2 _ super next asInteger.
-	(byte2 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
-	(byte1 bitAnd: 16rE0) = 192 ifTrue: [ "two bytes"
-		codePoint := ((byte1 bitAnd: 31) bitShift: 6) 
-		 				+ (byte2 bitAnd: 63).
-		^ codePoint
-	].
-	
-	"At least 3 bytes"
-	byte3 := super next asInteger.
-	(byte3 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
-	(byte1 bitAnd: 16rF0) = 224 ifTrue: [ "three bytes"
-		codePoint :=  ((byte1 bitAnd: 15) bitShift: 12) 
-						+ ((byte2 bitAnd: 63) bitShift: 6) 
-						+ (byte3 bitAnd: 63).
-		^codePoint.
-	].
-
-	"4 bytes"
-	byte4 := super next asInteger.
-	(byte4 bitAnd: 16rC0) = 16r80 ifFalse: [self error: 'invalid UTF-8'].
-	(byte1 bitAnd: 16rF8) = 240 ifTrue: [  "four bytes"
-		codePoint := ((byte1 bitAnd: 16r7) bitShift: 18) 
-						+ ((byte2 bitAnd: 63) bitShift: 12) 
-						+ ((byte3 bitAnd: 63) bitShift: 6) 
-						+ (byte4 bitAnd: 63).
-		^ codePoint
-	].
-! !
+	^ Integer nextUnicodeCodePointFromUtf8: self! !
 
 !UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 10:15'!
 nextPut: uniChar
@@ -4210,7 +4168,13 @@ nextPutByte: aByte
 	^ aByte
 "! !
 
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/18/2013 20:15'!
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 9/15/2016 08:31:09'!
+nextUniChar
+	"Answer the next UniChar"
+
+	^ self nextCodePoint asUniChar! !
+
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 9/15/2016 08:33:37'!
 nextUpTo: count
 	"Answer a subcollection from the current access position through count or EOF."
 		
@@ -4219,7 +4183,7 @@ nextUpTo: count
 	numRead := 0.
 	
 	[(self atEnd) or: [numRead >= count]] whileFalse: [ 
-		result nextPut: self next.
+		result nextPut: self nextUniChar.
 		numRead := numRead + 1.
 	].
 
