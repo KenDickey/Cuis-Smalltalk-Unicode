@@ -1,7 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2935] on 15 September 2016 at 8:47:18 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2936] on 15 September 2016 at 2:22:29 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 42!
+!provides: 'UniCodes' 1 43!
 !requires: 'Goodies' 1 6 nil!
 !requires: 'Cuis-Base' 42 2935 nil!
 !requires: 'Compression' 1 nil nil!
@@ -628,6 +628,11 @@ initialize
 	timeStamp := 0.
 	self flushUndoRedoCommands! !
 
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 9/15/2016 14:04:39'!
+labelString
+
+	^ 'Unicode Edit(''', self fileName, ''')'! !
+
 !UniTextModel methodsFor: 'misc' stamp: 'KenD 8/29/2016 15:14:17'!
 logUndoAndReplaceFrom: start to: stop with: replacement
 	"As requested."
@@ -786,7 +791,7 @@ fromFile: aFileName
 
 	^self new initialize fromFile: aFileName! !
 
-!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 9/9/2016 08:43:43'!
+!UniTextModel class methodsFor: 'instance creation' stamp: 'KenD 9/15/2016 14:15:04'!
 fromUser
 	"Put up a StandardFileMenu and let the user choose a file to read into me."
 	"Answer an instance of me or nil"
@@ -805,7 +810,7 @@ fromUser
 		
 	SystemWindow 
 		editText: textModel
-			label: 'Unicode Text(''',  (dialogResult name) ,  ''')'
+			label: 'Unicode Edit(''',  (dialogResult name) ,  ''')'
 			wrap: true.
 	
 	^ textModel! !
@@ -4380,7 +4385,7 @@ save: aKeyboardEvent
 	self acceptContents.
 	^ true! !
 
-!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 9/11/2016 15:01:54'!
+!UniTextEditor methodsFor: 'editing keys' stamp: 'KenD 9/15/2016 14:06:50'!
 saveAs
 	"SaveAs command"
 	| fileName |
@@ -4392,7 +4397,7 @@ saveAs
 	model saveAs: fileName.	
 	morph hasUnacceptedEdits: false.
 	morph owningWindow
-		setLabel: model fileName;
+		setLabel: model labelString;
 		invalidateTitleArea.
 	
 	^true! !
@@ -4523,7 +4528,7 @@ initializeMenu
 		{'Set Alignment...'.				#chooseAlignment}.
 	}! !
 
-!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 8/27/2016 14:49:33'!
+!UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 9/15/2016 14:09:41'!
 openFromFileEntry: fileEntry
 
 	| model fileName  |
@@ -4532,7 +4537,7 @@ openFromFileEntry: fileEntry
 	model isNil ifFalse: [
 		SystemWindow 
 			editText: model
-			label: 'Unicode(''',  fileEntry name ,  ''')'
+			label: model labelString
 			wrap: true.
 	]! !
 
