@@ -1,7 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2936] on 15 September 2016 at 2:22:29 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2936] on 17 September 2016 at 9:39:51 am'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 43!
+!provides: 'UniCodes' 1 44!
 !requires: 'Goodies' 1 6 nil!
 !requires: 'Cuis-Base' 42 2935 nil!
 !requires: 'Compression' 1 nil nil!
@@ -437,11 +437,6 @@ nextUnicodeCodePointFromUtf8: anUtf8Stream
 			+ (byte4 bitAnd: 63) ].
 
 	^nil! !
-
-!Character methodsFor: '*unicodes' stamp: 'KenD 9/10/2016 08:16:29'!
-asInteger
-
-	^ self numericValue ! !
 
 !Character methodsFor: '*unicodes' stamp: 'KenD 9/5/2016 15:10:49'!
 asUniChar
