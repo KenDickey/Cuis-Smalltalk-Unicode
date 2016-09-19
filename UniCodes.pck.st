@@ -1,11 +1,11 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2936] on 17 September 2016 at 9:39:51 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2942] on 19 September 2016 at 2:59:13 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 44!
-!requires: 'Goodies' 1 6 nil!
-!requires: 'Cuis-Base' 42 2935 nil!
+!provides: 'UniCodes' 1 46!
 !requires: 'Compression' 1 nil nil!
 !requires: 'Collections-CompactArrays' 1 4 nil!
+!requires: 'Goodies' 1 6 nil!
+!requires: 'Cuis-Base' 42 2942 nil!
 !classDefinition: #PluggableUniTextModel category: #UniCodes!
 PluggableTextModel subclass: #PluggableUniTextModel
 	instanceVariableNames: ''
@@ -515,6 +515,13 @@ asUniString
 	             runs:   self runs)
 		font: UniForms default! !
 
+!Rope methodsFor: '*unicodes' stamp: 'KenD 9/19/2016 13:02:42'!
+asUniString
+
+	"^UniString fromString: self"
+	"Convert embedded NCRs to UTF-8, and then to UniString"
+	^(self asString asUtf8: true) asUniString! !
+
 !TextReplaceCommand methodsFor: '*unicodes' stamp: 'KenD 8/29/2016 15:12:26'!
 appendUniStringToNew: aStringOrText
 	new _ new asUniString, aStringOrText! !
@@ -578,6 +585,17 @@ basicActualContents: aTextOrString
 	"Do not throw events... Not nice... Use with care... Clean some day..."
 	actualContents _ aTextOrString ifNotNil: [ aTextOrString asUniString asText ].
 	undoRedoCommands resetToStart.! !
+
+!UniTextModel methodsFor: 'commands' stamp: 'KenD 9/19/2016 12:58:35'!
+basicReplaceFrom: start to: stop with: replacement
+	"As requested. Basic service used by Undo / Redo. Does not genertate undo."
+
+	actualContents 
+	ifNil: [ actualContents := replacement asUniString asText ]
+	ifNotNil: [ actualContents := actualContents 
+						replaceFrom: start 
+						to: stop 
+						with: replacement asUniString asText ]! !
 
 !UniTextModel methodsFor: 'accessing' stamp: 'KenD 4/14/2013 19:17'!
 editorClass
@@ -1663,7 +1681,7 @@ do: aBlock
 	
 	^nil "zero elements to process" ! !
 
-!UniString methodsFor: 'debugging' stamp: 'KenD 3/21/2013 16:44'!
+!UniString methodsFor: 'debugging' stamp: 'KenD 9/19/2016 09:01:24'!
 doesNotUnderstand: aMessage
 
 	"See what is missing from UniStrings"
@@ -1671,7 +1689,7 @@ doesNotUnderstand: aMessage
 	Transcript log: (String streamContents: [:s | aMessage storeOn: s]).
 	
 	"Try to do what a String would do"
-	aMessage sendTo: (self asString)! !
+	aMessage sendTo: (self asString asString) "If Text, needs unwrap twice"! !
 
 !UniString methodsFor: 'user interface' stamp: 'KenD 4/8/2013 19:27'!
 edit
@@ -4147,9 +4165,9 @@ nextPut: uniChar
 	self error: 'Unicode character code point outside range'
 ! !
 
-!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 4/10/2013 17:06'!
+!UniFileStream methodsFor: 'read, write, position' stamp: 'KenD 9/19/2016 08:44:38'!
 nextPutAll: aCollection
-	"Write all the Unicode characters of the given colection to this file."
+	"Write all the Unicode characters of the given collection to this file."
 	
 	(aCollection asUniString) codePointsDo: [ :codePoint | self nextPut: codePoint ].
 	^ aCollection "what StandardFileStream returns"
@@ -4339,6 +4357,11 @@ find
 		ifFalse: [ self flash ].
 
 "	morph installEditorToReplace: self"! !
+
+!UniTextEditor methodsFor: 'accessing' stamp: 'KenD 9/19/2016 12:19:55'!
+icon
+
+	^ Theme textEditorIcon! !
 
 !UniTextEditor methodsFor: 'initialization' stamp: 'KenD 9/4/2016 16:37:48'!
 initialize
