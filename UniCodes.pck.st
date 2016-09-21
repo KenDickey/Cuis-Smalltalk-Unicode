@@ -1,7 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2943] on 21 September 2016 at 1:20:46 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2943] on 21 September 2016 at 1:32:15 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 48!
+!provides: 'UniCodes' 1 49!
 !requires: 'Cuis-Base' 42 2942 nil!
 !requires: 'Collections-CompactArrays' 1 4 nil!
 !requires: 'Goodies' 1 6 nil!
@@ -641,10 +641,10 @@ initialize
 	timeStamp := 0.
 	self flushUndoRedoCommands! !
 
-!UniTextModel methodsFor: 'accessing' stamp: 'KenD 9/15/2016 14:04:39'!
+!UniTextModel methodsFor: 'accessing' stamp: 'KenD 9/21/2016 13:31:15'!
 labelString
 
-	^ 'Unicode Edit(''', self fileName, ''')'! !
+	^ 'Unicode Edit(''', self fileName asFileEntry name, ''')' "base name"! !
 
 !UniTextModel methodsFor: 'misc' stamp: 'KenD 8/29/2016 15:14:17'!
 logUndoAndReplaceFrom: start to: stop with: replacement
