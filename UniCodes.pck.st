@@ -1,11 +1,11 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2942] on 19 September 2016 at 2:59:13 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2943] on 21 September 2016 at 1:14:00 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 46!
-!requires: 'Compression' 1 nil nil!
+!provides: 'UniCodes' 1 47!
+!requires: 'Cuis-Base' 42 2942 nil!
 !requires: 'Collections-CompactArrays' 1 4 nil!
 !requires: 'Goodies' 1 6 nil!
-!requires: 'Cuis-Base' 42 2942 nil!
+!requires: 'Compression' 1 nil nil!
 !classDefinition: #PluggableUniTextModel category: #UniCodes!
 PluggableTextModel subclass: #PluggableUniTextModel
 	instanceVariableNames: ''
@@ -514,13 +514,6 @@ asUniString
 	^ (Text string: self string asUniString 
 	             runs:   self runs)
 		font: UniForms default! !
-
-!Rope methodsFor: '*unicodes' stamp: 'KenD 9/19/2016 13:02:42'!
-asUniString
-
-	"^UniString fromString: self"
-	"Convert embedded NCRs to UTF-8, and then to UniString"
-	^(self asString asUtf8: true) asUniString! !
 
 !TextReplaceCommand methodsFor: '*unicodes' stamp: 'KenD 8/29/2016 15:12:26'!
 appendUniStringToNew: aStringOrText
