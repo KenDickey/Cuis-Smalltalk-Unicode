@@ -31,7 +31,7 @@ The support of Unicode text display is minimal.  Fonts are not yet supported.  B
 
 The basic strategy is as follows:
 - The main useful classes are UniChar and UniString.  Others are helper subclasses.
-- Unicode text is represented by arrayed blocks of storage where all characters are of the same size, but such blocks may be mixed transparently to the user -- you don't have to care.
+- Unicode text is represented by arrayed blocks of storage where all characters are of the same storage size, but such blocks may be mixed transparently to the user -- you don't have to care.
 - Ropes are used to keep the illustion of mixed storage sizes while allowing indexing into text by character location.
   [See https://en.wikipedia.org/wiki/Rope_%28computer_science%29 ]
 
