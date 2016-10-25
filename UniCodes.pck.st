@@ -1,11 +1,11 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2943] on 21 September 2016 at 1:32:15 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2956] on 25 October 2016 at 3:19:17 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 49!
-!requires: 'Cuis-Base' 42 2942 nil!
-!requires: 'Collections-CompactArrays' 1 4 nil!
+!provides: 'UniCodes' 1 50!
 !requires: 'Goodies' 1 6 nil!
+!requires: 'Collections-CompactArrays' 1 4 nil!
 !requires: 'Compression' 1 nil nil!
+!requires: 'Cuis-Base' 42 2956 nil!
 !classDefinition: #PluggableUniTextModel category: #UniCodes!
 PluggableTextModel subclass: #PluggableUniTextModel
 	instanceVariableNames: ''
@@ -154,6 +154,16 @@ FillInTheBlankMorph subclass: #UniFillInTheBlankMorph
 	category: 'UniCodes'!
 !classDefinition: 'UniFillInTheBlankMorph class' category: #UniCodes!
 UniFillInTheBlankMorph class
+	instanceVariableNames: ''!
+
+!classDefinition: #UniTextComposition category: #UniCodes!
+TextComposition subclass: #UniTextComposition
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'UniCodes'!
+!classDefinition: 'UniTextComposition class' category: #UniCodes!
+UniTextComposition class
 	instanceVariableNames: ''!
 
 !classDefinition: #UniChar category: #UniCodes!
@@ -313,6 +323,9 @@ An InnerTextMorph which does not squash the font.!
 
 !UniFillInTheBlankMorph commentStamp: '<historical>' prior: 0!
 A FillInTheBlankMorph which accepts Unicode text!
+
+!UniTextComposition commentStamp: '<historical>' prior: 0!
+TextComposition with the Unicode default font!
 
 !UniChar commentStamp: '<historical>' prior: 0!
 This is the abstract parent class of Unicode Characters with various representation sizes.
@@ -538,13 +551,15 @@ grafPort
 
 	^port! !
 
-!PluggableUniTextModel methodsFor: 'misc' stamp: 'KenD 9/9/2016 13:54:54'!
+!PluggableUniTextModel methodsFor: 'misc' stamp: 'KenD 10/25/2016 14:57:08'!
 refetch
 	"Answer true if actualContents was actually fetched."
 	textGetter
 		ifNil: [
 			actualContents ifNil: [
-				self actualContents: Text new ].
+				self actualContents: (Text
+				initialFont: UniForms default
+				stringOrText: UniString emptyString) ].
 			^false ]
 		ifNotNil: [
 			self actualContents: (Text
@@ -4459,6 +4474,12 @@ basicCmdShortcutsSpec
 		#(		$Z	#redo:					'Redo (multiple levels)')
 	)! !
 
+!UniTextEditor class methodsFor: 'cached state access' stamp: 'KenD 10/25/2016 15:04:51'!
+changeText
+	ChangeText ifNil: [
+		ChangeText _ Text fromString: UniString emptyString ].
+	^ChangeText! !
+
 !UniTextEditor class methodsFor: 'keyboard shortcut tables' stamp: 'KenD 8/28/2016 14:59:14'!
 cmdShortcutsSpec
 	"
@@ -4478,6 +4499,13 @@ fileReaderServicesForFile: filename suffix: suffix
 		^ { self serviceUniTextEdit } ].
 
 	^#()! !
+
+!UniTextEditor class methodsFor: 'cached state access' stamp: 'KenD 10/25/2016 15:05:30'!
+findText
+	FindText ifNil: [
+		FindText _ Text fromString: UniString emptyString ].
+	^FindText
+	! !
 
 !UniTextEditor class methodsFor: 'instance creation' stamp: 'KenD 8/27/2016 14:11:33'!
 fromFile: aFileNameString
@@ -5070,7 +5098,7 @@ textProvider: aTextProvider textGetter: textGetter textSetter: textSetter select
 withText: aTextOrString
 	^self withModel: (UniTextModel withText: aTextOrString asUniString asText)! !
 
-!InnerUniTextMorph methodsFor: 'private' stamp: 'KenD 9/9/2016 14:00:52'!
+!InnerUniTextMorph methodsFor: 'private' stamp: 'KenD 10/25/2016 14:48:06'!
 installEditorAndTextComposition
 	"Install an editor for my textComposition. Install also the textComposition."
 	| e tc |
@@ -5079,7 +5107,7 @@ installEditorAndTextComposition
 	e _ model editorClass new morph: self.
 	e model: model.
 	e defaultFont: UniForms default.
-	tc _ TextComposition new.
+	tc _ UniTextComposition new.
 	"Keep critical section short"
 	self mutex critical: [
 		editor _ e.
@@ -5101,6 +5129,35 @@ installEditorAndTextComposition
 			model textStylerClass ]).
 	self autoCompleterClass:
 		model autoCompleterClass! !
+
+!UniFillInTheBlankMorph methodsFor: 'initialization' stamp: 'KenD 10/25/2016 15:15:54'!
+createQueryTextMorph: queryString 
+	"create the queryTextMorph"
+	| result |
+	result _ StringMorph new contents: queryString asUniString.
+	"result font: UniForms default."
+	result lock.
+	result morphExtent: 24@2 * self sizeUnit.
+	self addMorph: result position: 2@0.5 * self sizeUnit // 1.
+	^ result! !
+
+!UniFillInTheBlankMorph methodsFor: 'initialization' stamp: 'KenD 10/25/2016 15:12:37'!
+createTextPaneAcceptOnCR: acceptBoolean
+	"create the textPane"
+	| result |
+
+	self flag: #todo. "Integrate this method with the Theme system. --cbr"
+
+	result _ UniTextModelMorph
+				textProvider: self
+				textGetter: #response
+				textSetter: #response:
+				selectionGetter: #selectionInterval.
+	result hasUnacceptedEdits: true.
+	result acceptOnCR: acceptBoolean.
+	result morphExtent: 18@5 * self sizeUnit.
+	self addMorph: result position: 1@2 * self sizeUnit.
+	^ result! !
 
 !UniFillInTheBlankMorph methodsFor: 'initialization' stamp: 'KenD 9/9/2016 14:07:55'!
 createTextPaneExtent: answerExtent acceptBoolean: acceptBoolean
@@ -5155,6 +5212,10 @@ setQuery: queryString initialAnswer: initialAnswer answerExtent: answerExtent ac
 				acceptBoolean: acceptBoolean
 	! !
 
+!UniFillInTheBlankMorph methodsFor: 'initialization' stamp: 'KenD 10/25/2016 15:09:09'!
+sizeUnit
+	^ UniForms default height! !
+
 !UniFillInTheBlankMorph class methodsFor: 'instance creation' stamp: 'KenD 9/11/2016 15:42:47'!
 request: queryString initialAnswer: defaultAnswer centerAt: aPoint onCancelReturn: returnOnCancel acceptOnCR: acceptBoolean answerExtent: answerExtent
 	"Create an instance of me whose question is queryString with the given initial answer. Invoke it centered at the given point, and answer the string the user accepts.   If the user cancels, answer returnOnCancel."
@@ -5175,6 +5236,10 @@ request: queryString initialAnswer: defaultAnswer centerAt: aPoint onCancelRetur
 	self runningWorld addMorph: aFillInTheBlankMorph centeredNear: aPoint.
 	^ aFillInTheBlankMorph getUserResponse
 ! !
+
+!UniTextComposition methodsFor: 'access' stamp: 'KenD 10/25/2016 14:49:38'!
+defaultFont
+	^ UniForms default ! !
 
 !UniChar methodsFor: 'comparing' stamp: 'KenD 2/18/2013 20:30'!
 < aCharacter 
