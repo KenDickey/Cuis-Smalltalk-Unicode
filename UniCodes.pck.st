@@ -515,13 +515,6 @@ asUniString
 	             runs:   self runs)
 		font: UniForms default! !
 
-!Rope methodsFor: '*unicodes' stamp: 'KenD 9/19/2016 13:02:42'!
-asUniString
-
-	"^UniString fromString: self"
-	"Convert embedded NCRs to UTF-8, and then to UniString"
-	^(self asString asUtf8: true) asUniString! !
-
 !TextReplaceCommand methodsFor: '*unicodes' stamp: 'KenD 8/29/2016 15:12:26'!
 appendUniStringToNew: aStringOrText
 	new _ new asUniString, aStringOrText! !
