@@ -1,7 +1,7 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3564] on 20 January 2019 at 5:06:03 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3564] on 20 January 2019 at 5:47:42 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
-!provides: 'UniCodes' 1 51!
+!provides: 'UniCodes' 1 52!
 !requires: 'Collections-CompactArrays' 1 4 nil!
 !requires: 'Goodies' 1 6 nil!
 !requires: 'Cuis-Base' 50 3564 nil!
@@ -5948,14 +5948,13 @@ rangeInfo3
 ^ #( 'Unassigned' 'Unknown' )
 ! !
 
-!UniChar methodsFor: 'printing' stamp: 'KenD 4/7/2013 09:56'!
+!UniChar methodsFor: 'printing' stamp: 'KenD 1/20/2019 17:29:10'!
 printOn: aStream
 	"Display for humans"
 
 	(codePoint < 16rFF) "Fits in a byte?"
 	ifTrue: [
-		aStream nextPut: $$.
-		aStream nextPut: (Character value: codePoint)
+		aStream nextPut: (Character codePoint: codePoint)
 	]
 	ifFalse: [ "Do what Cuis does as with String>>fromUtf8: "
 		aStream nextPutAll: '&#'.
