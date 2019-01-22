@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3564] on 20 January 2019 at 5:47:42 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3564] on 22 January 2019 at 4:55:09 pm'!
 'Description UniCodes -- basic support for Unicode code points
                 -- see http://unicode.org/'!
 !provides: 'UniCodes' 1 52!
@@ -1460,26 +1460,11 @@ initialIntegerOrNil
 "
 ! !
 
-!UniString methodsFor: 'converting' stamp: 'KenD 3/20/2013 19:05'!
+!UniString methodsFor: 'converting' stamp: 'KenD 1/22/2019 16:53:09'!
 keywords
 	"Answer an array of the keywords that compose the receiver."
-	| kwd char keywords |
-	keywords := Array streamContents:
-		[:kwds | kwd := UniStringWrapper new.
-		1 to: self size do:
-			[:i |
-			kwd nextPut: (char _ self at: i).
-			char = $: ifTrue: 
-					[kwds nextPut: kwd contents.
-					kwd := UniStringWrapper new]].
-		kwd isEmpty ifFalse: [kwds nextPut: kwd asUniString]].
-	(keywords size >= 1 and: [(keywords at: 1) = ':']) ifTrue:
-		["Has an initial keyword, as in #:if:then:else:"
-		keywords _ keywords allButFirst].
-	(keywords size >= 2 and: [(keywords at: keywords size - 1) = ':']) ifTrue:
-		["Has a final keyword, as in #nextPut::andCR"
-		keywords _ keywords copyReplaceFrom: keywords size - 1
-								to: keywords size with: {':' , keywords last}].
+	| keywords |
+	keywords := self asString keywords.
 	^ keywords collect: [ :str | str asUniString ]! !
 
 !UniString methodsFor: 'converting' stamp: 'KenD 4/8/2013 21:28'!
